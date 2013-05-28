@@ -5,8 +5,8 @@
 import os, glob, subprocess, random, operator, time
 from optparse import OptionParser
 
-program_path = "/home/guoxing/tool/morehouse/python/"
-other_path = "/home/guoxing/tool/morehouse/other/"
+program_path = "/home/guoxing/disk2/ngs/morehouse/python/"
+other_path = "/home/guoxing/disk2/ngs/morehouse/other/"
 samtools_path = other_path + "samtools-0.1.18/"
 ref_path = "/home/guoxing/disk2/UCSC_hg18_index_lm/"
 currentPath = os.getcwd() + '/'
@@ -19,7 +19,7 @@ parser.add_option("-c", "--cFile", type="string", dest="csfastaFile",help = "Inp
 parser.add_option("-q", "--qFile", type="string", dest="qualFile",help = "Input qual Name", default="null")
 parser.add_option("-o", "--output", type="string", dest="fastqFile",help = "output fastq file ", default="null")
 """
-parser.add_option("-i", "--rmskFile", type="string", dest="rmskFile",help = "Input rmsk Name", default="null")
+parser.add_option("-s", "--rmskFile", type="string", dest="rmskFile",help = "Input rmsk Name", default="null")
 parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="chr11")
 
 (options, args) = parser.parse_args()
@@ -160,24 +160,24 @@ chr_name = options.chrName
 #priRem_input_file_name = options.bwaFile
 #bwa_input_file = priRem_input_file_name
 rmsk_input_file_name = rmsk_input_file[:rmsk_input_file.find('.')].strip()
-
+"""
 # sam process
 print "sam_process runing"
 sam_process = program_path + "sam_process.py " + " -s " + rmsk_input_file
 print sam_process
 sam_process_Process = subprocess.Popen(sam_process, shell=True)
 sam_process_Process.wait()
-
+"""
 # snpPick_solid
 print "snpPick_solid runing"
-snpPick_solid = program_path + "snpPick_solid.py " + " -s " + rmsk_input_file_name + "_indel.sam -c " + chr_name
+snpPick_solid = program_path + "snpPick_solid.py " + " -s " + rmsk_input_file_name + ".sam -c " + chr_name
 print snpPick_solid
 snpPick_solid_Process = subprocess.Popen(snpPick_solid, shell=True)
 snpPick_solid_Process.wait()
 
 # refMerger
 print "refMerger runing"
-refMerger = program_path + "refMerger_v4.py " + " -i " + rmsk_input_file_name + "_indel_3_hifi.txt -c " + chr_name
+refMerger = program_path + "refMerger_v4.py " + " -i " + rmsk_input_file_name + "*_3_hifi.txt -c " + chr_name
 print refMerger
 refMerger_Process = subprocess.Popen(refMerger, shell=True)
 refMerger_Process.wait()

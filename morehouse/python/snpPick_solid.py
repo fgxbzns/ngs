@@ -442,10 +442,14 @@ for snp_data in snp_sorted_list:
 print "common_total", common_total
 print "same_to_A", same_to_A
 print "same_to_B", same_to_B
-print "same_to_AB", same_to_AB
+print "correct rate: ", float(same_to_A/(same_to_A + same_to_B))
+print "homo: ", same_to_AB
 print "X_AB", X_AB
 print "not_ABX", not_ABX
 print "hifi_seed", hifi_seed
+
+print "A/seed: ", float(same_to_A/hifi_seed)
+print "(A+B)/seed: ", float((same_to_A + same_to_B)/hifi_seed)
 print "not_in_genotype", not_in_genotype
 print "pure_total", pure_total
 
@@ -454,10 +458,15 @@ print "pure_total", pure_total
 #data_record_file.write("total in genotype is: " + str(common_total) + "\n")
 data_record_file.write("same to snp.A: " + str(same_to_A) + "\n")
 data_record_file.write("same to snp.B: " + str(same_to_B) + "\n")
+data_record_file.write("same to snp.B: " + str(float(same_to_A/(same_to_A + same_to_B))) + "\n")
 data_record_file.write("homo: " + str(same_to_AB) + "\n")
 data_record_file.write("X_AB: " + str(X_AB) + "\n")
 data_record_file.write("not_ABX: " + str(not_ABX) + "\n")
 data_record_file.write("total seed for hifi: " + str(hifi_seed) + "\n")
+
+print >> data_record_file, "A/seed: ", float(same_to_A/hifi_seed)
+print >> data_record_file, "(A+B)/seed: ", float((same_to_A + same_to_B)/hifi_seed)
+
 data_record_file.write("not_in_genotype: " + str(not_in_genotype) + "\n")
 data_record_file.write("pure_total (include alleles pure but may not in genotype): " + str(pure_total) + "\n")
 

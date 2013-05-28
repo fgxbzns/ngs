@@ -5,8 +5,8 @@
 import os, glob, subprocess, random, operator, time
 from optparse import OptionParser
 
-program_path = "/home/guoxing/tool/morehouse/python/"
-other_path = "/home/guoxing/tool/morehouse/other/"
+program_path = "/home/guoxing/disk2/ngs/morehouse/python/"
+other_path = "/home/guoxing/disk2/ngs/morehouse/other/"
 samtools_path = other_path + "samtools-0.1.18/"
 ref_path = "/home/guoxing/disk2/UCSC_hg18_index_lm/"
 currentPath = os.getcwd() + '/'

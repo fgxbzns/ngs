@@ -133,7 +133,7 @@ alias procheck='$prodir/procheck.scr'
 #alias wirplot       $prodir'/wirplot.scr'
 
 # morehouse python
-export morehousePath=/home/guoxing/tool/morehouse/python
+export morehousePath=/home/guoxing/disk2/ngs/morehouse/python
 alias fileCutter='$morehousePath/fileCutter.py'
 alias fileCompare='$morehousePath/fileCompare.py'
 alias snpCoverage='$morehousePath/snpCoverage_v5.py'
@@ -161,10 +161,13 @@ alias segdupsRemove='$morehousePath/segdupsRemove.py'
 alias strvalRemove='$morehousePath/strvalRemove.py'
 alias snpPick_solid='$morehousePath/snpPick_solid.py'
 alias solid_process='$morehousePath/solid_process.py'
+alias solid_process_2='$morehousePath/solid_process_2.py'
+alias solid_process_3='$morehousePath/solid_process_3.py'
+alias solid_process_4='$morehousePath/solid_process_4.py'
 alias sam_process='$morehousePath/sam_process.py'
 
 # other programs
-export otherPath=/home/guoxing/tool/morehouse/other
+export otherPath=/home/guoxing/disk2/ngs/morehouse/other
 alias samtools='$otherPath/samtools-0.1.18/samtools'
 
 
