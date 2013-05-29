@@ -1,0 +1,13 @@
+#!/bin/bash
+#total_reads=$(($(wc song_5_2_noPri_chr.sam)-24))
+total_reads=3403473
+echo "total reads number: $total_reads"
+for num in {1..22} X Y
+#for num in 1 
+  do
+#    echo chr$num   
+    chrReads=$(grep -c -iw chr$num song_5_2_noPri_chr.sam)
+ #   echo $chrReads
+    echo "chr$num, $chrReads, $(($chrReads*10000/$total_reads))"
+    #wait
+  done
