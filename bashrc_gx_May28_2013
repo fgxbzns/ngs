@@ -165,6 +165,7 @@ alias solid_process_2='$morehousePath/solid_process_2.py'
 alias solid_process_3='$morehousePath/solid_process_3.py'
 alias solid_process_4='$morehousePath/solid_process_4.py'
 alias sam_process='$morehousePath/sam_process.py'
+alias chr_spliter='$morehousePath/chr_spliter.py'
 
 # other programs
 export otherPath=/home/guoxing/disk2/ngs/morehouse/other
