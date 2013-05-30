@@ -81,7 +81,7 @@ bwa_long_Process.wait()
 
 #bwa_input_file_name = options.bwaFile
 sam_file = bwa_input_file_name + ".sam"
-"""
+
 # grep
 print "grep chr from sam file"
 grep = "grep chr " + sam_file + " > " + bwa_input_file_name + "_chr.sam"
@@ -95,7 +95,7 @@ chrPercentage = program_path + "chrPercentage.py " + " -i " + bwa_input_file_nam
 print chrPercentage
 chrPercentage_Process = subprocess.Popen(chrPercentage, shell=True)
 chrPercentage_Process.wait()
-"""
+
 # sort the sam file
 print "sort runing"
 sort_input = bwa_input_file_name + "_chr"
@@ -144,7 +144,12 @@ print chrPercentage
 chrPercentage_Process = subprocess.Popen(chrPercentage, shell=True)
 chrPercentage_Process.wait()
 
-
+# sam process
+print "sam_process runing"
+sam_process = program_path + "sam_process.py " + " -s " + bwa_input_file_name + "_" + chr_name + "_sorted_rmsk.sam"
+print sam_process
+sam_process_Process = subprocess.Popen(sam_process, shell=True)
+sam_process_Process.wait()
 
 
 

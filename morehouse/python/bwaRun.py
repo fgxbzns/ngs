@@ -55,6 +55,7 @@ end = time.time()
 run_time = str(format((end - start), "0.3f"))
 print "run time is: " + run_time + "s"
 
-data_record_file_name = fastq_file_name + "_time_" + run_time + "s.txt"
-data_record_file = open(currentPath + data_record_file_name, "w")
+data_record_file_name = fastq_file_name + "_BWAtime_" + ".txt"
+data_record_file = open(currentPath + data_record_file_name, "a")
+print >> data_record_file, "run time is: " + run_time + "s"
 data_record_file.close()

@@ -170,7 +170,9 @@ sam_process_Process.wait()
 """
 # snpPick_solid
 print "snpPick_solid runing"
-snpPick_solid = program_path + "snpPick_solid.py " + " -s " + rmsk_input_file_name + ".sam -c " + chr_name
+#snpPick_solid = program_path + "snpPick_solid.py " + " -s " + rmsk_input_file_name + ".sam -c " + chr_name
+
+snpPick_solid = program_path + "snpPick_solid.py " + " -s " + rmsk_input_file_name + "_indel.sam -c " + chr_name		#sam_processed
 print snpPick_solid
 snpPick_solid_Process = subprocess.Popen(snpPick_solid, shell=True)
 snpPick_solid_Process.wait()
