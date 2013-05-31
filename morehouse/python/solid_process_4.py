@@ -186,7 +186,7 @@ refMerger_Process.wait()
 
 # hifi
 print "hifi runing"
-hifi = program_path + "hifi"
+hifi = program_path + "hifi &"
 print hifi
 hifi_Process = subprocess.Popen(hifi, shell=True)
 hifi_Process.wait()

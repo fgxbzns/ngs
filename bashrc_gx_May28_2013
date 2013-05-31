@@ -63,6 +63,8 @@ alias bmcc4='ssh guoxing@bmcc4.cs.gsu.edu'
 alias bmcc4sftp='sshfs guoxing@bmcc4.cs.gsu.edu:/u1/guoxing ~/remote'
 alias node1='ssh guoxing@10.20.1.81'
 alias node1sftp='sshfs guoxing@10.20.1.81:/home/guoxing ~/node1'
+alias node2='ssh guoxing@10.20.1.81 -p 23'
+alias node2sftp='sshfs guoxing@10.20.1.81 -p 23:/home/guoxing ~/node2'
 
 
 # Alias's to modified commands
@@ -166,6 +168,8 @@ alias solid_process_3='$morehousePath/solid_process_3.py'
 alias solid_process_4='$morehousePath/solid_process_4.py'
 alias sam_process='$morehousePath/sam_process.py'
 alias chr_spliter='$morehousePath/chr_spliter.py'
+alias fastq_spliter='$morehousePath/fastq_spliter.py'
+alias bwa_process='$morehousePath/bwa_process.py'
 
 # other programs
 export otherPath=/home/guoxing/disk2/ngs/morehouse/other

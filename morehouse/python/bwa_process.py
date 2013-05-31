@@ -29,7 +29,7 @@ chr_name = options.chrName
 chr_name = "chr11"
 
 number_of_subfile = 10
-"""
+
 # bwa
 file_number = 5
 while file_number < number_of_subfile:
@@ -44,11 +44,12 @@ while file_number < number_of_subfile:
 	file_number += 1
 
 #os.wait()
-"""
+
 # grep chr
 file_number = 0
 while file_number < number_of_subfile:
-	subfile_sam_name = fastq_file_name + str(file_number) + "_all"  + ".sam"
+	#subfile_sam_name = fastq_file_name + str(file_number) + "_all"  + ".sam"
+	subfile_sam_name = fastq_file_name + str(file_number) + chr_name  + ".sam"
 	print "current file: ", subfile_sam_name
 	if file_number == 0:
 		#grep = "grep chr " + " " + subfile_sam_name + " > " + fastq_file_name + chr_name + ".sam &"
