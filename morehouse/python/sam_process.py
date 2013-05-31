@@ -110,7 +110,8 @@ for read in inputFile_sam:
 			read = read.replace(qual_line, read_qual[1])
 			print >> outputFile_sam, read.strip()		
 		except:
-			print "error in line: ", line
+			#print "error in line: ", line
+			pass
 
 print "total_reads_num: ", total_reads_num
 

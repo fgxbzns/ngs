@@ -6,6 +6,8 @@ import os, glob, subprocess, random, operator, time
 from optparse import OptionParser
 
 file_path = "/home/guoxing/disk2/solid/common_files/"
+data_record_path = "/home/guoxing/disk2/solid/common_files/data_record/"
+
 currentPath = os.getcwd() + '/'
 
 class snp_hap_ori:
@@ -167,11 +169,27 @@ accuracy_output_file.write("same_AB_total_number: " + str(same_AB_total_number) 
 accuracy_output_file.write("same_A_total_number: " + str(same_A_total_number) + "\n")
 accuracy_output_file.write("same_B_total_number: " + str(same_B_total_number) + "\n")
 accuracy_output_file.write("not_same_AB_total_number: " + str(not_same_AB_total_number) + "\n")
-accuracy_output_file.write("pencentage in common: " + str(float(same_position_total_number)/float(snp_hap_hifi_total_number)) + "\n")			
-accuracy_output_file.write("accuracy: " + str(float(same_A_total_number + same_B_total_number + same_AB_total_number)/float(same_position_total_number)) + "\n")
+pencentage_in_common = format(float(same_position_total_number)/float(snp_hap_hifi_total_number)*100, "0.2f")
+accuracy_output_file.write("pencentage in common: " + str() + "\n")	
+accuracy = format(float(same_A_total_number + same_B_total_number + same_AB_total_number)/float(same_position_total_number)*100, "0.2f")	
+accuracy_output_file.write("accuracy: " + str() + "\n")
 
 inputFile_hap_ori.close()
 inputFile_hap_hifi.close()
 accuracy_output_file.close()
 
 difference_output_file.close()
+
+# record data
+data_record_file_name = "solid_process_4.txt"
+data_record_file = open(data_record_path + data_record_file_name, "a")
+print >> data_record_file, "hifi_data", same_position_total_number, (same_A_total_number+same_B_total_number+not_same_AB_total_number), snp_hap_hifi_total_number, accuracy
+data_record_file.close()
+cmd = "grep hifi_data hifi_accuracy.txt >> " + data_record_path + data_record_file_name
+print cmd
+os.system(cmd)
+"""
+data_record_file = open(data_record_path + data_record_file_name, "a")
+print >> data_record_file, ""
+data_record_file.close()
+"""

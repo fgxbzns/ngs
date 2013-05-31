@@ -9,6 +9,8 @@ program_path = "/home/guoxing/disk2/ngs/morehouse/python/"
 other_path = "/home/guoxing/disk2/ngs/morehouse/other/"
 samtools_path = other_path + "samtools-0.1.18/"
 ref_path = "/home/guoxing/disk2/UCSC_hg18_index_lm/"
+data_record_path = "/home/guoxing/disk2/solid/common_files/data_record/"
+
 currentPath = os.getcwd() + '/'
 
 # Reading options
@@ -21,6 +23,8 @@ parser.add_option("-o", "--output", type="string", dest="fastqFile",help = "outp
 """
 parser.add_option("-s", "--rmskFile", type="string", dest="rmskFile",help = "Input rmsk Name", default="null")
 parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="chr11")
+parser.add_option("-d", "--depth", type="string", dest="depth",help = "Input depth threshold", default="3")
+
 
 (options, args) = parser.parse_args()
 """
@@ -153,8 +157,7 @@ chrPercentage_Process.wait()
 
 rmsk_input_file = options.rmskFile
 chr_name = options.chrName
-
-
+depth = options.depth
 
 # priRem_input_file_name = "song_1_prep.fastq"
 #priRem_input_file_name = options.bwaFile
@@ -172,14 +175,37 @@ sam_process_Process.wait()
 print "snpPick_solid runing"
 #snpPick_solid = program_path + "snpPick_solid.py " + " -s " + rmsk_input_file_name + ".sam -c " + chr_name
 
-snpPick_solid = program_path + "snpPick_solid.py " + " -s " + rmsk_input_file_name + "_indel.sam -c " + chr_name		#sam_processed
+#snpPick_solid = program_path + "snpPick_solid.py " + " -s " + rmsk_input_file_name + "_indel.sam -c " + chr_name + " -d " + depth		#sam_processed
+snpPick_solid = program_path + "snpPick_solid.py " + " -s " + rmsk_input_file_name + ".sam -c " + chr_name + " -d " + depth		#sam_processed
 print snpPick_solid
 snpPick_solid_Process = subprocess.Popen(snpPick_solid, shell=True)
 snpPick_solid_Process.wait()
 
+
+data_record_file_name = "solid_process_4.txt"
+try:
+	data_record_file = open(data_record_path + data_record_file_name, "r")
+except:
+	data_record_file = open(data_record_path + data_record_file_name, "w")
+	print >> data_record_file, "all", "sam_file", "chr", "depth_threshold", "same_to_A", "same_to_B", "correct_rate", \
+	"same_to_AB", "X_AB", "not_ABX", "hifi_seed", "A_seed_rate", "hete_seed_rate", "pure_total", "not_in_genotype", "hifi", "error", "total", "accuracy"
+data_record_file = open(data_record_path + data_record_file_name, "a")
+"""
+print >> data_record_file, "==================================================="
+print >> data_record_file, "time is: " + str(time.time())
+print >> data_record_file, "current path is: " + currentPath
+print >> data_record_file, "chr_name is: " + chr_name
+print >> data_record_file, "depth is: " + depth
+"""
+
+data_record_file.close()
+cmd = "grep data " + rmsk_input_file_name + "_"+depth+"_data_record.txt >> " + data_record_path + data_record_file_name
+print cmd
+os.system(cmd)
+
 # refMerger
 print "refMerger runing"
-refMerger = program_path + "refMerger_v4.py " + " -i " + rmsk_input_file_name + "*_3_hifi.txt -c " + chr_name
+refMerger = program_path + "refMerger_v4.py " + " -i " + rmsk_input_file_name + "_"+depth+"_hifi.txt -c " + chr_name
 print refMerger
 refMerger_Process = subprocess.Popen(refMerger, shell=True)
 refMerger_Process.wait()
@@ -188,14 +214,16 @@ refMerger_Process.wait()
 print "hifi runing"
 hifi = program_path + "hifi &"
 print hifi
-hifi_Process = subprocess.Popen(hifi, shell=True)
-hifi_Process.wait()
+#hifi_Process = subprocess.Popen(hifi, shell=True)
+#hifi_Process.wait()
 
+"""
 # hifiAccuCheck
 print "hifiAccuCheck runing"
 hifiAccuCheck = program_path + "hifiAccuCheck_v2.py -c " + chr_name
 print hifiAccuCheck
 hifiAccuCheck_Process = subprocess.Popen(hifiAccuCheck, shell=True)
 hifiAccuCheck_Process.wait()
+"""
 
 
