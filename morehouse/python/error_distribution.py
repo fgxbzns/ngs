@@ -21,7 +21,7 @@ snp_hap_seed_total_number = 0
 usage = "usage: %prog [options] arg1" 
 parser = OptionParser(usage = usage) 
 parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="null")
-parser.add_option("-s", "--seed", type="string", dest="hifiSeed",help = "Input seed file Name", default="null")
+parser.add_option("-i", "--seed", type="string", dest="hifiSeed",help = "Input seed file Name", default="null")
 
 (options, args) = parser.parse_args()
 chr_name = options.chrName
@@ -114,30 +114,30 @@ same_A_total_number = 0
 same_B_total_number = 0
 not_same_AB_total_number = 0
 
-accuracy_output_file_name = "hifi_accuracy.txt"
-accuracy_output_file = open(currentPath + accuracy_output_file_name, "w")
-
 error_distribution_output_file_name = "hifi_error_distribution.txt"
 error_distribution_output_file = open(currentPath + error_distribution_output_file_name, "w")
 #error_distribution_output_file.write("position")
-print >> error_distribution_output_file, "position /t seed_A /t seed_B /t seed_X /t seed_N /t seed_other /t hifi_AB /t hifi_A /t hifi_B /t hifi_X /t hifi_N /t hifi_other"
+print >> error_distribution_output_file, "position seed_A seed_B seed_X seed_N seed_other hifi_AB hifi_A hifi_B hifi_X hifi_N hifi_other"
+#print >> error_distribution_output_file, "position /t seed_A /t seed_B /t seed_X /t seed_N /t seed_other /t hifi_AB /t hifi_A /t hifi_B /t hifi_X /t hifi_N /t hifi_other"
+
+y_axis_value = 0
 
 for position, line_hifi in snp_hap_hifi_dict.iteritems():
 	
 	snp_position = position	
-	seed_A_pos = ""
-	seed_B_pos = ""
-	seed_X_pos = ""
-	seed_N_pos = ""
-	seed_other_pos = ""
+	seed_A_pos = "NA"
+	seed_B_pos = "NA"
+	seed_X_pos = "NA"
+	seed_N_pos = "NA"
+	seed_other_pos = "NA"
 
-	hifi_AB_pos = ""
-	hifi_A_pos = ""
-	hifi_B_pos = ""
-	hifi_X_pos = ""
-	hifi_N_pos = ""
-	hifi_other_pos = ""
-	
+	hifi_AB_pos = "NA"
+	hifi_A_pos = "NA"
+	hifi_B_pos = "NA"
+	hifi_X_pos = "NA"
+	hifi_N_pos = "NA"
+	hifi_other_pos = "NA"
+	"""
 	# check hifi seeds
 	if position in snp_hap_seed_dict and position in snp_hap_ref_dict:
 		line_ref = snp_hap_ref_dict[position]
@@ -157,27 +157,8 @@ for position, line_hifi in snp_hap_hifi_dict.iteritems():
 		elif ref_A == "N" or ref_B == "N":
 			seed_N_pos = position
 		else:
-			seed_other_pos = position
-			
-		
-		"""
-		if seed_A == ref_A:
-			if seed_B == ref_B:
-				seed_AB_pos = position
-				seed_A_pos = position
-				seed_B_pos = position
-			else:
-				seed_A_pos = position
-		elif seed_B == ref_B:	# error = B + other	assume A is the selected chr. need to update this for solid data song_4 song_6
-			seed_B_pos = position
-			seed_other_pos = position
-		elif ref_A == "X" or ref_B == "X":
-			seed_X_pos = position
-		elif ref_A == "N" or ref_B == "N":
-			seed_N_pos = position
-		else:
-			seed_other_pos = position
-		"""
+			seed_other_pos = position		
+	"""
 	# check hifi results
 	if position in snp_hap_ref_dict:
 		line_ref = snp_hap_ref_dict[position]
@@ -205,7 +186,29 @@ for position, line_hifi in snp_hap_hifi_dict.iteritems():
 			hifi_N_pos = position
 		else:
 			hifi_other_pos = position
-	print >> error_distribution_output_file, snp_position, seed_A_pos, seed_B_pos, seed_X_pos, seed_N_pos, seed_other_pos, hifi_AB_pos, hifi_A_pos, hifi_B_pos, hifi_X_pos, hifi_N_pos, hifi_other_pos
+			
+		# check hifi seeds, these position need to be in ref too
+		if position in snp_hap_seed_dict:
+			line_ref = snp_hap_ref_dict[position]
+			elements_ref = line_ref.strip().split()
+			ref_A = elements_ref[2].strip()
+			ref_B = elements_ref[3].strip()
+			line_seed = snp_hap_seed_dict[position]
+			elements_seed = line_seed.strip().split()
+			seed_A = elements_seed[2].strip()
+			#seed_B = elements_seed[3].strip()
+			if seed_A == ref_A:
+				seed_A_pos = position
+			elif seed_A == ref_B:
+				seed_B_pos = position
+			elif ref_A == "X" or ref_B == "X":
+				seed_X_pos = position
+			elif ref_A == "N" or ref_B == "N":
+				seed_N_pos = position
+			else:
+				seed_other_pos = position		
+			
+		print >> error_distribution_output_file, snp_position, seed_A_pos, seed_B_pos, seed_X_pos, seed_N_pos, seed_other_pos, hifi_AB_pos, hifi_A_pos, hifi_B_pos, hifi_X_pos, hifi_N_pos, hifi_other_pos
 
 inputFile_hap_ref.close()
 inputFile_hap_hifi.close()
