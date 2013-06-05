@@ -141,6 +141,7 @@ alias fileCompare='$morehousePath/fileCompare.py'
 #alias snpCoverage='$morehousePath/snpCoverage_v5.py'
 alias refMerger='$morehousePath/refMerger_v4.py'
 alias hifiAccuCheck='$morehousePath/hifiAccuCheck_v2.py'
+alias hifiAccuCheck_v3='$morehousePath/hifiAccuCheck_v3.py'
 alias makeGenoHap='$morehousePath/makeGenoHap_v1.py'
 #alias snpPick='$morehousePath/snpPick.py'
 alias hifi='$morehousePath/hifi'
@@ -172,6 +173,7 @@ alias fastq_spliter='$morehousePath/fastq_spliter.py'
 alias bwa_process='$morehousePath/bwa_process.py'
 alias bwa_process='$morehousePath/bwa_process.py'
 alias error_distribution='$morehousePath/error_distribution.py'
+alias genotype_extract='$morehousePath/genotype_extract.py'
 
 # other programs
 export otherPath=/home/guoxing/disk2/ngs/morehouse/other

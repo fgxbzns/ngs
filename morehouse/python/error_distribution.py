@@ -117,15 +117,37 @@ not_same_AB_total_number = 0
 error_distribution_output_file_name = "hifi_error_distribution.txt"
 error_distribution_output_file = open(currentPath + error_distribution_output_file_name, "w")
 #error_distribution_output_file.write("position")
-print >> error_distribution_output_file, "position seed_A seed_B seed_X seed_N seed_other hifi_AB hifi_A hifi_B hifi_X hifi_N hifi_other"
-#print >> error_distribution_output_file, "position /t seed_A /t seed_B /t seed_X /t seed_N /t seed_other /t hifi_AB /t hifi_A /t hifi_B /t hifi_X /t hifi_N /t hifi_other"
+#print >> error_distribution_output_file, "position seed_AB seed_A seed_B seed_X seed_N seed_other hifi_AB hifi_A hifi_B hifi_X hifi_N hifi_other"
+print >> error_distribution_output_file, "position \t seed_AB \t seed_A \t seed_B \t seed_X \t seed_N \t seed_other \t hifi_AB \t hifi_A \t hifi_B \t hifi_X \t hifi_N \t hifi_other"
+#print >> error_distribution_output_file, position, seed_AB_pos, seed_A_pos, seed_B_pos, seed_X_pos, seed_N_pos, seed_other_pos, hifi_AB_pos, hifi_A_pos, hifi_B_pos, hifi_X_pos, hifi_N_pos, hifi_other_pos
 
-y_axis_value = 0
+y_axis_value = "80 \t"
+seed_correct_axis_value = "100 \t"
+seed_error_axis_value = "120 \t"
+hifi_error_axis_value = "140 \t"
 
-for position, line_hifi in snp_hap_hifi_dict.iteritems():
+snp_hap_hifi_dict_sorted_list = [x for x in snp_hap_hifi_dict.iteritems()] 
+snp_hap_hifi_dict_sorted_list.sort(key=lambda x: x[0]) # sort by key
+
+#for position, line_hifi in snp_hap_hifi_dict.iteritems():
+for snp in snp_hap_hifi_dict_sorted_list:
 	
-	snp_position = position	
-	seed_A_pos = "NA"
+	position = snp[0]
+	seed_AB_pos = "\t"	
+	seed_A_pos = "\t"
+	seed_B_pos = "\t"
+	seed_X_pos = "\t"
+	seed_N_pos = "\t"
+	seed_other_pos = "\t"
+
+	hifi_AB_pos = "\t"
+	hifi_A_pos = "\t"
+	hifi_B_pos = "\t"
+	hifi_X_pos = "\t"
+	hifi_N_pos = "\t"
+	hifi_other_pos = "\t"
+	"""
+	seed_A_pos = ""
 	seed_B_pos = "NA"
 	seed_X_pos = "NA"
 	seed_N_pos = "NA"
@@ -138,54 +160,32 @@ for position, line_hifi in snp_hap_hifi_dict.iteritems():
 	hifi_N_pos = "NA"
 	hifi_other_pos = "NA"
 	"""
-	# check hifi seeds
-	if position in snp_hap_seed_dict and position in snp_hap_ref_dict:
-		line_ref = snp_hap_ref_dict[position]
-		elements_ref = line_ref.strip().split()
-		ref_A = elements_ref[2].strip()
-		ref_B = elements_ref[3].strip()
-		line_seed = snp_hap_seed_dict[position]
-		elements_seed = line_seed.strip().split()
-		seed_A = elements_seed[2].strip()
-		#seed_B = elements_seed[3].strip()
-		if seed_A == ref_A:
-			seed_A_pos = position
-		elif seed_A == ref_B:
-			seed_B_pos = position
-		elif ref_A == "X" or ref_B == "X":
-			seed_X_pos = position
-		elif ref_A == "N" or ref_B == "N":
-			seed_N_pos = position
-		else:
-			seed_other_pos = position		
-	"""
 	# check hifi results
 	if position in snp_hap_ref_dict:
 		line_ref = snp_hap_ref_dict[position]
 		elements_ref = line_ref.strip().split()
 		ref_A = elements_ref[2].strip()
 		ref_B = elements_ref[3].strip()
+		line_hifi = snp_hap_hifi_dict[position]
 		elements_hifi = line_hifi.strip().split()
 		hifi_A = elements_hifi[2].strip()
 		hifi_B = elements_hifi[3].strip()
 	
 		if hifi_A == ref_A:
 			if hifi_B == ref_B:
-				hifi_AB_pos = position
-				hifi_A_pos = position
-				hifi_B_pos = position
+				hifi_AB_pos = y_axis_value
 			else:
-				hifi_A_pos = position
+				hifi_A_pos = y_axis_value
 				same_A_total_number += 1
 		elif hifi_B == ref_B:	# error = B + other	assume A is the selected chr. need to update this for solid data song_4 song_6
-			hifi_B_pos = position
-			hifi_other_pos = position
+			hifi_B_pos = y_axis_value
+			#hifi_other_pos = y_axis_value
 		elif ref_A == "X" or ref_B == "X":
-			hifi_X_pos = position
+			hifi_X_pos = y_axis_value
 		elif ref_A == "N" or ref_B == "N":
-			hifi_N_pos = position
+			hifi_N_pos = y_axis_value
 		else:
-			hifi_other_pos = position
+			hifi_other_pos = hifi_error_axis_value
 			
 		# check hifi seeds, these position need to be in ref too
 		if position in snp_hap_seed_dict:
@@ -196,19 +196,22 @@ for position, line_hifi in snp_hap_hifi_dict.iteritems():
 			line_seed = snp_hap_seed_dict[position]
 			elements_seed = line_seed.strip().split()
 			seed_A = elements_seed[2].strip()
-			#seed_B = elements_seed[3].strip()
+			#seed_A = elements_seed[3].strip() # for solid data 4 and 6, chr from mother
 			if seed_A == ref_A:
-				seed_A_pos = position
+				if seed_A == ref_B:
+					seed_AB_pos = seed_correct_axis_value
+				else:
+					seed_A_pos = seed_correct_axis_value
 			elif seed_A == ref_B:
-				seed_B_pos = position
+				seed_B_pos = seed_error_axis_value
 			elif ref_A == "X" or ref_B == "X":
-				seed_X_pos = position
+				seed_X_pos = y_axis_value
 			elif ref_A == "N" or ref_B == "N":
-				seed_N_pos = position
+				seed_N_pos = y_axis_value
 			else:
-				seed_other_pos = position		
-			
-		print >> error_distribution_output_file, snp_position, seed_A_pos, seed_B_pos, seed_X_pos, seed_N_pos, seed_other_pos, hifi_AB_pos, hifi_A_pos, hifi_B_pos, hifi_X_pos, hifi_N_pos, hifi_other_pos
+				seed_other_pos = y_axis_value		
+		if hifi_A != hifi_B:
+			print >> error_distribution_output_file, str(position)+"\t", seed_AB_pos, seed_A_pos, seed_B_pos, seed_X_pos, seed_N_pos, seed_other_pos, hifi_AB_pos, hifi_A_pos, hifi_B_pos, hifi_X_pos, hifi_N_pos, hifi_other_pos
 
 inputFile_hap_ref.close()
 inputFile_hap_hifi.close()
