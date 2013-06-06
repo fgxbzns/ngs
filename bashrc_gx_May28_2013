@@ -9,7 +9,7 @@ alias cd3='cd ../../..'
 alias cd4='cd ../../../..'
 alias cd5='cd ../../../../..'
 
-export CDPATH=.:~:/home/guoxing/project/:/home/guoxing/tool 
+export CDPATH=.:~:/home/guoxing/disk2/ 
 
 # Alias to multiple ls commands
 alias la='ls -Al'               # show hidden files
@@ -44,26 +44,13 @@ alias +x='chmod +x'
 # Alias's to local workstations
 alias asterix='ssh -Y gxfu@asterix.cs.gsu.edu'
 alias asterixsftp='sftp gxfu@asterix.cs.gsu.edu'
-alias yarrow='ssh raxis@192.168.1.108'
-alias yarrowsftp='sftp raxis@192.168.1.108'
-alias bertie='ssh gxfu@192.168.1.114'
-alias bertiesftp='sftp gxfu@192.168.1.114'
-alias 5200='ssh guoxing@192.168.1.108'
-alias 5200sftp='sftp guoxing@192.168.1.108'
-alias 444='ssh -X raxis@131.96.148.5'
-alias 444sftp='sftp raxis@131.96.148.5'
-alias 565='ssh -X raxis@131.96.32.14'
-alias 565sftp='sftp raxis@131.96.32.14'
-alias 565hm='ssh -X hzhang3@131.96.32.14'
-alias 565gx='ssh -X gxfu@131.96.32.14'
-alias 565sftpgx='sftp gxfu@131.96.32.14'
 alias octans='ssh gfu1@octans.gsu.edu'
 alias octanssftp='sshfs gfu1@octans.gsu.edu:/home/iweber/gfu1 ~/remote'
 alias bmcc4='ssh guoxing@bmcc4.cs.gsu.edu'
 alias bmcc4sftp='sshfs guoxing@bmcc4.cs.gsu.edu:/u1/guoxing ~/remote'
 alias node1='ssh guoxing@10.20.1.81'
 alias node1sftp='sshfs guoxing@10.20.1.81:/home/guoxing ~/node1'
-alias node2='ssh guoxing@10.20.1.81 -p 23'
+alias node2='ssh guoxing@10.20.1.81 -p 25'
 alias node2sftp='sshfs guoxing@10.20.1.81 -p 23:/home/guoxing ~/node2'
 
 
@@ -79,6 +66,7 @@ alias ns='netstat -alnp --protocol=inet | grep -v CLOSE_WAIT | cut -c-6,21-94 | 
 alias du1='du -h --max-depth=1'
 alias da='date "+%Y-%m-%d %A    %T %Z"'
 alias ebrc='pico ~/.bashrc'
+alias vibc='vi ~/.bashrc_gx'
 
 #PYMOL
 alias pymol='/home/guoxing/tool/pymol/pymol'
@@ -176,11 +164,20 @@ alias error_distribution='$morehousePath/error_distribution.py'
 alias genotype_extract='$morehousePath/genotype_extract.py'
 
 # other programs
-export otherPath=/home/guoxing/disk2/ngs/morehouse/other
+export otherPath=/home/guoxing/disk2/tool
 alias samtools='$otherPath/samtools-0.1.18/samtools'
+alias bwa75='$otherPath/bwa-0.7.5a/bwa'
+alias yaha='$otherPath/yaha72/yaha'
 
+#sratools
+export sratools_path=$otherPath"/sratoolkit.2.3.2-5-centos_linux64/bin"
+alias fastq_dump='$sratools_path/fastq-dump'
+alias sam_dump='$sratools_path/sam-dump'
 
-# NGS programs
+# bash script
+export bash_path=/home/guoxing/disk2/ngs/bash
+alias solid_bash='$bash_path/solid_bash.sh'
+ #NGS programs
 #export disk2ToolPath=/home/guoxing/disk2/tool
 #alias samtools='$disk2ToolPath/samtools-0.1.18/samtools'
 
