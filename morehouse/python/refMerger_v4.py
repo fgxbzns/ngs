@@ -34,7 +34,7 @@ common_snp_number = 0
 
 
 #for infile in glob.glob(os.path.join(currentPath,'*.phased')):
-for infile in glob.glob(os.path.join(file_path,"*"+chr_name+"????*.phased")):	# add * for chrX
+for infile in glob.glob(os.path.join(file_path,"*"+chr_name+"_???.phased")):	# add * for chrX
 	file_name = infile[(infile.find("hapmap3")):].strip()
 	inputFile = open(file_path + file_name, "r")
 	print file_name

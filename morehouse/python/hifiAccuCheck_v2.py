@@ -114,7 +114,7 @@ for position, line_hifi in snp_hap_hifi_dict.iteritems():
 		elements_ori = line_ori.strip().split()
 		ori_A = elements_ori[2].strip()
 		ori_B = elements_ori[3].strip()
-		
+		"""
 		# the hifi seed is from father, A
 		if hifi_A == ori_A:	#A is A
 			if hifi_B == ori_B:
@@ -142,7 +142,7 @@ for position, line_hifi in snp_hap_hifi_dict.iteritems():
 		else:
 			not_same_AB_total_number += 1
 		same_position_total_number += 1
-		"""
+		
 	else:
 		different_position_total_number += 1
 		difference_output_file.write(line_hifi + "\n")
@@ -179,16 +179,16 @@ accuracy_output_file.close()
 
 difference_output_file.close()
 
-"""
+
 # record data
 data_record_file_name = "solid_process_4.txt"
 data_record_file = open(data_record_path + data_record_file_name, "a")
-print >> data_record_file, "hifi_data", same_position_total_number, (same_A_total_number+same_B_total_number+not_same_AB_total_number), snp_hap_hifi_total_number, accuracy
+print >> data_record_file, currentPath, same_position_total_number, (same_A_total_number+same_B_total_number+not_same_AB_total_number), same_AB_total_number, snp_hap_hifi_total_number, accuracy
 data_record_file.close()
 cmd = "grep hifi_data hifi_accuracy.txt >> " + data_record_path + data_record_file_name
 print cmd
 os.system(cmd)
-"""
+
 """
 data_record_file = open(data_record_path + data_record_file_name, "a")
 print >> data_record_file, ""
