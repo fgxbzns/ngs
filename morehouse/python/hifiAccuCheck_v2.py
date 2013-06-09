@@ -114,7 +114,7 @@ for position, line_hifi in snp_hap_hifi_dict.iteritems():
 		elements_ori = line_ori.strip().split()
 		ori_A = elements_ori[2].strip()
 		ori_B = elements_ori[3].strip()
-		"""
+		
 		# the hifi seed is from father, A
 		if hifi_A == ori_A:	#A is A
 			if hifi_B == ori_B:
@@ -142,7 +142,7 @@ for position, line_hifi in snp_hap_hifi_dict.iteritems():
 		else:
 			not_same_AB_total_number += 1
 		same_position_total_number += 1
-		
+		"""	
 	else:
 		different_position_total_number += 1
 		difference_output_file.write(line_hifi + "\n")
@@ -169,7 +169,7 @@ accuracy_output_file.write("same_A_total_number: " + str(same_A_total_number) + 
 accuracy_output_file.write("same_B_total_number: " + str(same_B_total_number) + "\n")
 accuracy_output_file.write("not_same_AB_total_number: " + str(not_same_AB_total_number) + "\n")
 pencentage_in_common = format(float(same_position_total_number)/float(snp_hap_hifi_total_number)*100, "0.2f")
-accuracy_output_file.write("pencentage in common: " + str(accuracy_output_file) + "\n")	
+accuracy_output_file.write("pencentage in common: " + str(pencentage_in_common) + "\n")	
 accuracy = format(float(same_A_total_number + same_B_total_number + same_AB_total_number)/float(same_position_total_number)*100, "0.2f")	
 accuracy_output_file.write("accuracy: " + str(accuracy) + "\n")
 

@@ -202,6 +202,7 @@ for snp in snp_hap_hifi_dict_sorted_list:
 					seed_AB_pos = seed_correct_axis_value
 				else:
 					seed_A_pos = seed_correct_axis_value
+					seed_AB_pos = seed_correct_axis_value	# include homo seed in correct seed
 			elif seed_A == ref_B:
 				seed_B_pos = seed_error_axis_value
 			elif ref_A == "X" or ref_B == "X":
@@ -210,8 +211,8 @@ for snp in snp_hap_hifi_dict_sorted_list:
 				seed_N_pos = y_axis_value
 			else:
 				seed_other_pos = y_axis_value		
-		if hifi_A != hifi_B:
-			print >> error_distribution_output_file, str(position)+"\t", seed_AB_pos, seed_A_pos, seed_B_pos, seed_X_pos, seed_N_pos, seed_other_pos, hifi_AB_pos, hifi_A_pos, hifi_B_pos, hifi_X_pos, hifi_N_pos, hifi_other_pos
+		#if hifi_A != hifi_B:
+		print >> error_distribution_output_file, str(position)+"\t", seed_AB_pos, seed_A_pos, seed_B_pos, seed_X_pos, seed_N_pos, seed_other_pos, hifi_AB_pos, hifi_A_pos, hifi_B_pos, hifi_X_pos, hifi_N_pos, hifi_other_pos
 
 inputFile_hap_ref.close()
 inputFile_hap_hifi.close()
