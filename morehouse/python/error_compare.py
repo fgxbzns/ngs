@@ -38,16 +38,23 @@ while alldel_line != "":
 	position = alldel_elements[0].strip()
 	alldel_hifi_error = ""
 	error_hifi_error = ""
-	try:
-		alldel_hifi_error = alldel_elements[-1].strip()
-	except:
-		pass
+	#if len(alldel_elements) > 2:
+	if True:
+		try:
+			if alldel_elements[-1].strip() == "140":
+				alldel_hifi_error = alldel_elements[-1].strip()
+		except:
+			pass
 	error_elements = error_line.strip().split()
-	try:
-		error_hifi_error = error_elements[-1].strip()
-	except:
-		pass
-	if alldel_hifi_error != "" and alldel_hifi_error != "" and alldel_hifi_error == error_hifi_error:
+	#if len(error_elements) > 2:
+	if True:
+		try:
+			if error_elements[-1].strip() == "140":
+				error_hifi_error = error_elements[-1].strip()
+		except:
+			pass
+#	if alldel_hifi_error != "" and error_hifi_error != "" and alldel_hifi_error == error_hifi_error:
+	if alldel_hifi_error == "140" and error_hifi_error == "140":
 		same_position_number += 1
 		error_hifi_error = ""
 	new_line = position + "\t" +alldel_hifi_error +"\t" + error_hifi_error
