@@ -942,12 +942,11 @@ int main(int argc, char** argv)
 
 
 												//====================================
-												
+
 													printf("Imputing   %s %d   %c%c <-- %c%c\n",
 													        hgr_rs[snpimp[indexofsnp_act[i]]],hgr_pos[snpimp[indexofsnp_act[i]]],hogo_xn[snpimp[indexofsnp_act[i]]][0],hogo_xn[snpimp[indexofsnp_act[i]]][1],
 															imputor_refinetable[matindex_0][i],  imputor_refinetable[matindex_1][i]);
-												
-												
+													
 												hogo_xn[snpimp[indexofsnp_act[i]]][0] = imputor_refinetable[matindex_0][i];
 												hogo_xn[snpimp[indexofsnp_act[i]]][1] = imputor_refinetable[matindex_1][i];											
 											}

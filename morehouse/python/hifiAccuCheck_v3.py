@@ -2,6 +2,8 @@
 
 # location /home/guoxing/tool/morehouse
 
+# check triple heterozygous, the position in father, mother and child are all heterozygous
+
 import os, glob, subprocess, random, operator, time
 from optparse import OptionParser
 
@@ -27,9 +29,12 @@ genotype_mather_dict = {}
 # Reading options
 usage = "usage: %prog [options] arg1" 
 parser = OptionParser(usage = usage) 
-parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="chr11")
+parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="null")
+parser.add_option("-n", "--chr", type="string", dest="fileID",help = "Input file Name", default="1")	# for solid 4 and 6, chr is from mother
+
 (options, args) = parser.parse_args()
 chr_name = options.chrName
+file_id = fileID
 
 genotype_father_file_name = "genotype_" + genotype_father_ID + "_" + chr_name + ".txt" 
 inputFile_genotype_father = open(NA10847_F12146_M12239_path + genotype_father_file_name, "r")

@@ -20,8 +20,11 @@ snp_hap_hifi_total_number = 0
 usage = "usage: %prog [options] arg1" 
 parser = OptionParser(usage = usage) 
 parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="chr11")
+parser.add_option("-n", "--id", type="string", dest="fileID",help = "Input file Name", default="1")	# for solid 4 and 6, chr is from mother
+
 (options, args) = parser.parse_args()
 chr_name = options.chrName
+file_id = options.fileID
 
 
 #hap_ori_file_name = "NA12878_hap_new_refed.txt"	# simulation data
@@ -115,34 +118,36 @@ for position, line_hifi in snp_hap_hifi_dict.iteritems():
 		ori_A = elements_ori[2].strip()
 		ori_B = elements_ori[3].strip()
 		
-		# the hifi seed is from father, A
-		if hifi_A == ori_A:	#A is A
-			if hifi_B == ori_B:
+		if file_id != "4" and file_id != "6":
+			# the hifi seed is from father, A
+			if hifi_A == ori_A:	#A is A
+				if hifi_B == ori_B:
+					same_AB_total_number += 1	# same AB
+				else:
+					same_A_total_number += 1	# same A
+			elif hifi_B == ori_B:
+				same_B_total_number += 1	# same B
+			elif ori_A == "X" or ori_B == "X" or ori_A == "N" or ori_B == "N":
 				same_AB_total_number += 1	# same AB
 			else:
-				same_A_total_number += 1	# same A
-		elif hifi_B == ori_B:
-			same_B_total_number += 1	# same B
-		elif ori_A == "X" or ori_B == "X" or ori_A == "N" or ori_B == "N":
-			same_AB_total_number += 1	# same AB
-		else:
-			not_same_AB_total_number += 1
-		same_position_total_number += 1
-		"""
-		# for solid data 4 and 6, the hifi seed is from mother (B)
-		if hifi_A == ori_B:	#A is B
-			if hifi_B == ori_A:
+				not_same_AB_total_number += 1
+			same_position_total_number += 1
+			
+		elif file_id == "4" or file_id == "6":
+			# for solid data 4 and 6, the hifi seed is from mother (B)
+			if hifi_A == ori_B:	#A is B
+				if hifi_B == ori_A:
+					same_AB_total_number += 1	# same AB
+				else:
+					same_A_total_number += 1	# same A
+			elif hifi_B == ori_A:
+				same_B_total_number += 1	# same B
+			elif ori_A == "X" or ori_B == "X" or ori_A == "N" or ori_B == "N":
 				same_AB_total_number += 1	# same AB
 			else:
-				same_A_total_number += 1	# same A
-		elif hifi_B == ori_A:
-			same_B_total_number += 1	# same B
-		elif ori_A == "X" or ori_B == "X" or ori_A == "N" or ori_B == "N":
-			same_AB_total_number += 1	# same AB
-		else:
-			not_same_AB_total_number += 1
-		same_position_total_number += 1
-		"""	
+				not_same_AB_total_number += 1
+			same_position_total_number += 1
+			
 	else:
 		different_position_total_number += 1
 		difference_output_file.write(line_hifi + "\n")

@@ -1,8 +1,6 @@
 #!/usr/bin/python
 
-# location /home/guoxing/tool/morehouse
-
-# convert bwa sam file to fastq
+# remove entries in rmsk reference other than "Alu" and "Simple_repeat"
 
 import os, glob, subprocess, random, operator, time
 from optparse import OptionParser
@@ -16,45 +14,40 @@ start = time.time()
 # Reading options
 usage = "usage: %prog [options] arg1" 
 parser = OptionParser(usage = usage) 
-parser.add_option("-s", "--sam", type="string", dest="samFile",help = "Input sam File Name", default="null")
+parser.add_option("-i", "--rmsk", type="string", dest="rmskFile",help = "Input rmsk File Name", default="null")
 (options, args) = parser.parse_args()
 
-sam_file = options.samFile
+rmsk_file = options.rmskFile
 
-if sam_file == "null":
-	print "Please input the sam file name"
+if rmsk_file == "null":
+	print "Please input the rmsk file name"
 
-sam_file_name = sam_file[:(len(sam_file)-4)]
+rmsk_file_name = rmsk_file[:(len(rmsk_file)-4)]
+print "rmsk file: ", rmsk_file_name
 
-print "sam file: ", sam_file_name
+inputFile_rmsk = open(currentPath + rmsk_file, "r")
+outputFile_rmsk = open(currentPath + rmsk_file_name + "_processed.txt", "w")
 
-inputFile_sam = open(currentPath + sam_file, "r")
+ori_rmsk_total_number = 0
+processed_rmsk_total_number = 0
 
-outputFile_fastq = open(currentPath + sam_file_name + ".fastq", "w")
-total_reads_num = 0
+for line in inputFile_rmsk:
+	ori_rmsk_total_number += 1	
+	if "Alu" in line or "Simple_repeat" in line:
+		processed_rmsk_total_number += 1	
+		print >> outputFile_rmsk, line.strip()	
+		
+	
 
-for read in inputFile_sam:
-	if not read.startswith("@"):
-		total_reads_num += 1	
-		elements_first = read.strip().split()
-		try:
-			ID = elements_first[0].strip()
-			read_seq = elements_first[9].strip()
-			qual_line = elements_first[10].strip()
-			read = "@"+ID+"\n"+read_seq+"\n+\n"+qual_line
-			print >> outputFile_fastq, read.strip()		
-		except:
-			#print "error in line: ", line
-			pass
-
-print "total_reads_num: ", total_reads_num
+print "ori_rmsk_total_number: ", ori_rmsk_total_number
+print "processed_rmsk_total_number: ", processed_rmsk_total_number
 
 end = time.time()
 run_time = str(format((end - start), "0.3f"))
 print "run time is: " + run_time + "s"
 
-inputFile_sam.close()
-outputFile_fastq.close()
+inputFile_rmsk.close()
+outputFile_rmsk.close()
 
 
 

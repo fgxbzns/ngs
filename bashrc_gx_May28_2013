@@ -164,6 +164,10 @@ alias error_distribution='$morehousePath/error_distribution.py'
 alias genotype_extract='$morehousePath/genotype_extract.py'
 alias sam2fastq='$morehousePath/sam2fastq.py'
 alias error_compare='$morehousePath/error_compare.py'
+alias rmsk_preprocess='$morehousePath/rmsk_preprocess.py'
+alias rmsk_preprocess='$morehousePath/rmsk_preprocess.py'
+alias cnv_samprocess='$morehousePath/cnv_samprocess.py'
+
 
 # other programs
 export otherPath=/home/guoxing/disk2/tool
@@ -183,6 +187,8 @@ alias solid_bash='$bash_path/solid_bash.sh'
 #export disk2ToolPath=/home/guoxing/disk2/tool
 #alias samtools='$disk2ToolPath/samtools-0.1.18/samtools'
 
+export hifiPath=/home/guoxing/disk2/ngs/morehouse/other
+alias hifi_test="$hifiPath/hifi_test"
 
 # other
 #alias solid2fastq='$morehousePath/other/solid2fastq_gx.pl'
