@@ -227,7 +227,7 @@ for snp_data in snp_sorted_list:
 	if len(snp.covered_reads_list) > depth_threshold:
 		outputFile_allele.write(chr_name+"\t"+str(snp.position)+"\t"+str(len(snp.covered_reads_list))+"\t"+str(snp.allele_dict['A'])	\
 								+"\t"+str(snp.allele_dict['T'])+"\t"+str(snp.allele_dict['C'])+"\t"+str(snp.allele_dict['G'])+"\n")
-		outputFile_reads.write("@_" + str(snp.position) + "\t" + snp.A  + "\t" + snp.B  + "\t" + str(len(snp.covered_reads_list)) + "\n")
+		outputFile_reads.write("@_" + snp.rsID + "\t" + str(snp.position) + "\t" + snp.A  + "\t" + snp.B  + "\t" + str(len(snp.covered_reads_list)) + "\n")
 		for reads in snp.covered_reads_list:
 			outputFile_reads.write(reads.qName + "\t" + reads.flag + "\t" + reads.rName + "\t" + str(reads.start_position) + "\t" \
 									+ reads.covered_snp + "\t" + reads.read_sequence + "\t" + reads.quality_score_sequence + "\n")
@@ -445,6 +445,7 @@ print "A/seed: ", A_seed_rate
 print "(A+B)/seed: ", hete_seed_rate
 print "not_in_genotype", not_in_genotype
 print "pure_total", pure_total
+
 
 #data_record_file.write("pure and in genotype" + "\n")
 #data_record_file.write("total in genotype is: " + str(common_total) + "\n")

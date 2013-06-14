@@ -70,9 +70,6 @@ do
 	#mv $prem_file_name ../
 	#wait
 	
-	
-
-
 	#$ngs_path/solid_process_4.py -s $fname -c $chr_name -d 3 &
 	#wait
 	#$ngs_path/hifi &
@@ -87,19 +84,19 @@ done
 #cp prem_rmsk_indel/$prem_rmsk_indel_file_name depth/ &
 cd depth
 
-for depth in {6..10}
+for depth in {0..10}
 do
 	echo $depth
-#	$ngs_path/solid_process_4.py -s "$prem_rmsk_indel_file_name" -c $chr_name -d $depth &
+	$ngs_path/solid_process_4.py -s "$prem_rmsk_indel_file_name" -c $chr_name -d $depth &
 	wait
-#	mkdir -p $depth
-#	mv song_"$i"_prem_"$chr_name"_sorted_rmsk_indel_"$depth"_* $depth
+	mkdir -p $depth
+	mv song_"$i"_prem_"$chr_name"_sorted_rmsk_indel_"$depth"_* $depth
 	#mv hifi_*.txt imput* $depth &
 	#mv infosum* match_* preimputehaplotype* quality_score* runingtime* $depth &
-#	mv genotype.txt haplotype.txt refHaplos.txt $depth &
+	mv genotype.txt haplotype.txt refHaplos.txt $depth &
 	
 	cd $depth
-	$ngs_path/hifi &
+#	$ngs_path/hifi &
 	wait
 	#$ngs_path/hifiAccuCheck_v2.py -c $chr_name &
 	wait
@@ -108,34 +105,6 @@ do
 	#mv hifi_*.txt imput* $depth &
 	#mv infosum* match_* preimputehaplotype* quality_score* runingtime* $depth &
 done
-
-
-
-#cd prem 
-#$ngs_path/solid_process_4.py -s "$prem_file_name" -c $chr_name &
-#wait
-#$ngs_path/hifi &
-#$ngs_path/hifiAccuCheck_v2.py -c $chr_name &
-#wait
-#cd $current_folder
-
-#cd prem_rmsk 
-#$ngs_path/solid_process_4.py -s "$prem_rmsk_file_name" -c $chr_name &
-#wait
-#$ngs_path/hifi &
-#$ngs_path/hifiAccuCheck_v2.py -c $chr_name &
-#wait
-#cd $current_folder
-
-
-#cd prem_indel 
-#$ngs_path/solid_process_4.py -s "$prem_indel_file_name" -c $chr_name &
-#wait
-#$ngs_path/hifi &
-#$ngs_path/hifiAccuCheck_v2.py -c $chr_name &
-#wait
-#cd $current_folder
-
 
 #cd prem_rmsk_indel 
 #$ngs_path/solid_process_4.py -s "$prem_rmsk_indel_file_name" -c $chr_name &

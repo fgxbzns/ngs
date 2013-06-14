@@ -69,7 +69,7 @@ haplotype_file = options.haplotypeFile
 sam_file = options.samFile
 depth_threshold = int(options.threshold)
 chr_name = options.chrName
-depth_threshold = 0	# for quake test
+depth_threshold = 3	# for quake test
 insert_size_lower_bond = 100
 insert_size_upper_bond = 1000
 base_list = ["A", "T", "C", "G"]
@@ -93,7 +93,8 @@ outputFile_reads = open(currentPath + sam_file_name + "_reads.txt", "w")
 outputFile_reads.write("SNP position \t Depth \n")
 
 outputFile_allele = open(currentPath + sam_file_name+"_allele.txt", "w")
-outputFile_allele.write("Chromosome \t position \t Total Depth \t A_depth \t T_depth \t C_depth \t G_depth \n")
+#outputFile_allele.write("Chromosome \t position \t Total Depth \t A_depth \t T_depth \t C_depth \t G_depth \n")
+outputFile_allele.write("rsID \t position \t std_A \t std_B \t Total Depth \t =A_depth \t =B_depth \t other \n")
 
 data_record_file_name = sam_file_name + "_data_record.txt"
 data_record_file = open(currentPath + data_record_file_name, "w")
@@ -275,7 +276,7 @@ hap_hete_file = open(currentPath + "hap_hete.txt", "w")
 for snp_data in snp_sorted_list:
 	snp = snp_data[1]
 	if len(snp.covered_reads_list) > depth_threshold:
-		
+		"""
 		max_base = keywithmaxval(snp.allele_dict)
 		max_value = snp.allele_dict[max_base]
 		pure = True
@@ -283,12 +284,12 @@ for snp_data in snp_sorted_list:
 			if base != max_base:
 				if snp.allele_dict[base] != 0:
 					pure = False
-		
-		if snp.A != snp.B and not pure:
+		"""
+		if snp.A != snp.B:
 			#outputFile_allele.write(chr_name+"\t"+str(snp.position)+"\t"+snp.A+"\t"+snp.B+"\t"+str(len(snp.covered_reads_list))+"\t"+"A_"+str(snp.allele_dict['A'])	\
 			#					+"\t"+"T_"+str(snp.allele_dict['T'])+"\t"+"C_"+str(snp.allele_dict['C'])+"\t"+"G_"+str(snp.allele_dict['G'])+"\n")
 			temp_line = ""					
-			temp_line += chr_name+"\t"+str(snp.position)+"\t"+snp.A+"\t"+snp.B+"\t"+str(len(snp.covered_reads_list))+"\t"
+			temp_line += snp.rsID+"\t"+str(snp.position)+"\t"+snp.A+"\t"+snp.B+"\t"+str(len(snp.covered_reads_list))+"\t"
 			for base, depth in snp.allele_dict.iteritems():
 				if base == snp.A and depth > 0:
 					temp_line += str(depth)
@@ -296,9 +297,13 @@ for snp_data in snp_sorted_list:
 			for base, depth in snp.allele_dict.iteritems():
 				if base == snp.B and depth > 0:
 					temp_line += str(depth)
+			temp_line += "\t"
+			for base, depth in snp.allele_dict.iteritems():
+				if base != snp.A and base != snp.B and depth > 0:
+					temp_line += base + "\t" + str(depth) + "\t"
 			temp_line += "\n"
 			outputFile_allele.write(temp_line)
-		outputFile_reads.write("@_" + str(snp.position) + "\t" + snp.A  + "\t" + snp.B  + "\t" + str(len(snp.covered_reads_list)) + "\n")
+		outputFile_reads.write("@_" + snp.rsID + "\t" + str(snp.position) + "\t" + snp.A  + "\t" + snp.B  + "\t" + str(len(snp.covered_reads_list)) + "\n")
 		for reads in snp.covered_reads_list:
 			outputFile_reads.write(reads.qName + "\t" + reads.flag + "\t" + reads.rName + "\t" + str(reads.start_position) + "\t" \
 									+ reads.covered_snp + "\t" + reads.read_sequence + "\t" + reads.quality_score_sequence + "\n")
@@ -439,6 +444,8 @@ X_dict = {}
 not_ABX_dict = {}
 not_in_genotype_dict = {}
 
+homo_error = 0
+
 for snp_data in snp_sorted_list:
 	snp = snp_data[1]
 	if len(snp.covered_reads_list) > depth_threshold:
@@ -522,6 +529,12 @@ for snp_data in snp_sorted_list:
 				
 					
 			else:	# not in genotype, sequencing error???
+				
+				# count homo error				
+				if snp.A == snp.B:
+					homo_error += 1
+			
+			
 				not_in_genotype += 1
 				geno_hap_line += "\t" + "\t" + "\t" + max_base + "\t"
 				not_in_genotype_file.write(snp.rsID + "\t" + str(snp.position) + "\t" + snp.A + "\t"+ snp.B + "\t" + max_base + "\t" + str(max_value) + "\t" + geno_dict[snp.position] + "\n")
@@ -552,7 +565,7 @@ print "A/seed: ", A_seed_rate
 print "(A+B)/seed: ", hete_seed_rate
 print "not_in_genotype", not_in_genotype
 print "pure_total", pure_total
-
+print "homo_error", homo_error
 print "not_in_genotype/pure_total: ", float(not_in_genotype)/float(pure_total) 
 
 print >> data_record_file, "haplotype file: ", haplotype_file
@@ -574,6 +587,7 @@ data_record_file.write("total seed for hifi: " + str(hifi_seed) + "\n")
 
 print >> data_record_file, "A/seed: ", A_seed_rate
 print >> data_record_file, "(A+B)/seed: ", hete_seed_rate
+data_record_file.write("homo_error: " + str(homo_error) + "\n")
 
 data_record_file.write("not_in_genotype: " + str(not_in_genotype) + "\n")
 data_record_file.write("pure_total (include alleles pure but may not in genotype): " + str(pure_total) + "\n")
