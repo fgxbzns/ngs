@@ -3,14 +3,14 @@
 # location /home/guoxing/tool/morehouse
 
 # this is for pre-processing the sam file before snpPick
+# need to check quality score
+
 
 import os, glob, subprocess, random, operator, time
 from optparse import OptionParser
 
-
 file_path = "/home/guoxing/disk2/solid/common_files/"
 currentPath = os.getcwd() + '/'
-
 
 # start time
 start = time.time()		
@@ -23,6 +23,9 @@ parser.add_option("-s", "--sam", type="string", dest="samFile",help = "Input sam
 (options, args) = parser.parse_args()
 
 sam_file = options.samFile
+
+
+SRR539373.6     2177    chr1    3222695 0       51H31M19H       =       341     -3222355        GGTAGGGGTGGGGGTGGGGGTGGGGGTGGGG @'()7?A######################## NM:i:0  AS:i:31 XS:i:30 SA:Z:chr11,134451942,+,58M43S,0,2;
 
 
 indel_info = "39M62S"
@@ -50,7 +53,7 @@ def removePrimer(read_seq, qual_line, indel_info):
 			if indel_type == "M":	# matched, remove this part 
 				read_seq = read_seq[indel_length:]
 				qual_line = qual_line[indel_length:]
-			elif indel_type == "S" or indel_type == "H":	# mismatch, keep this part
+			elif indel_type == "S":	# mismatch, keep this part
 				if indel_length >= mismatch_threshold:
 					read_seq_final += read_seq[:indel_length]
 					qual_line_final += qual_line[:indel_length]
@@ -59,6 +62,8 @@ def removePrimer(read_seq, qual_line, indel_info):
 				else:
 					read_seq = read_seq[indel_length:]
 					qual_line = qual_line[indel_length:]
+			elif indel_type == "H":
+				pass
 			elif indel_type == "I":	# insertion, remove
 				read_seq = read_seq[indel_length:]
 				qual_line = qual_line[indel_length:]

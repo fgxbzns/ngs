@@ -87,12 +87,12 @@ done
 #cp prem_rmsk_indel/$prem_rmsk_indel_file_name depth/ &
 cd depth
 
-for depth in {4..10}
+for depth in {6..10}
 do
 	echo $depth
 #	$ngs_path/solid_process_4.py -s "$prem_rmsk_indel_file_name" -c $chr_name -d $depth &
-#	wait
-	mkdir -p $depth
+	wait
+#	mkdir -p $depth
 #	mv song_"$i"_prem_"$chr_name"_sorted_rmsk_indel_"$depth"_* $depth
 	#mv hifi_*.txt imput* $depth &
 	#mv infosum* match_* preimputehaplotype* quality_score* runingtime* $depth &
