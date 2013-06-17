@@ -428,20 +428,25 @@ for snp_data in snp_sorted_list:
 				for reads in snp.covered_reads_list:
 						not_in_genotype_file.write(reads.qName + "\t" + reads.flag + "\t" + reads.rName + "\t" + str(reads.start_position) + "\t" + reads.covered_snp + "\t" + reads.read_sequence + "\t" + reads.quality_score_sequence + "\n")
 		
+if sam_file.startswith("song_4") or sam_file.startswith("song_6"):
+	correct_rate_in_hetero = format((float(same_to_B)/float(same_to_A + same_to_B))*100, "0.2f")
+	correct_rate_in_all_seed = format(float(same_to_B)/float(hifi_seed)*100, "0.2f")
+else:
+	correct_rate_in_hetero = format((float(same_to_A)/float(same_to_A + same_to_B))*100, "0.2f")
+	correct_rate_in_all_seed = format(float(same_to_A)/float(hifi_seed)*100, "0.2f")
 
-correct_rate = format((float(same_to_A)/float(same_to_A + same_to_B))*100, "0.2f")
-A_seed_rate = format(float(same_to_A)/float(hifi_seed)*100, "0.2f")
+
 hete_seed_rate = format(float(same_to_A + same_to_B)/float(hifi_seed)*100, "0.2f")				
 
 print "common_total", common_total
 print "same_to_A", same_to_A
 print "same_to_B", same_to_B
-print "correct rate: ", correct_rate
+print "correct_rate_in_hetero: ", correct_rate_in_hetero
 print "homo: ", same_to_AB
 print "X_AB", X_AB
 print "not_ABX", not_ABX
 print "hifi_seed", hifi_seed
-print "A/seed: ", A_seed_rate
+print "correct_rate_in_all_seed: ", correct_rate_in_all_seed
 print "(A+B)/seed: ", hete_seed_rate
 print "not_in_genotype", not_in_genotype
 print "pure_total", pure_total
@@ -457,22 +462,22 @@ print >> data_record_file, "reads list size is: ", str(total_reads_num)
 
 data_record_file.write("same to snp.A: " + str(same_to_A) + "\n")
 data_record_file.write("same to snp.B: " + str(same_to_B) + "\n")
-data_record_file.write("correct rate: " + str(correct_rate) + "\n")
+data_record_file.write("correct_rate_in_hetero: " + str(correct_rate_in_hetero) + "\n")
 data_record_file.write("homo: " + str(same_to_AB) + "\n")
 data_record_file.write("X_AB: " + str(X_AB) + "\n")
 data_record_file.write("not_ABX: " + str(not_ABX) + "\n")
 data_record_file.write("total seed for hifi: " + str(hifi_seed) + "\n")
 
 
-print >> data_record_file, "A/seed: ", A_seed_rate
+print >> data_record_file, "correct_rate_in_all_seed: ", correct_rate_in_all_seed
 print >> data_record_file, "(A+B)/seed: ", hete_seed_rate
 
 data_record_file.write("not_in_genotype: " + str(not_in_genotype) + "\n")
 data_record_file.write("pure_total (include alleles pure but may not in genotype): " + str(pure_total) + "\n")
 
 #data_record_file.write("All \t A \t B \t A/(A+B) \t \homo \t X \t N \t hifi_seed \t A/seed \t (A+B)/seed \t pure_total \t not_ingeno \n")
-print >> data_record_file, "all", "sam_file", "chr", "depth_threshold", "same_to_A", "same_to_B", "correct_rate", "same_to_AB", "X_AB", "not_ABX", "hifi_seed", "A_seed_rate", "hete_seed_rate", "pure_total", "not_in_genotype"
-print >> data_record_file, "data", sam_file, chr_name, depth_threshold, same_to_A, same_to_B, correct_rate, same_to_AB, X_AB, not_ABX, hifi_seed, A_seed_rate, hete_seed_rate, pure_total, not_in_genotype
+print >> data_record_file, "all", "sam_file", "chr", "depth_threshold", "same_to_A", "same_to_B", "correct_rate_in_hetero", "same_to_AB", "X_AB", "not_ABX", "hifi_seed", "correct_rate_in_all_seed", "hete_seed_rate", "pure_total", "not_in_genotype"
+print >> data_record_file, "data", sam_file, chr_name, depth_threshold, same_to_A, same_to_B, correct_rate_in_hetero, same_to_AB, X_AB, not_ABX, hifi_seed, correct_rate_in_all_seed, hete_seed_rate, pure_total, not_in_genotype
 
 hifi_pure_file.close()
 """

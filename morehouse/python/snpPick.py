@@ -475,7 +475,8 @@ for snp_data in snp_sorted_list:
 		#if pure and max_value > depth_threshold:
 			pure_total += 1
 			# check genotype to remove called base that does not in genotype
-			if max_base in geno_dict[snp.position]:	
+			#if max_base in geno_dict[snp.position]:	
+			if True: # keep all pure seed. for seed_check.py
 				hifi_seed += 1	
 				hifi_pure_file.write(snp.rsID + "\t" + str(snp.position) + "\t" + max_base + "\n")	
 				

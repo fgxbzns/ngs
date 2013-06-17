@@ -168,6 +168,7 @@ alias rmsk_preprocess='$morehousePath/rmsk_preprocess.py'
 alias rmsk_preprocess='$morehousePath/rmsk_preprocess.py'
 alias cnv_samprocess='$morehousePath/cnv_samprocess.py'
 alias seed_check='$morehousePath/seed_check.py'
+alias seed_check_homo='$morehousePath/seed_check_homo.py'
 
 
 

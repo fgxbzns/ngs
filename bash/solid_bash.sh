@@ -84,7 +84,7 @@ done
 #cp prem_rmsk_indel/$prem_rmsk_indel_file_name depth/ &
 cd depth
 
-for depth in {0..10}
+for depth in {0..1}
 do
 	echo $depth
 	$ngs_path/solid_process_4.py -s "$prem_rmsk_indel_file_name" -c $chr_name -d $depth &
