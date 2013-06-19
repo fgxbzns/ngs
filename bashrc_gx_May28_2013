@@ -51,7 +51,7 @@ alias bmcc4sftp='sshfs guoxing@bmcc4.cs.gsu.edu:/u1/guoxing ~/remote'
 alias node1='ssh guoxing@10.20.1.30'
 alias node1sftp='sshfs guoxing@10.20.1.30:/home/guoxing ~/node1'
 alias node2='ssh guoxing@10.20.1.81 -p 25'
-alias node2sftp='sshfs guoxing@10.20.1.81 -p 23:/home/guoxing ~/node2'
+alias node2sftp='sshfs guoxing@10.20.1.224 -p 23:/home/guoxing ~/node2'
 
 
 # Alias's to modified commands
@@ -186,6 +186,8 @@ alias sam_dump='$sratools_path/sam-dump'
 # bash script
 export bash_path=/home/guoxing/disk2/ngs/bash
 alias solid_bash='$bash_path/solid_bash.sh'
+alias grep_position='$bash_path/grep_position.sh'
+
  #NGS programs
 #export disk2ToolPath=/home/guoxing/disk2/tool
 #alias samtools='$disk2ToolPath/samtools-0.1.18/samtools'

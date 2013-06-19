@@ -2,9 +2,11 @@
 
 # location /home/guoxing/tool/morehouse
 
+# prepare geno, hap, ref files for hifi. 
+# remove hap of father and mother from the ref file. 
+
 import os, glob, subprocess, random, operator, time
 from optparse import OptionParser
-
 
 file_path = "/home/guoxing/disk2/solid/common_files/"
 
@@ -33,9 +35,6 @@ common_snp_number = 0
 
 for infile in glob.glob(os.path.join(file_path,"*"+chr_name+"_???.phased")):	# add * for chrX
 	file_name = infile[(infile.find("hapmap3")):].strip()
-#if True:
-#	file_name = "CEU_chr5_child.txt"
-	
 	inputFile = open(file_path + file_name, "r")
 	print file_name
 	for line in inputFile:
@@ -45,7 +44,21 @@ for infile in glob.glob(os.path.join(file_path,"*"+chr_name+"_???.phased")):	# a
 			else:
 				elements = line.strip().split()
 				first_tag = elements[2].strip()
-				tag_info += "\t" + line[line.find(first_tag):].strip()		
+				tag_info += "\t" + line[line.find(first_tag):].strip()
+				
+				
+		elements = line.strip().split()
+		try:
+			ID_index = elements.index(person_ID)
+			print ID_index
+		except:
+			print person_ID, "not found in file"
+			break
+				
+				
+				
+				
+						
 		if not line.startswith("rsID"):
 			elements = line.strip().split()
 			position = elements[1].strip()				

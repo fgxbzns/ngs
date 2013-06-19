@@ -12,15 +12,27 @@ currentPath = os.getcwd() + '/'
 # Reading options
 usage = "usage: %prog [options] arg1" 
 parser = OptionParser(usage = usage) 
-parser.add_option("-a", "--all", type="string", dest="alldelFile",help = "Input all error deleted file Name", default="null")
-parser.add_option("-i", "--one", type="string", dest="errorFile",help = "Input error file Name", default="null")
+parser.add_option("-i", "--seed", type="string", dest="seedFile",help = "Input haplotype seed file Name", default="null")
+parser.add_option("-e", "--one", type="string", dest="errorFile",help = "Input error file Name", default="null")
 
 (options, args) = parser.parse_args()
-alldel_name = options.alldelFile
+alldel_name = options.seedFile
 error_file_name = options.errorFile
 
-alldel_file = open(currentPath + alldel_name, "r")
+seed_file = open(currentPath + alldel_name, "r")
 error_file = open(currentPath + error_file_name, "r")
+
+error_pos_list = []
+
+for line in seed_file:
+	if not line.startswith("rsID"):
+		elements = line.strip().split()
+		position = elements[1].strip()
+		error_pos_list.append(position)
+seed_file.close()
+
+
+
 output_file = open(currentPath + "error_compare.txt", "w")
 output_record_file = open(currentPath + "error_record.txt", "w")
 print >> output_file, "position \t alldel \t single_error_only"

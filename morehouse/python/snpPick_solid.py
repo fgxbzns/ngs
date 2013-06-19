@@ -78,7 +78,7 @@ chr_name = options.chrName
 #if haplotype_file == "null":
 	#print "Please input the haplotype file name"
 
-haplotype_file = "NA12878_hap_new_refed.txt"	# simulation data chr6
+#haplotype_file = "NA12878_hap_new_refed.txt"	# simulation data chr6
 #haplotype_file = "ASW_chr11_child_hap_refed.txt"	# solid song_5_2 chr11
 haplotype_file = "ASW_"+chr_name+"_child_hap_refed.txt"	# for all
 

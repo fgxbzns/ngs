@@ -23,16 +23,12 @@ parser.add_option("-s", "--sam", type="string", dest="samFile",help = "Input sam
 (options, args) = parser.parse_args()
 
 sam_file = options.samFile
-
-
-SRR539373.6     2177    chr1    3222695 0       51H31M19H       =       341     -3222355        GGTAGGGGTGGGGGTGGGGGTGGGGGTGGGG @'()7?A######################## NM:i:0  AS:i:31 XS:i:30 SA:Z:chr11,134451942,+,58M43S,0,2;
-
-
+"""
 indel_info = "39M62S"
 read_seq = "GTCTCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGAGAGGCCCTTCCCCCCCCCAAAACAAAAAAAAAAAAATGCTTTCCCCGGGGGAAAAAAAAACATCC"
 
 qual_line = "C@BFFFFFHHHHHJJJJJJJHFDDDDDDDDDD#####################################################################"
-
+"""
 
 # keep mismatched seq >= 25
 
@@ -84,7 +80,7 @@ def removePrimer(read_seq, qual_line, indel_info):
 			indel_type = ""	
 	return (read_seq_final, qual_line_final)
 
-
+"""
 read_qual = removePrimer(read_seq, qual_line, indel_info)
 print read_qual[0]
 print read_qual[1]
@@ -97,7 +93,7 @@ read = read.replace(read_seq, read_qual[0])
 read = read.replace(qual_line, read_qual[1])
 #read = read.replace("TCCAACAACACTTGAAGCACCCACAGAAAGATATGGACCTTCTTCCACCTTTAATACTGACAGAAAACACAGCAGCAAAACAAAA", read_qual[0])
 print "new ", read
-
+"""
 
 
 
@@ -123,7 +119,8 @@ for read in inputFile_sam:
 			read_seq = elements_first[9].strip()
 			qual_line = elements_first[10].strip()
 			read_qual = removePrimer(read_seq, qual_line, indel_info)
-			if len(read_qual[0]) > 0:
+			#if len(read_qual[0]) > 0:
+			if len(read_qual[0]) > 0 and not qual_line.startswith("#") and not qual_line.endswith("#"):	# remove reads with low quality score
 				hanging_reads_num += 1
 				read = read.replace(read_seq, read_qual[0])
 				read = read.replace(qual_line, read_qual[1])

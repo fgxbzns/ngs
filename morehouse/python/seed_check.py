@@ -56,7 +56,8 @@ for line in inputFile_seed:
 		elements = line.strip().split()
 		rsID = elements[0].strip()
 		position = elements[1].strip()
-		A = elements[2].strip()
+		A = elements[2].strip() # compare A
+		#A = elements[3].strip() # compare B
 		seed_dict[position] = seed(rsID, position, A)
 inputFile_seed.close()
 
