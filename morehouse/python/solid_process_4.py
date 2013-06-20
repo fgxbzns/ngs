@@ -214,16 +214,16 @@ refMerger_Process.wait()
 print "hifi runing"
 hifi = program_path + "hifi &"
 print hifi
-#hifi_Process = subprocess.Popen(hifi, shell=True)
-#hifi_Process.wait()
+hifi_Process = subprocess.Popen(hifi, shell=True)
+hifi_Process.wait()
 
-"""
+
 # hifiAccuCheck
 print "hifiAccuCheck runing"
 hifiAccuCheck = program_path + "hifiAccuCheck_v2.py -c " + chr_name
 print hifiAccuCheck
 hifiAccuCheck_Process = subprocess.Popen(hifiAccuCheck, shell=True)
 hifiAccuCheck_Process.wait()
-"""
+
 
 
