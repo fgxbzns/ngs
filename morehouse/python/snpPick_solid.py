@@ -512,7 +512,7 @@ hete_notABX_pure_file.close()
 geno_sorted_list = [x for x in geno_dict.iteritems()] 
 geno_sorted_list.sort(key=lambda x: x[0]) # sort by key
 
-hifi_pure_corrected_with_homo_file_name = sam_file_name + "_hifi_corrected_homo.txt"
+hifi_pure_corrected_with_homo_file_name = sam_file_name + "_hifi_homo.txt"
 hifi_pure_corrected_with_homo_file = open(currentPath + hifi_pure_corrected_with_homo_file_name, "w")		
 hifi_pure_corrected_with_homo_file.write(title_haplotype + "\n")
 
@@ -536,7 +536,8 @@ for geno_data in geno_sorted_list:
 					if max_base == snp.A and max_base != snp.B:							
 						hifi_pure_corrected_with_homo_file.write(snp.rsID + "\t" + str(snp.position) + "\t" + max_base + "\n")				
 					if max_base == snp.B and max_base != snp.A:								
-						hifi_pure_corrected_with_homo_file.write(snp.rsID + "\t" + str(snp.position) + "\t" + snp.A + "\n")				
+						#hifi_pure_corrected_with_homo_file.write(snp.rsID + "\t" + str(snp.position) + "\t" + snp.A + "\n")		# error_corrected
+						hifi_pure_corrected_with_homo_file.write(snp.rsID + "\t" + str(snp.position) + "\t" + max_base + "\n")			
 				elif snp.A == "X" or snp.B == "X":	# keep these reads too
 					pass
 				else:

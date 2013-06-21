@@ -170,6 +170,7 @@ alias cnv_samprocess='$morehousePath/cnv_samprocess.py'
 alias seed_check='$morehousePath/seed_check.py'
 alias seed_check_homo='$morehousePath/seed_check_homo.py'
 alias seed_correction='$morehousePath/seed_correction.py'
+alias seed_std_compare='$morehousePath/seed_std_compare.py'
 
 
 

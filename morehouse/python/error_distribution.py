@@ -56,27 +56,7 @@ for line in inputFile_hap_ref:
 				print file_name, position	
 				print line
 			snp_hap_ref_total_number += 1
-			"""
-		if elements[2].strip() == "N":
-			n_number += 1
-		if elements[2].strip() == "X":
-			x_number += 1
-		if elements[2].strip() == "A":
-			a_number += 1
-		if elements[2].strip() == "T":
-			t_number += 1
-		if elements[2].strip() == "C":
-			c_number += 1
-		if elements[2].strip() == "G":
-			g_number += 1
-	
-print "n_number", n_number
-print "x_number", x_number	
-print "a_number", a_number
-print "t_number", t_number
-print "c_number", c_number
-print "g_number", g_number
-"""			
+		
 for line in inputFile_hap_hifi:
 	if not line.startswith("rsID"):
 		elements = line.strip().split()
@@ -114,9 +94,15 @@ same_A_total_number = 0
 same_B_total_number = 0
 not_same_AB_total_number = 0
 
+
+seed_same_to_A = 0
+seed_same_to_B = 0
+seed_X = 0
+seed_N = 0
+seed_not_AB = 0
+
 error_distribution_output_file_name = "hifi_error_distribution.txt"
 error_distribution_output_file = open(currentPath + error_distribution_output_file_name, "w")
-#error_distribution_output_file.write("position")
 #print >> error_distribution_output_file, "position seed_AB seed_A seed_B seed_X seed_N seed_other hifi_AB hifi_A hifi_B hifi_X hifi_N hifi_other"
 print >> error_distribution_output_file, "position \t seed_AB \t seed_A \t seed_B \t seed_X \t seed_N \t seed_other \t hifi_AB \t hifi_A \t hifi_B \t hifi_X \t hifi_N \t hifi_error"
 #print >> error_distribution_output_file, position, seed_AB_pos, seed_A_pos, seed_B_pos, seed_X_pos, seed_N_pos, seed_other_pos, hifi_AB_pos, hifi_A_pos, hifi_B_pos, hifi_X_pos, hifi_N_pos, hifi_other_pos
@@ -174,18 +160,21 @@ for snp in snp_hap_hifi_dict_sorted_list:
 		if hifi_A == ref_A:
 			if hifi_B == ref_B:
 				hifi_AB_pos = other_axis_value
+				#same_AB_total_number += 1
 			else:
 				hifi_A_pos = other_axis_value
-				same_A_total_number += 1
+				#same_A_total_number += 1
 		elif hifi_B == ref_B:	# error = B + other	assume A is the selected chr. need to update this for solid data song_4 song_6
 			hifi_B_pos = other_axis_value
 			#hifi_other_pos = other_axis_value
+			#same_B_total_number += 1
 		elif ref_A == "X" or ref_B == "X":
 			hifi_X_pos = other_axis_value
 		elif ref_A == "N" or ref_B == "N":
 			hifi_N_pos = other_axis_value
 		else:
 			hifi_other_pos = hifi_error_axis_value
+			not_same_AB_total_number += 1
 			
 		# check hifi seeds, these position need to be in ref too
 		if position in snp_hap_seed_dict:
@@ -199,23 +188,37 @@ for snp in snp_hap_hifi_dict_sorted_list:
 			#seed_A = elements_seed[3].strip() # for solid data 4 and 6, chr from mother
 			if seed_A == ref_A:
 				if seed_A == ref_B:
+					seed_same_to_AB += 1
 					seed_AB_pos = seed_correct_axis_value
 				else:
+					seed_same_to_A += 1
 					seed_A_pos = seed_correct_axis_value
 					seed_AB_pos = seed_correct_axis_value	# include homo seed in correct seed
 			elif seed_A == ref_B:
+				seed_same_to_B += 1
 				seed_B_pos = seed_error_axis_value
 			elif ref_A == "X" or ref_B == "X":
+				seed_X += 1
 				seed_X_pos = other_axis_value
 			elif ref_A == "N" or ref_B == "N":
+				seed_N += 1
 				seed_N_pos = other_axis_value
 			else:
+				seed_not_AB += 1
 				seed_other_pos = other_axis_value		
 		#if hifi_A != hifi_B: # keep hete points only
 		#keep all points
 		print >> error_distribution_output_file, str(position)+"\t", seed_AB_pos, seed_A_pos, seed_B_pos, seed_X_pos, seed_N_pos, seed_other_pos, hifi_AB_pos, hifi_A_pos, hifi_B_pos, hifi_X_pos, hifi_N_pos, hifi_other_pos
 
+print "seed_same_to_A", seed_same_to_A
+print "seed_same_to_B", seed_same_to_B
+print "homo seed", seed_same_to_AB
+print "seed_not_AB", seed_not_AB
+
 inputFile_hap_ref.close()
 inputFile_hap_hifi.close()
 inputFile_hap_seed.close()
 error_distribution_output_file.close()
+
+snp_hap_seed_dict_sorted_list = [x for x in snp_hap_seed_dict.iteritems()] 
+snp_hap_seed_dict_sorted_list.sort(key=lambda x: x[0]) # sort by key
