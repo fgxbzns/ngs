@@ -291,12 +291,7 @@ changed_snp_file.close()
 
 hifi_pure_file_name = sam_file_name + "_hifi.txt"
 hifi_pure_file = open(currentPath + hifi_pure_file_name, "w")		
-hifi_pure_file.write(title_haplotype + "\n")
-
-# correct errors in seed, for testing purpose
-hifi_pure_corrected_file_name = sam_file_name + "_hifi_corrected.txt"
-hifi_pure_corrected_file = open(currentPath + hifi_pure_corrected_file_name, "w")		
-hifi_pure_corrected_file.write(title_haplotype + "\n")
+hifi_pure_file.write(title_haplotype)
 
 """
 hifi_max_file_name = sam_file_name + "_hifi_max.txt"
@@ -388,10 +383,7 @@ for snp_data in snp_sorted_list:
 						if max_value not in A_dict:
 							A_dict[max_value] = 1
 						else:
-							A_dict[max_value] += 1		
-							
-						hifi_pure_corrected_file.write(snp.rsID + "\t" + str(snp.position) + "\t" + max_base + "\n")	
-			
+							A_dict[max_value] += 1					
 					if max_base == snp.B and max_base != snp.A:
 						same_to_B += 1
 						hete_B_pure_file.write(snp.rsID + "\t" + str(snp.position) + "\t" + snp.A + "\t" + snp.B + "\t" + max_base + "\t" + str(max_value) + "\n")
@@ -402,15 +394,11 @@ for snp_data in snp_sorted_list:
 							B_dict[max_value] += 1				
 						for reads in snp.covered_reads_list:
 							hete_B_pure_file.write(reads.qName + "\t" + reads.flag + "\t" + reads.rName + "\t" + str(reads.start_position) \
-							+ "\t" + reads.covered_snp + "\t" + reads.read_sequence + "\t" + reads.quality_score_sequence + "\n")	
-							
-						hifi_pure_corrected_file.write(snp.rsID + "\t" + str(snp.position) + "\t" + snp.A + "\n")				
+							+ "\t" + reads.covered_snp + "\t" + reads.read_sequence + "\t" + reads.quality_score_sequence + "\n")					
 					if max_base == snp.B and max_base == snp.A:
 						same_to_AB += 1
 						#hifi_pure_file.write(snp.rsID + "\t" + str(snp.position) + "\t" + max_base + "\n")
 						distribution_file.write(snp.rsID + "\t" + str(snp.position) + "\t" + snp.A + "\t" + snp.B + "\t" + "" + "\n")
-						
-						hifi_pure_corrected_file.write(snp.rsID + "\t" + str(snp.position) + "\t" + max_base + "\n")
 				elif snp.A == "X" or snp.B == "X":	# keep these reads too
 					X_AB += 1
 					#hifi_pure_file.write(snp.rsID + "\t" + str(snp.position) + "\t" + max_base + "\n")
@@ -492,8 +480,6 @@ print >> data_record_file, "all", "sam_file", "chr", "depth_threshold", "same_to
 print >> data_record_file, "data", sam_file, chr_name, depth_threshold, same_to_A, same_to_B, correct_rate_in_hetero, same_to_AB, X_AB, not_ABX, hifi_seed, correct_rate_in_all_seed, hete_seed_rate, pure_total, not_in_genotype
 
 hifi_pure_file.close()
-hifi_pure_corrected_file.close()
-
 """
 #hifi_max_file.close()
 #print "max_hete", max_hete
@@ -506,49 +492,6 @@ hete_A_pure_file.close()
 hete_B_pure_file.close()
 hete_X_pure_file.close()
 hete_notABX_pure_file.close()
-
-
-# correct errors in seed, add homo from genotype to seed. for testing purpose
-geno_sorted_list = [x for x in geno_dict.iteritems()] 
-geno_sorted_list.sort(key=lambda x: x[0]) # sort by key
-
-hifi_pure_corrected_with_homo_file_name = sam_file_name + "_hifi_corrected_homo.txt"
-hifi_pure_corrected_with_homo_file = open(currentPath + hifi_pure_corrected_with_homo_file_name, "w")		
-hifi_pure_corrected_with_homo_file.write(title_haplotype + "\n")
-
-for geno_data in geno_sorted_list:
-	position = geno_data[0]
-	geno = geno_data[1]
-	if geno[0] == geno[1]:
-		hifi_pure_corrected_with_homo_file.write("rs_g_homo" + "\t" + str(position) + "\t" + geno[0] + "\n")	
-	elif position in snp_dict:
-		snp = snp_dict[position]
-		if len(snp.covered_reads_list) > depth_threshold:	
-			max_base = keywithmaxval(snp.allele_dict)
-			max_value = snp.allele_dict[max_base]	
-			pure = True
-			for base in base_list:
-				if base != max_base:
-					if snp.allele_dict[base] != 0:
-						pure = False
-			if pure and max_value > depth_threshold:
-				if max_base == snp.A or max_base == snp.B:	#check genotype
-					if max_base == snp.A and max_base != snp.B:							
-						hifi_pure_corrected_with_homo_file.write(snp.rsID + "\t" + str(snp.position) + "\t" + max_base + "\n")				
-					if max_base == snp.B and max_base != snp.A:								
-						hifi_pure_corrected_with_homo_file.write(snp.rsID + "\t" + str(snp.position) + "\t" + snp.A + "\n")				
-				elif snp.A == "X" or snp.B == "X":	# keep these reads too
-					pass
-				else:
-					pass	
-					
-						
-	
-hifi_pure_corrected_with_homo_file.close()		
-			
-		
-		
-		
 
 # caulculate the coverage distribution for each snp
 coverage_distribution_file = open(currentPath + sam_file_name + "_coverage_distribution.txt", "w")

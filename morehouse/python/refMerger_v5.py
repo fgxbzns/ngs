@@ -3,7 +3,9 @@
 # location /home/guoxing/tool/morehouse
 
 # prepare geno, hap, ref files for hifi. 
-# remove hap of father and mother from the ref file. 
+# This is to remove hap of father and mother from the ref file. 
+
+# not finished. 
 
 import os, glob, subprocess, random, operator, time
 from optparse import OptionParser
