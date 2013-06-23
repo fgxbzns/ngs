@@ -3,6 +3,8 @@
 # location /home/guoxing/tool/morehouse
 
 # this is for solid data May 09 2013
+# June 22, 2013, added purity. >= 0.90 max_value will be kept as seed. A. B, X, homo will be kept as seeds.
+# quality score check. ord('!')-33 > 13
 
 import os, glob, subprocess, random, operator, time
 from optparse import OptionParser
@@ -190,7 +192,8 @@ while sam_line_first!='':
 						if (start_position_first+i) in snp_dict:							
 							covered_snp = read_sequence_first[i]			# ith position is the covered snp
 							quality_score_symbol = quality_score_sequence_first[i]
-							if (rName_first == chr_name) and (not covered_snp == 'N') and (not quality_score_symbol in quality_score_dict):	# check quality_score
+							#if (rName_first == chr_name) and (not covered_snp == 'N') and (not quality_score_symbol in quality_score_dict):	# check quality_score
+							if (rName_first == chr_name) and (not covered_snp == 'N') and ((ord(quality_score_symbol)-33) > 13):	# check quality_score
 								covered_snp_total_number += 1
 								snp_dict[start_position_first+i].covered_reads_list.append(read(qName_first, flag_first, rName_first, \
 								start_position_first, read_sequence_first, quality_score_sequence_first, read_length_first, covered_snp))					
@@ -365,11 +368,16 @@ for snp_data in snp_sorted_list:
 			if max_base == snp.B:
 				hete_B_max_file.write(snp.rsID + "\t" + str(snp.position) + "\t" + snp.B + "\t" + max_base + "\t" + str(max_value) + "\n")
 		"""
+		pure = False
+		if float(max_value)/float(len(snp.covered_reads_list)) >= 0.90:
+			pure = True
+		"""
 		pure = True
 		for base in base_list:
 			if base != max_base:
 				if snp.allele_dict[base] != 0:
 					pure = False
+		"""
 		if pure and max_value > depth_threshold:
 			pure_total += 1
 			# check genotype to remove called base that does not in genotype
@@ -526,11 +534,15 @@ for geno_data in geno_sorted_list:
 		if len(snp.covered_reads_list) > depth_threshold:	
 			max_base = keywithmaxval(snp.allele_dict)
 			max_value = snp.allele_dict[max_base]	
-			pure = True
+			pure = False
+			if float(max_value)/float(len(snp.covered_reads_list)) >= 0.90:
+				pure = True
+			"""
 			for base in base_list:
 				if base != max_base:
 					if snp.allele_dict[base] != 0:
 						pure = False
+			"""
 			if pure and max_value > depth_threshold:
 				if max_base == snp.A or max_base == snp.B:	#check genotype
 					if max_base == snp.A and max_base != snp.B:							
@@ -539,7 +551,7 @@ for geno_data in geno_sorted_list:
 						#hifi_pure_corrected_with_homo_file.write(snp.rsID + "\t" + str(snp.position) + "\t" + snp.A + "\n")		# error_corrected
 						hifi_pure_corrected_with_homo_file.write(snp.rsID + "\t" + str(snp.position) + "\t" + max_base + "\n")			
 				elif snp.A == "X" or snp.B == "X":	# keep these reads too
-					pass
+					hifi_pure_corrected_with_homo_file.write(snp.rsID + "\t" + str(snp.position) + "\t" + max_base + "\n")			
 				else:
 					pass	
 					
