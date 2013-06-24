@@ -5,7 +5,7 @@ alias df='df -h'	#disk
 # Alias of cd
 alias cd1='cd ..'
 alias cd2='cd ../..'
-alias cd3='cd ../../..'
+Alias cd3='cd ../../..'
 alias cd4='cd ../../../..'
 alias cd5='cd ../../../../..'
 
@@ -133,6 +133,7 @@ alias hifiAccuCheck_v3='$morehousePath/hifiAccuCheck_v3.py'
 alias makeGenoHap='$morehousePath/makeGenoHap_v1.py'
 alias snpPick_quake='$morehousePath/snpPick.py'
 alias hifi='$morehousePath/hifi'
+alias hifi_fu='$morehousePath/hifi_fu'
 alias haplotypeExtractor='$morehousePath/haplotypeExtractor.py'
 alias processSolid='$morehousePath/processSolid.py'
 alias fileCheck='$morehousePath/fileCheck.py'
@@ -169,7 +170,7 @@ alias rmsk_preprocess='$morehousePath/rmsk_preprocess.py'
 alias cnv_samprocess='$morehousePath/cnv_samprocess.py'
 alias seed_check='$morehousePath/seed_check.py'
 alias seed_check_homo='$morehousePath/seed_check_homo.py'
-alias seed_correction='$morehousePath/seed_correction.py'
+alias seed_correction='$morehousePath/seed_correction_v2.py'
 alias seed_std_compare='$morehousePath/seed_std_compare.py'
 
 
