@@ -1,123 +1,86 @@
 #!/usr/bin/python
+#######################################################################################
+# Compare seed and std hap, to check purity of seed
+#######################################################################################
 
-# location /home/guoxing/tool/morehouse
-
-import os, glob, subprocess, random, operator, time
+import os, glob, subprocess, random, operator, time, sys
 from optparse import OptionParser
 
-file_path = "/home/guoxing/disk2/solid/common_files/"
-data_record_path = "/home/guoxing/disk2/solid/common_files/data_record/"
-currentPath = os.getcwd() + '/'
+from tools import file_path, data_record_path, currentPath
+from tools import sort_dict_by_key, load_raw_data
 
-snp_hap_ref_dict = {}
-snp_hap_hifi_dict = {}
-snp_hap_seed_dict = {}
-snp_hap_ref_total_number = 0
-snp_hap_ref_total_number_withoutXN = 0
-snp_hap_hifi_total_number = 0
-snp_hap_seed_total_number = 0
+def usage():
+	print "%s [seed_file] [chr]" % sys.argv[0]
 
-# Reading options
-usage = "usage: %prog [options] arg1" 
-parser = OptionParser(usage = usage) 
-parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="null")
-parser.add_option("-i", "--seed", type="string", dest="hifiSeed",help = "Input seed file Name", default="null")
-
-(options, args) = parser.parse_args()
-chr_name = options.chrName
-seed_file = options.hifiSeed
-
-hap_ref_file_name = "ASW_"+chr_name+"_child_hap_refed.txt"	
-
-inputFile_hap_ref = open(file_path + hap_ref_file_name, "r")
-inputFile_hap_seed = open(currentPath + seed_file, "r")
-seed_file_name = seed_file[:seed_file.find('.')].strip()
-
-for line in inputFile_hap_ref:
-	if not line.startswith("rsID"):
-		elements = line.strip().split()
-		#if elements[2].strip() != "N" and elements[2].strip() != "X" and elements[3].strip() != "N" and elements[3].strip() != "X":
-		if elements[2].strip() != "N" and elements[3].strip() != "N":
-			position = elements[1].strip()	
-			try:
-				position = int(position)
-				snp_hap_ref_dict[position] = line.strip()
-			except ValueError:
-				print file_name, position	
-				print line
-			snp_hap_ref_total_number += 1
-		
-for line in inputFile_hap_seed:
-	if not line.startswith("rsID"):
-		elements = line.strip().split()
-		if True:
-			position = elements[1].strip()	
-			try:
-				position = int(position)
-				snp_hap_seed_dict[position] = line.strip()
-			except ValueError:
-				print position	
-				print line
-			snp_hap_seed_total_number += 1	
-
-print "snp_hap_ref_total_number", snp_hap_ref_total_number
-print "snp_hap_seed_total_number", snp_hap_seed_total_number
-
-seed_same_to_A = 0
-seed_same_to_B = 0
-seed_same_to_AB = 0
-seed_X = 0
-seed_N = 0
-seed_not_AB = 0
-
-error_distribution_output_file_name = seed_file_name + "_std_compare.txt"
-error_distribution_output_file = open(currentPath + error_distribution_output_file_name, "w")
-print >> error_distribution_output_file, "seed file: ", seed_file
-print >> error_distribution_output_file, "std hap file: ", hap_ref_file_name
-
-snp_hap_seed_dict_sorted_list = [x for x in snp_hap_seed_dict.iteritems()] 
-snp_hap_seed_dict_sorted_list.sort(key=lambda x: x[0]) # sort by key
-
-for snp in snp_hap_seed_dict_sorted_list:
+def seed_std_compare(seed_input_file, chr_name):
+	std_file_name = "ASW_"+chr_name+"_child_hap_refed.txt"
+	std_input_file = file_path + std_file_name
+	snp_hap_std_dict = load_raw_data(std_input_file)[1]
 	
-	position = snp[0]
-		
-	# check hifi seeds, these position need to be in ref too
-	if position in snp_hap_ref_dict:
-		line_ref = snp_hap_ref_dict[position]
-		elements_ref = line_ref.strip().split()
-		ref_A = elements_ref[2].strip()
-		ref_B = elements_ref[3].strip()
-		line_seed = snp_hap_seed_dict[position]
-		elements_seed = line_seed.strip().split()
-		seed_A = elements_seed[2].strip()
-		#seed_A = elements_seed[3].strip() # for solid data 4 and 6, chr from mother
-		if seed_A == ref_A:
-			if seed_A == ref_B:
-				seed_same_to_AB += 1
+	snp_hap_seed_dict = load_raw_data(seed_input_file)[1]
+	seed_file_name = seed_input_file[:seed_input_file.find('.')].strip()
+	print "snp_hap_std_total_number", len(snp_hap_std_dict)
+	print "snp_hap_seed_total_number", len(snp_hap_seed_dict)
+	
+	seed_same_to_A = 0
+	seed_same_to_B = 0
+	seed_same_to_AB = 0
+	seed_X = 0
+	seed_N = 0
+	seed_not_AB = 0
+
+	compare_output_file_name = seed_file_name + "_" + chr_name + "_compare.txt"
+	compare_output_file = open(currentPath + compare_output_file_name, "w")
+	print >> compare_output_file, "seed file: ", seed_input_file
+	print >> compare_output_file, "std hap file: ", std_input_file
+
+	snp_hap_seed_dict_sorted_list = sort_dict_by_key(snp_hap_seed_dict)
+
+	for snp in snp_hap_seed_dict_sorted_list:
+		position = snp[0]	
+		# check hifi seeds, these position need to be in std too
+		if position in snp_hap_std_dict:
+			elements_std = snp_hap_std_dict[position]
+			std_A = elements_std[2].strip()
+			std_B = elements_std[3].strip()
+			elements_seed = snp_hap_seed_dict[position]
+			seed_A = elements_seed[2].strip()
+			#seed_A = elements_seed[3].strip() # for solid data 4 and 6, chr from mother
+			if seed_A == std_A:
+				if seed_A == std_B:
+					seed_same_to_AB += 1
+				else:
+					seed_same_to_A += 1			
+			elif seed_A == std_B:
+				seed_same_to_B += 1
+			elif std_A == "X" or std_B == "X":
+				seed_X += 1
+			elif std_A == "N" or std_B == "N":
+				seed_N += 1
 			else:
-				seed_same_to_A += 1
-			
-		elif seed_A == ref_B:
-			seed_same_to_B += 1
-		elif ref_A == "X" or ref_B == "X":
-			seed_X += 1
-		elif ref_A == "N" or ref_B == "N":
-			seed_N += 1
-		else:
-			seed_not_AB += 1
+				seed_not_AB += 1
+	A_in_hetero = format((float(seed_same_to_A)/float(seed_same_to_A + seed_same_to_B))*100, "0.2f")
+	B_in_hetero = format((float(seed_same_to_B)/float(seed_same_to_A + seed_same_to_B))*100, "0.2f")
+	
+	print "seed_same_to_A", seed_same_to_A
+	print "seed_same_to_B", seed_same_to_B
+	print "A_in_hetero", A_in_hetero, "%"
+	print "B_in_hetero", B_in_hetero, "%"
+	print "homo seed", seed_same_to_AB
+	print "seed_not_AB", seed_not_AB
 
-print "seed_same_to_A", seed_same_to_A
-print "seed_same_to_B", seed_same_to_B
-print "homo seed", seed_same_to_AB
-print "seed_not_AB", seed_not_AB
+	print >> compare_output_file, "seed_same_to_A", seed_same_to_A
+	print >> compare_output_file, "seed_same_to_B", seed_same_to_B
+	print >> compare_output_file, "A_in_hetero", A_in_hetero, "%"
+	print >> compare_output_file, "B_in_hetero", B_in_hetero, "%"
+	print >> compare_output_file, "homo seed", seed_same_to_AB
+	print >> compare_output_file, "seed_not_AB", seed_not_AB	
+	compare_output_file.close()
 
-print >> error_distribution_output_file, "seed_same_to_A", seed_same_to_A
-print >> error_distribution_output_file, "seed_same_to_B", seed_same_to_B
-print >> error_distribution_output_file, "homo seed", seed_same_to_AB
-print >> error_distribution_output_file, "seed_not_AB", seed_not_AB
-
-inputFile_hap_ref.close()
-inputFile_hap_seed.close()
-error_distribution_output_file.close()
-
+if __name__=='__main__':
+	if len(sys.argv)!=3:
+		usage()
+		sys.exit(1)
+	seed_input_file=sys.argv[1]
+	chr_name=sys.argv[2]
+	seed_std_compare(seed_input_file, chr_name)
