@@ -77,8 +77,8 @@ int main(int argc, char** argv)
 	strcpy(haplotype,argv[1]);
 	//strcpy(genotype,argv[2]);
 	//strcpy(refhap,argv[3]);
-	strcpy(impute,"impute");
-	strncat(impute,haplotype,12);
+	strcpy(impute,"imputed_");
+	strncat(impute,haplotype,32);
 	
 
 	//haplotype_ID = haplotype.substr(10,1)
@@ -775,10 +775,10 @@ int main(int argc, char** argv)
 												//====================================
 
 
-										/*fu		printf("Imputing   %s %d   %c%c <-- %c%c\n",
+						/*fu						printf("Imputing   %s %d   %c%c <-- %c%c\n",
 													        hgr_rs[snpimp[indexofsnp_act[i]]],hgr_pos[snpimp[indexofsnp_act[i]]],hogo_xn[snpimp[indexofsnp_act[i]]][0],hogo_xn[snpimp[indexofsnp_act[i]]][1],
 															imputor_refinetable[matindex_0][i],  imputor_refinetable[matindex_1][i]);
-										*/		
+							*/					
 												hogo_xn[snpimp[indexofsnp_act[i]]][0] = imputor_refinetable[matindex_0][i];
 												hogo_xn[snpimp[indexofsnp_act[i]]][1] = imputor_refinetable[matindex_1][i];											
 											}
@@ -1400,7 +1400,8 @@ fu */	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	}
 	headofhaplo[d+e]='\0';
 
-	fpo=fopen("imputedhaplotype.txt","w");	
+//	fpo=fopen("imputedhaplotype.txt","w");	
+	fpo=fopen(impute,"w");	
 	fprintf(fpo,"%s", headofhaplo);
 	for(int i=0;i<snpsum_hgr;i++)
 	{

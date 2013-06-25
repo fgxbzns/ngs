@@ -21,17 +21,20 @@ usage = "usage: %prog [options] arg1"
 parser = OptionParser(usage = usage) 
 parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="chr11")
 parser.add_option("-n", "--id", type="string", dest="fileID",help = "Input file Name", default="1")	# for solid 4 and 6, chr is from mother
+parser.add_option("-i", "--imputed", type="string", dest="hifiResult",help = "Input hifiResult file Name", default="null")
+
 
 (options, args) = parser.parse_args()
 chr_name = options.chrName
 file_id = options.fileID
-
+hifi_imputed_hap = options.hifiResult
 
 #hap_ori_file_name = "NA12878_hap_new_refed.txt"	# simulation data
 hap_ori_file_name = "ASW_"+chr_name+"_child_hap_refed.txt"	
 #hap_ori_file_name = "ASW_chr5_child_hap_refed.txt"	# solid song_1 chr5
 
 hap_hifi_file_name = "imputedhaplotype.txt"
+hap_hifi_file_name = hifi_imputed_hap
 
 inputFile_hap_ori = open(file_path + hap_ori_file_name, "r")
 inputFile_hap_hifi = open(currentPath + hap_hifi_file_name, "r")

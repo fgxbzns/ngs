@@ -7,7 +7,7 @@
 # remove one parts of hetero seed each time. (note, the hetero seeds here may also contain homo snps. The genotype is not available for them)
 
 
-import os, glob, subprocess, random, operator, time, math
+import os, glob, subprocess, random, operator, time, math, copy
 from optparse import OptionParser
 
 program_path = "/home/guoxing/disk2/ngs/morehouse/python/"
@@ -149,6 +149,28 @@ def load_genotype(genotype_file):
 genotype_file = "genotype_NA10847_"+chr_name+".txt"	# for all
 geno_dict = load_genotype(genotype_file)
 
+
+
+def load_hap_std(inputFile_hap_std):
+	hap_std_dict = {}
+	inputFile_hap_std = open(file_path + inputFile_hap_std, "r")
+	for line in inputFile_hap_std:
+		if not line.startswith("rsID"):
+			elements = line.strip().split()
+			if elements[2].strip() != "N" and elements[3].strip() != "N":
+				position = elements[1].strip()	
+				try:
+					position = int(position)
+					hap_std_dict[position] = line.strip()
+				except ValueError:
+					print file_name, position	
+					print line
+	inputFile_hap_std.close()
+	return hap_std_dict
+	
+hap_std_file = "ASW_"+chr_name+"_child_hap_refed.txt"	
+hap_std_dict = load_hap_std(hap_std_file)
+
 seed_homo_dict = {}
 seed_hetero_dict = {}
 for position, snp in seed_dict.iteritems():
@@ -175,56 +197,65 @@ def seed_spliter(seed_dict, number_of_subfile):
 	seed_hetero_sorted_list.sort(key=lambda x: x[0]) # sort by key
 	seed_number_ceilling = int(math.ceil(float(len(seed_hetero_sorted_list))/100)*100)
 	print "seed_hetero_number_ceilling: ", seed_number_ceilling
-	seed_in_each_subfile = seed_number_ceilling/number_of_subfile
-	print "seed_hetero_in_each_subfile: ", seed_in_each_subfile
-	seed_in_last_subfile = int(math.fmod(len(seed_hetero_sorted_list), seed_in_each_subfile))
-	print "seed_in_last_subfile: ", seed_in_last_subfile
+	seed_removed_in_each_subfile = seed_number_ceilling/number_of_subfile
+	print "seed_hetero_in_each_subfile: ", seed_removed_in_each_subfile
+	seed_removed_in_last_subfile = int(math.fmod(len(seed_hetero_sorted_list), seed_removed_in_each_subfile))
+	print "seed_removed_in_last_subfile: ", seed_removed_in_last_subfile
 		
 	seed_homo_sorted_list = [x for x in seed_homo_dict.iteritems()] 
 	file_number = 0
 	while file_number < number_of_subfile:
-		line_number = 0
-		output_subfile_name = seed_file_name + "_" + str(file_number) + ".txt"
-		print "output: ", output_subfile_name
-		output_subfile = open(currentPath + output_subfile_name, "w")
-		print >> output_subfile, title_haplotype
-		i = 0
-		sub_seed_list = seed_hetero_sorted_list[:seed_in_each_subfile*file_number] \
-						+ seed_hetero_sorted_list[seed_in_each_subfile*(file_number+1):(len(seed_hetero_sorted_list)-1)]
-		sub_seed_list.append(seed_hetero_sorted_list[-1])	
-		sub_seed_list += seed_homo_sorted_list	# add the homo snps to seed
-		sub_seed_list.sort(key=lambda x: x[0]) # sort by key
-		print len(sub_seed_list)
-		for seed in sub_seed_list:
-			line = seed[1].rsID + "\t" + str(seed[1].position) + "\t" + seed[1].allele_ori
-			print >> output_subfile, line	
+		#i = 1
+		#while i < number_of_subfile:
+		if True:	
+			output_subfile_name = seed_file_name + "_" + str(file_number) + ".txt"
+			print "output: ", output_subfile_name
+			output_subfile = open(currentPath + output_subfile_name, "w")
+			print >> output_subfile, title_haplotype
+
+			#sub_seed_list = seed_hetero_sorted_list[:int(seed_removed_in_each_subfile*file_number*0.25)] \
+			#				+ seed_hetero_sorted_list[(int(seed_removed_in_each_subfile*(file_number+1)*0.25):(len(seed_hetero_sorted_list)-1)]
+			#sub_seed_list.append(seed_hetero_sorted_list[-1])	
+			seed_hetero_sorted_list_bkup = copy.deepcopy(seed_hetero_sorted_list)
+			i = 0
+			while i <  seed_removed_in_each_subfile:
+				seed_to_be_removed = random.randrange(0,(len(seed_hetero_sorted_list)-1))
+				#seed_hetero_sorted_list.remove(seed_hetero_sorted_list[seed_to_be_removed])
+				del seed_hetero_sorted_list[seed_to_be_removed]
+				i += 1
+			sub_seed_list = seed_hetero_sorted_list + seed_homo_sorted_list	# add the homo snps to seed
+			sub_seed_list.sort(key=lambda x: x[0]) # sort by key
+			print len(sub_seed_list)
+			for seed in sub_seed_list:
+				line = seed[1].rsID + "\t" + str(seed[1].position) + "\t" + seed[1].allele_ori
+				print >> output_subfile, line	
+			output_subfile.close()
+			seed_hetero_sorted_list = copy.deepcopy(seed_hetero_sorted_list_bkup)
+			
+			hifi = program_path + "hifi_fu " + output_subfile_name + " &"
+			hifi_process = subprocess.Popen(hifi, shell=True)
+			hifi_process.wait()
+			
+			"""
+			cp = "cp imputedhaplotype.txt imputedhaplotype_" + str(file_number)  + ".txt"
+			cp_process = subprocess.Popen(cp, shell=True)
+			cp_process.wait()
+			#i += 1
+			"""
 		file_number += 1
-		output_subfile.close()
-		"""
-		cp = "cp " + output_subfile_name + " haplotype.txt"
-		cp_process = subprocess.Popen(cp, shell=True)
-		cp_process.wait()
-		"""	
-		hifi = program_path + "hifi_fu " + output_subfile_name
-		hifi_process = subprocess.Popen(hifi, shell=True)
-		hifi_process.wait()
-		
-		cp = "cp imputedhaplotype.txt imputedhaplotype_" + str(file_number) + ".txt"
-		cp_process = subprocess.Popen(cp, shell=True)
-		cp_process.wait()
 			
 
-number_of_subfile = 200 
-seed_spliter(seed_dict, number_of_subfile)
-"""
+number_of_subfile = 10 
+#seed_spliter(seed_dict, number_of_subfile)
+
 hifi_dict = {}
 for position, seeds in seed_dict.iteritems():
 	hifi_dict[position] = seeds
 print len(hifi_dict)
 	
-file_number = 1
+file_number = 0
 while file_number < number_of_subfile:	
-	input_subfile_name = "imputedhaplotype_" + str(file_number) + ".txt"
+	input_subfile_name = "imputed_haplotype_" + str(file_number) + ".txt"
 	hifi_dict = load_hifi_result(input_subfile_name, hifi_dict)
 	print file_number," :", len(hifi_dict)
 	file_number += 1
@@ -234,23 +265,28 @@ print >> seed_new_file, title_haplotype
 num_100 = 0
 
 seed_hetero_new_file = open(currentPath + "hetero.txt", "w")
-print >> seed_hetero_new_file, title_haplotype
+#print >> seed_hetero_new_file, title_haplotype
+print >> seed_hetero_new_file, "rsID \t pos \t std_F \t std_M \t seed_ori \t seed_new \t seed_new_perc"
 
 hifi_sorted_list = [x for x in hifi_dict.iteritems()] 
 hifi_sorted_list.sort(key=lambda x: x[0]) # sort by key
 for snp in hifi_sorted_list:
+	position = snp[0]
 	seeds = snp[1]
 	max_base = keywithmaxval(seeds.allele_dict)
 	max_value = seeds.allele_dict[max_base]
 	seeds.allele_new_percentage = float(max_value)/float(number_of_subfile)
-	if int(seeds.allele_new_percentage*100) >= 95:
+	# snp in geno >=90 not in geno >= 100
+	if seeds.allele_new_percentage*100 >= 90 and position in seed_dict:
 		num_100 += 1
 		seeds.allele_new = max_base
 		line = seeds.rsID + "\t" + str(seeds.position) + "\t" + max_base
 		print >> seed_new_file, line
-	position = snp[0]
-	if position in seed_hetero_dict and seeds.allele_ori != max_base:
-		line = seeds.rsID + "\t" + str(seeds.position) + "\t" + seeds.allele_ori + "\t" + max_base + "\t" + str(seeds.allele_new_percentage)
+	if position in seed_hetero_dict and seeds.allele_ori != max_base and seeds.allele_new_percentage*100 >= 80:
+		hap_std = hap_std_dict[position].split()
+		allele_dict = hifi_dict[position].allele_dict
+		line = seeds.rsID + "\t" + str(seeds.position) + "\t" + hap_std[2] + "\t" + \
+				hap_std[3] + "\t" + seeds.allele_ori + "\t" + max_base + "\t" + str(seeds.allele_new_percentage) + "\t" + str(allele_dict['A']+allele_dict['T']+allele_dict['C']+allele_dict['G'])
 		print >> seed_hetero_new_file, line
 		
 seed_new_file.close()
@@ -258,7 +294,6 @@ seed_hetero_new_file.close()
 	
 print "num_100", num_100
 
-"""
 
 
 
