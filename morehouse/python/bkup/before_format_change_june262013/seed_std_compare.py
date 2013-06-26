@@ -9,6 +9,9 @@ from optparse import OptionParser
 from tools import file_path, data_record_path, currentPath
 from tools import sort_dict_by_key, load_raw_data
 
+def usage():
+	print "%s [seed_file] [chr]" % sys.argv[0]
+
 def seed_std_compare(seed_input_file, chr_name):
 	std_file_name = "ASW_"+chr_name+"_child_hap_refed.txt"
 	std_input_file = file_path + std_file_name
@@ -74,34 +77,10 @@ def seed_std_compare(seed_input_file, chr_name):
 	print >> compare_output_file, "seed_not_AB", seed_not_AB	
 	compare_output_file.close()
 
-"""
-def usage():
-	print "%s [seed_file] [chr]" % sys.argv[0]
 if __name__=='__main__':
 	if len(sys.argv)!=3:
 		usage()
 		sys.exit(1)
 	seed_input_file=sys.argv[1]
 	chr_name=sys.argv[2]
-	seed_std_compare(seed_input_file, chr_name)
-"""
-
-def get_args():
-	desc="Compare seed and std hap, to check purity of seed"
-
-	usage = "seed_std_compare -i seed_file -c chr#" 
-	parser = OptionParser(usage = usage, description=desc) 
-	parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="null")
-	parser.add_option("-i", "--seed", type="string", dest="hifiSeed",help = "Input seed file Name", default="null")
-	(options, args) = parser.parse_args()
-	if options.chrName == "null" or options.hifiSeed == "null":
-		print "parameters missing..."
-		print usage
-		sys.exit(1)
-	return options
-
-if __name__=='__main__':
-	options = get_args()
-	chr_name = options.chrName
-	seed_input_file = options.hifiSeed	
 	seed_std_compare(seed_input_file, chr_name)
