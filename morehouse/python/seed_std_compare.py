@@ -25,6 +25,8 @@ def seed_std_compare(seed_input_file, chr_name):
 	seed_X = 0
 	seed_N = 0
 	seed_not_AB = 0
+	
+	same_to_B_dict = {}
 
 	compare_output_file_name = seed_file_name + "_" + chr_name + "_compare.txt"
 	compare_output_file = open(currentPath + compare_output_file_name, "w")
@@ -50,6 +52,7 @@ def seed_std_compare(seed_input_file, chr_name):
 					seed_same_to_A += 1			
 			elif seed_A == std_B:
 				seed_same_to_B += 1
+				same_to_B_dict[position] = elements_seed
 			elif std_A == "X" or std_B == "X":
 				seed_X += 1
 			elif std_A == "N" or std_B == "N":
@@ -73,6 +76,7 @@ def seed_std_compare(seed_input_file, chr_name):
 	print >> compare_output_file, "homo seed", seed_same_to_AB
 	print >> compare_output_file, "seed_not_AB", seed_not_AB	
 	compare_output_file.close()
+	return same_to_B_dict
 
 """
 def usage():

@@ -97,6 +97,7 @@ not_same_AB_total_number = 0
 
 seed_same_to_A = 0
 seed_same_to_B = 0
+seed_same_to_AB = 0
 seed_X = 0
 seed_N = 0
 seed_not_AB = 0

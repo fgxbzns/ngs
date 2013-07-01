@@ -172,6 +172,7 @@ alias seed_check='$morehousePath/seed_check.py'
 alias seed_check_homo='$morehousePath/seed_check_homo.py'
 alias seed_correction='$morehousePath/seed_correction_v2.py'
 alias seed_std_compare='$morehousePath/seed_std_compare.py'
+alias calculate_maf='$morehousePath/calculate_maf.py'
 
 
 
