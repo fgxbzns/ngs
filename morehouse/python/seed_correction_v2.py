@@ -98,9 +98,12 @@ def group_seed(seed_dict, geno_dict):
 	seed_homo_dict = {}
 	seed_hetero_dict = {}
 	for position, snp in seed_dict.iteritems():
-		geno_allele = geno_dict[position][2]
-		if position in geno_dict and geno_allele[0] == geno_allele[1]:
-			seed_homo_dict[position] = snp
+		if position in geno_dict:	# pos in seed may not be in geno
+			geno_allele = geno_dict[position][2]
+			if geno_allele[0] == geno_allele[1]:
+				seed_homo_dict[position] = snp
+			else:
+				seed_hetero_dict[position] = snp
 		else:
 			seed_hetero_dict[position] = snp
 	return (seed_homo_dict, seed_hetero_dict)
@@ -148,27 +151,17 @@ def seed_spliter(seed_dict, number_of_subfile):
 		#sub_seed_list.append(seed_hetero_sorted_list[-1])	
 		seed_hetero_sorted_list_bkup = copy.deepcopy(seed_hetero_sorted_list)
 		
-		"""
-		i = 0 
-		while i < seed_removed_in_each_subfile:
-			try:
-				del seed_hetero_sorted_list[i*file_number+file_number]
-			except:
-				pass
-			i += 1
-		"""
 		i = 0 
 		while i < int(seed_removed_in_each_subfile):
 			try:
 				del seed_hetero_sorted_list[i*file_number+file_number]
 				del seed_hetero_sorted_list[i*(file_number+1)-file_number]
-				"""
-				#randomly del the second seed in small range
-				random_index = random.randrange(i*file_number,(i*file_number+2*file_number))
-				while random_index == (i*file_number+2*file_number):
-					random_index = random.randrange(i*file_number,(i*file_number+2*file_number))
-				"""
 				#randomly del the second seed in whole range
+				random_index = random.randrange(0,(len(seed_hetero_sorted_list)-1))
+				while random_index == (i*file_number+file_number) or random_index == (i*file_number+file_number):
+					random_index = random.randrange(0,(len(seed_hetero_sorted_list)-1))
+				
+				del seed_hetero_sorted_list[random_index]
 				random_index = random.randrange(0,(len(seed_hetero_sorted_list)-1))
 				while random_index == (i*file_number+file_number) or random_index == (i*file_number+file_number):
 					random_index = random.randrange(0,(len(seed_hetero_sorted_list)-1))
@@ -178,16 +171,7 @@ def seed_spliter(seed_dict, number_of_subfile):
 			except:
 				pass
 			i += 1
-		"""
-		 # rondemly delete in whole range
-		i = 0
-		#while i < 100:
-		while i <  seed_removed_in_each_subfile:
-			seed_to_be_removed = random.randrange(0,(len(seed_hetero_sorted_list)-1))
-			#seed_to_be_removed = random.randrange(start_pos,end_pos)
-			del seed_hetero_sorted_list[seed_to_be_removed]
-			i += 1
-		"""
+
 		print "seed_hetero_sorted_list new", len(seed_hetero_sorted_list)
 		sub_seed_list = seed_hetero_sorted_list + seed_homo_sorted_list	# add the homo snps to seed
 		sub_seed_list.sort(key=lambda x: x[0]) # sort by key
@@ -204,11 +188,7 @@ def seed_spliter(seed_dict, number_of_subfile):
 			hifi = program_path + "hifi_fu " + output_subfile_name + ""	# make sure the other hifi processes are finished
 		hifi_process = subprocess.Popen(hifi, shell=True)
 		hifi_process.wait()
-		
 		file_number += 1
-
-
-
 
 def seed_extract(seed_dict):
 	revised_seed_dict = {}
@@ -287,69 +267,86 @@ def error_seed_distance(seed_dict, same_to_B_dict):
 		print seed_sorted_list[index+1][0], seed_sorted_list[index+1][0]- position
 
 
-#def seed_correction(seed_file, chr_name, mode):
+def seed_correction(seed_file, chr_name, mode):
 
-start = time.time()	
-options = get_args()
-seed_file = options.seedFile
-chr_name = options.chrName
-mode = options.mode	
-
-print "seed_file is :", seed_file
-seed_file_name = seed_file[:seed_file.find('.')].strip()
-seed_tuple = load_seed_data(seed_file)
-seed_title_info = seed_tuple[0]
-seed_dict = seed_tuple[1]
-
-#print "seed_title_info", seed_title_info
-print "total_seed_number: ", len(seed_dict)
-
-genotype_file = file_path + "genotype_NA10847_"+chr_name+".txt"	# for all
-geno_dict = load_raw_data(genotype_file)[1]
-
-hap_std_file = file_path + "ASW_"+chr_name+"_child_hap_refed.txt"	
-hap_std_dict = load_hap_std(hap_std_file)
-
-group_tuple = group_seed(seed_dict, geno_dict)
-seed_homo_dict = group_tuple[0]
-seed_hetero_dict = group_tuple[1]
-print "seed_homo_dict", len(seed_homo_dict)
-print "seed_hetero_dict", len(seed_hetero_dict)
-		
-if mode == "split":
-	seed_spliter(seed_dict, number_of_subfile)
-	seed_extract(seed_dict)
-	seed_std_compare("haplotype_new.txt", chr_name)
-elif mode == None:
-	pass
-else:
-	revised_seed_dict = seed_extract(seed_dict)
-	same_to_B_dict = seed_std_compare("haplotype_new.txt", chr_name)
-	print same_to_B_dict
-	file_name = "refHaplos.txt"
+	global geno_dict
+	global hap_std_dict
+	global seed_dict
+	global seed_homo_dict
+	global seed_hetero_dict
 	
-	#for position, seed in same_to_B_dict.iteritems():
-		#calculate_maf(file_name, position)	
-	error_seed_distance(seed_dict, same_to_B_dict)
-	error_seed_distance(seed_hetero_dict, same_to_B_dict)
-	"""
-	output_revised_seed_without_error(revised_seed_dict, same_to_B_dict)
-	seed_std_compare("haplotype_without_error.txt", chr_name)
-	output_revised_seed_with_error(revised_seed_dict, same_to_B_dict)
-	"""
+	global seed_title_info
+	global seed_file_name
+	
+	start = time.time()	
+	options = get_args()
+	seed_file = options.seedFile
+	chr_name = options.chrName
+	mode = options.mode	
 
-os.system("mkdir -p new")
-os.system("cp haplotype_new* imputed_haplotype_* new")
-os.system("mv haplotype_new.txt haplotype.txt")
+	print "seed_file is :", seed_file
+	seed_file_name = seed_file[:seed_file.find('.')].strip()
+	seed_tuple = load_seed_data(seed_file)
+	seed_title_info = seed_tuple[0]
+	seed_dict = seed_tuple[1]
 
+	#print "seed_title_info", seed_title_info
+	print "total_seed_number: ", len(seed_dict)
 
+	genotype_file = file_path + "genotype_NA10847_"+chr_name+".txt"	# for all
+	geno_dict = load_raw_data(genotype_file)[1]
+
+	hap_std_file = file_path + "ASW_"+chr_name+"_child_hap_refed.txt"	
+	hap_std_dict = load_hap_std(hap_std_file)
+
+	group_tuple = group_seed(seed_dict, geno_dict)
+	seed_homo_dict = group_tuple[0]
+	seed_hetero_dict = group_tuple[1]
+	print "seed_homo_dict", len(seed_homo_dict)
+	print "seed_hetero_dict", len(seed_hetero_dict)
+			
+	if mode == "split":
+		seed_spliter(seed_dict, number_of_subfile)
+		seed_extract(seed_dict)
+		seed_std_compare("haplotype_new.txt", chr_name)
+	elif mode == None:
+		pass
+	else:
+		revised_seed_dict = seed_extract(seed_dict)
+		same_to_B_dict = seed_std_compare("haplotype_new.txt", chr_name)
+		print same_to_B_dict
+		file_name = "refHaplos.txt"
+		
+		for position, seed in same_to_B_dict.iteritems():
+			calculate_maf(file_name, position)	
+		#error_seed_distance(seed_dict, same_to_B_dict)
+		#error_seed_distance(seed_hetero_dict, same_to_B_dict)
+		"""
+		output_revised_seed_without_error(revised_seed_dict, same_to_B_dict)
+		seed_std_compare("haplotype_without_error.txt", chr_name)
+		output_revised_seed_with_error(revised_seed_dict, same_to_B_dict)
+		"""
 """
+	os.system("mkdir -p new")
+	os.system("cp haplotype_new* imputed_haplotype_* new")
+	os.system("mv haplotype_new.txt haplotype.txt")
+"""
+
+#def seed_extent():
+	
+
+
+
 if __name__=='__main__':
 	options = get_args()
 	seed_file = options.seedFile
 	chr_name = options.chrName
 	mode = options.mode	
-	seed_correction(seed_file, chr_name, mode)
-"""
+	for i in range (1,4):
+		seed_correction(seed_file, chr_name, mode)
+		os.system("mkdir -p " + str(i))
+		os.system("cp haplotype_new* imputed_haplotype_* " + str(i))
+		os.system("mv haplotype_new.txt haplotype.txt")
+
 
 
