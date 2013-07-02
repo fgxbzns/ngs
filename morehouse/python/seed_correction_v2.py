@@ -162,7 +162,7 @@ def seed_spliter(seed_dict, number_of_subfile):
 					random_index = random.randrange(0,(len(seed_hetero_sorted_list)-1))
 				
 				del seed_hetero_sorted_list[random_index]
-				
+				"""
 				random_index = random.randrange(0,(len(seed_hetero_sorted_list)-1))
 				while random_index == (i*file_number+file_number) or random_index == (i*file_number+file_number):
 					random_index = random.randrange(0,(len(seed_hetero_sorted_list)-1))
@@ -174,7 +174,7 @@ def seed_spliter(seed_dict, number_of_subfile):
 					random_index = random.randrange(0,(len(seed_hetero_sorted_list)-1))
 				
 				del seed_hetero_sorted_list[random_index]
-				
+				"""
 			except:
 				pass
 			i += 1
@@ -320,7 +320,7 @@ def seed_correction(seed_file, chr_name, mode):
 		pass
 	else:
 		revised_seed_dict = seed_extract(seed_dict)
-		same_to_B_dict = seed_std_compare("haplotype.txt", chr_name)
+		same_to_B_dict = seed_std_compare("haplotype_new.txt", chr_name)
 		print same_to_B_dict
 		file_name = "refHaplos.txt"
 		
@@ -349,7 +349,7 @@ if __name__=='__main__':
 	seed_file = options.seedFile
 	chr_name = options.chrName
 	mode = options.mode	
-	for i in range (1,5):
+	for i in range (5,9):
 		seed_correction(seed_file, chr_name, mode)
 		os.system("mkdir -p " + str(i))
 		os.system("cp haplotype_new* imputed_haplotype_* " + str(i))

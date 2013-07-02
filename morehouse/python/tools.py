@@ -33,14 +33,23 @@ def load_raw_data(file_name):
 	fp.close()
 	return (title_info, data)
 
+# remove the snps with "N" in std hap
+def removeN(hifi_std_dict):
+	temp_dict = {}
+	for position, elements in hifi_std_dict.iteritems():
+		if elements[2].strip() != "N" and elements[3].strip() != "N":
+			temp_dict[position] = hifi_std_dict[position]
+	return temp_dict
+
+
 def sort_dict_by_key(input_dict):
 	sorted_list = []
 	sorted_list = [x for x in input_dict.iteritems()] 
 	sorted_list.sort(key=lambda x: x[0]) # sort by key
 	return sorted_list
 
-def wccount(filename):
-    out = subprocess.Popen(['wc', '-l', filename],
+def wccount(file_name):
+    out = subprocess.Popen(['wc', '-l', file_name],
                          stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT
                          ).communicate()[0]

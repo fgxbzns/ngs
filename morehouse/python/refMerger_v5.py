@@ -29,6 +29,8 @@ def get_args():
 	return options
 
 
+
+options = get_args()
 haplotype_file = options.haplotypeFile
 #genotype_file = options.genotypeFile
 chr_name = options.chrName
