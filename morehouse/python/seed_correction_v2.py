@@ -13,6 +13,8 @@ from tools import file_path, program_path, data_record_path, currentPath
 from tools import sort_dict_by_key, load_raw_data, wccount, keywithmaxval
 from seed_std_compare import seed_std_compare
 from calculate_maf import calculate_maf
+from hifiAccuCheck_v2 import hifiAccuCheck
+
 
 seed_dict = {}
 geno_dict = {}
@@ -207,6 +209,7 @@ def seed_extract(seed_dict):
 		input_subfile_name = "imputed_haplotype_" + str(file_number) + ".txt"
 		hifi_dict = load_hifi_result(input_subfile_name, hifi_dict)
 		file_number += 1
+		
 	seed_hetero_new_file = open(currentPath + "hetero.txt", "w")
 	print >> seed_hetero_new_file, "rsID \t pos \t std_F \t std_M \t seed_ori \t seed_new \t seed_new_perc"
 
@@ -324,10 +327,15 @@ def seed_correction(seed_file, chr_name, mode):
 		print same_to_B_dict
 		file_name = "refHaplos.txt"
 		
-		for position, seed in same_to_B_dict.iteritems():
-			calculate_maf(file_name, position)	
+		hifiAccuCheck("imputed_haplotype_1.txt", chr_name)
+		#for position, seed in same_to_B_dict.iteritems():
+		#	calculate_maf(file_name, position)	
 		#error_seed_distance(seed_dict, same_to_B_dict)
 		#error_seed_distance(seed_hetero_dict, same_to_B_dict)
+		
+		
+		
+		
 		"""
 		output_revised_seed_without_error(revised_seed_dict, same_to_B_dict)
 		seed_std_compare("haplotype_without_error.txt", chr_name)
@@ -349,7 +357,7 @@ if __name__=='__main__':
 	seed_file = options.seedFile
 	chr_name = options.chrName
 	mode = options.mode	
-	for i in range (5,9):
+	for i in range (0,1):
 		seed_correction(seed_file, chr_name, mode)
 		os.system("mkdir -p " + str(i))
 		os.system("cp haplotype_new* imputed_haplotype_* " + str(i))
