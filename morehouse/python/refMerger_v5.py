@@ -1,33 +1,38 @@
 #!/usr/bin/python
 
-# location /home/guoxing/tool/morehouse
-
-# prepare geno, hap, ref files for hifi. 
-# This is to remove hap of father and mother from the ref file. 
-
-# not finished. 
+#######################################################################################
+# generate files for hifi. new format
+#######################################################################################
 
 import os, glob, subprocess, random, operator, time
 from optparse import OptionParser
 
-file_path = "/home/guoxing/disk2/solid/common_files/"
+from tools import file_path, data_record_path, currentPath
+from tools import sort_dict_by_key, load_raw_data
 
-currentPath = os.getcwd() + '/'
 
-# Reading options
-usage = "usage: %prog [options] arg1" 
-parser = OptionParser(usage = usage) 
-parser.add_option("-i", "--haplotype", type="string", dest="haplotypeFile",help = "Input File Name", default="null")
-parser.add_option("-s", "--genotype", type="string", dest="samFile",help = "Input File Name", default="null")
-parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="chr11")
 
-(options, args) = parser.parse_args()
+
+def get_args():
+	desc="Compare seed and std hap, to check purity of seed"
+
+	usage = "seed_std_compare -i seed_file -c chr#" 
+	parser = OptionParser(usage = usage, description=desc) 
+	parser.add_option("-i", "--haplotype", type="string", dest="haplotypeFile",help = "Input File Name", default="null")
+	parser.add_option("-s", "--genotype", type="string", dest="genotypeFile",help = "Input File Name", default="null")
+	parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="chr11")
+	(options, args) = parser.parse_args()
+	if options.haplotypeFile == "null" or options.chrName == "null":
+		print "parameters missing..."
+		print usage
+		sys.exit(1)
+	return options
+
 
 haplotype_file = options.haplotypeFile
-#genotype_file = options.samFile
+#genotype_file = options.genotypeFile
 chr_name = options.chrName
 
-#chr_name = "chr11"
 
 snp_dic = {}
 tag_info = ""
@@ -46,21 +51,7 @@ for infile in glob.glob(os.path.join(file_path,"*"+chr_name+"_???.phased")):	# a
 			else:
 				elements = line.strip().split()
 				first_tag = elements[2].strip()
-				tag_info += "\t" + line[line.find(first_tag):].strip()
-				
-				
-		elements = line.strip().split()
-		try:
-			ID_index = elements.index(person_ID)
-			print ID_index
-		except:
-			print person_ID, "not found in file"
-			break
-				
-				
-				
-				
-						
+				tag_info += "\t" + line[line.find(first_tag):].strip()		
 		if not line.startswith("rsID"):
 			elements = line.strip().split()
 			position = elements[1].strip()				
