@@ -94,7 +94,7 @@ genotype_output_file = open(currentPath + genotype_output_file_name, "w")
 
 title_genotype = ""
 
-genotype_dict = {}
+geno_dict = {}
 
 for line in genotype_input_file:
 	if line.startswith("rsID"):
@@ -104,7 +104,7 @@ for line in genotype_input_file:
 		position = elements[1].strip()							
 		try:
 			position = int(position)
-			genotype_dict[position] = line.strip()
+			geno_dict[position] = line.strip()
 		except ValueError:
 			print "error in ", line
 
@@ -158,8 +158,8 @@ for snp in snp_sorted_list:
 	# assume last_haplotype_position is the smallest in all three. Make sure the last position in three files is the same. Limited by current version of hifi.
 	if len(snp[1].strip().split()) == total_element_number and int(snp[0]) <= int(last_haplotype_position):  
 		outputFile.write(snp[1] + "\n")
-		if snp[0] in genotype_dict:
-			genotype_output_file.write(genotype_dict[snp[0]] + "\n")
+		if snp[0] in geno_dict:
+			genotype_output_file.write(geno_dict[snp[0]] + "\n")
 		if snp[0] in haplotype_dict:
 			haplotype_output_file.write(haplotype_dict[snp[0]] + "\n")
 		common_snp_number += 1

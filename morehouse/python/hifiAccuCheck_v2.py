@@ -4,7 +4,7 @@
 
 import os, glob, subprocess, random, operator, time
 from optparse import OptionParser
-from tools import file_path, program_path, data_record_path, currentPath
+from tools import *
 from tools import sort_dict_by_key, load_raw_data, removeN
 
 data_record_path = "/home/guoxing/disk2/solid/common_files/data_record/"
@@ -42,8 +42,8 @@ def allele_similarity(hifi_result_dict, hifi_std_dict):
 				same_to_A += 1
 			if hifi_A == std_B:
 				same_to_B += 1
-	print "same_to_A", same_to_A
-	print "same_to_B", same_to_B
+	print "similarity, same_to_A", same_to_A
+	print "similarity, same_to_B", same_to_B
 	if same_to_A >= same_to_B:
 		return "similar_to_A"
 	else:
@@ -94,10 +94,13 @@ def output_different_snps(different_position_dict):
 	difference_output_file_name = "hifi_difference_position.txt"
 	difference_output_file = open(currentPath + difference_output_file_name, "w")
 	for position, elements in different_position_dict.iteritems():
+		"""
 		line = ""
 		for a in elements:
 			line += a + "\t"
 		print >> difference_output_file, line
+		"""
+		print >> difference_output_file, list_to_line(elements)
 	difference_output_file.close()
 
 
@@ -117,7 +120,7 @@ def hifiAccuCheck (hifi_result_file, chr_name):
 	
 	compare_tuple = compare_std_result(hifi_result_dict, hifi_std_dict)
 	same_to_A_dict= compare_tuple[0]
-	print len(same_to_A_dict)
+	#print len(same_to_A_dict)
 	same_to_B_dict = compare_tuple[1]
 	same_to_AB_dict = compare_tuple[2]
 	not_same_to_AB_dict = compare_tuple[3]

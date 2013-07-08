@@ -197,7 +197,7 @@ alias grep_position='$bash_path/grep_position.sh'
 #alias samtools='$disk2ToolPath/samtools-0.1.18/samtools'
 
 export hifiPath=/home/guoxing/disk2/ngs/morehouse/other
-alias hifi_test="$hifiPath/hifi_test"
+alias hifi_i="$hifiPath/hifi_fu_with_imputing"
 
 # other
 #alias solid2fastq='$morehousePath/other/solid2fastq_gx.pl'

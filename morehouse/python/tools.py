@@ -11,6 +11,8 @@ program_path = "/home/guoxing/disk2/ngs/morehouse/python/"
 data_record_path = "/home/guoxing/disk2/solid/common_files/data_record/"
 currentPath = os.getcwd() + '/'
 
+quality_score_dict = { '!':0, '\"':1, '#':2, '$':3, '%':4, '&':5, '\'':6, '(':7, 
+					')':8, '*':9, '+':10, ',':11, '-':12, '.':13 }
 
 def usage():
 	print "%s [seed_file] [chr]" % sys.argv[0]
@@ -41,6 +43,11 @@ def removeN(hifi_std_dict):
 			temp_dict[position] = hifi_std_dict[position]
 	return temp_dict
 
+def list_to_line(list):
+	line = ""
+	for a in list:
+		line += a + "\t"
+	return line
 
 def sort_dict_by_key(input_dict):
 	sorted_list = []
@@ -54,7 +61,16 @@ def wccount(file_name):
                          stderr=subprocess.STDOUT
                          ).communicate()[0]
     return int(out.partition(b' ')[0])
-    
+   
+def getTotalBaseNum(fileName):
+	totalBase = 0
+	f = open(currentPath+fileName, "r")
+	for line in f:
+		if not line.startswith('>'):
+			totalBase += len(line.strip())
+	return totalBase
+	f.close()   
+ 
 def keywithmaxval(dict):
      """ a) create a list of the dict's keys and values; 
          b) return the key with the max value """  

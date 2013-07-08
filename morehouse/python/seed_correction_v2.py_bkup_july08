@@ -9,9 +9,8 @@
 import os, glob, subprocess, random, operator, time, math, copy
 from optparse import OptionParser
 
-from tools import *
-#from tools import file_path, program_path, data_record_path, currentPath
-#from tools import sort_dict_by_key, load_raw_data, wccount, keywithmaxval
+from tools import file_path, program_path, data_record_path, currentPath
+from tools import sort_dict_by_key, load_raw_data, wccount, keywithmaxval
 from seed_std_compare import seed_std_compare
 from calculate_maf import calculate_maf
 from hifiAccuCheck_v2 import hifiAccuCheck
@@ -20,6 +19,7 @@ from hifiAccuCheck_v2 import hifiAccuCheck
 seed_dict = {}
 geno_dict = {}
 hifi_dict = {}
+
 
 seed_title_info = ""
 seed_file_name = ""
@@ -164,13 +164,13 @@ def seed_spliter(seed_dict, number_of_subfile):
 					random_index = random.randrange(0,(len(seed_hetero_sorted_list)-1))
 				
 				del seed_hetero_sorted_list[random_index]
-				"""
+				
 				random_index = random.randrange(0,(len(seed_hetero_sorted_list)-1))
 				while random_index == (i*file_number+file_number) or random_index == (i*file_number+file_number):
 					random_index = random.randrange(0,(len(seed_hetero_sorted_list)-1))
 				
 				del seed_hetero_sorted_list[random_index]
-				
+				"""
 				random_index = random.randrange(0,(len(seed_hetero_sorted_list)-1))
 				while random_index == (i*file_number+file_number) or random_index == (i*file_number+file_number):
 					random_index = random.randrange(0,(len(seed_hetero_sorted_list)-1))
@@ -234,20 +234,40 @@ def seed_extract(seed_dict):
 			
 	seed_hetero_new_file.close()	
 	print "new seed total number", len(revised_seed_dict)
-	output_revised_seed("haplotype_new.txt", revised_seed_dict)
+	output_revised_seed(revised_seed_dict)
 	return revised_seed_dict
 
 
 def seed_extent(seed_dict, number_of_subfile):
 	print "seed_hetero_dict new", len(seed_hetero_dict)
-	seed_hetero_sorted_list = sort_dict_by_key(seed_hetero_dict) 
+	seed_hetero_sorted_list = [x for x in seed_hetero_dict.iteritems()] 
+	seed_hetero_sorted_list.sort(key=lambda x: x[0]) # sort by key
 	seed_number_ceilling = int(math.ceil(float(len(seed_hetero_sorted_list))/100)*100)
 	#print "seed_hetero_number_ceilling: ", seed_number_ceilling
 	seed_removed_in_each_subfile = seed_number_ceilling/number_of_subfile
 	print "hetero_seed_removed_in_each_subfile: ", seed_removed_in_each_subfile
+	#seed_removed_in_last_subfile = int(math.fmod(len(seed_hetero_sorted_list), seed_removed_in_each_subfile))
+	#print "seed_removed_in_last_subfile: ", seed_removed_in_last_subfile
 		
 	seed_homo_sorted_list = [x for x in seed_homo_dict.iteritems()]
-	
+	"""
+	seed_hetero_pos_list = []
+	j = 0
+	while j < len(seed_hetero_sorted_list):
+		seed_hetero_pos_list.append(seed_hetero_sorted_list[j][0])
+		j += 1
+
+	print "seed_hetero_sorted_list", len(seed_hetero_sorted_list)
+	pos_index = seed_hetero_pos_list.index(pos_deleted)
+	print "pos_index", pos_deleted, pos_index, seed_hetero_pos_list[pos_index], seed_hetero_sorted_list[pos_index][0], seed_hetero_sorted_list[pos_index][1]
+	start_pos = pos_index - 100
+	if start_pos < 0:
+		start_pos = 0
+	end_pos = start_pos + 500
+	print start_pos, end_pos
+	del seed_hetero_sorted_list[pos_index]
+	print "seed_hetero_sorted_list new", len(seed_hetero_sorted_list)
+	"""
 	print "seed_hetero_sorted_list", len(seed_hetero_sorted_list)
 	file_number = 1
 	while file_number <= number_of_subfile:	
@@ -260,12 +280,27 @@ def seed_extent(seed_dict, number_of_subfile):
 		seed_hetero_sorted_list_bkup = copy.deepcopy(seed_hetero_sorted_list)
 		
 		i = 0 
-		while i < int(seed_removed_in_each_subfile):	# remove 5% seed
-			try:		
-				random_index = random.randrange(0,(len(seed_hetero_sorted_list)-1))		
+		while i < int(seed_removed_in_each_subfile):
+			try:
+				del seed_hetero_sorted_list[i*file_number+file_number]
+				del seed_hetero_sorted_list[i*(file_number+1)-file_number]
+				#randomly del the second seed in whole range
+				random_index = random.randrange(0,(len(seed_hetero_sorted_list)-1))
+				while random_index == (i*file_number+file_number) or random_index == (i*file_number+file_number):
+					random_index = random.randrange(0,(len(seed_hetero_sorted_list)-1))
+				
+				del seed_hetero_sorted_list[random_index]
+				
+				random_index = random.randrange(0,(len(seed_hetero_sorted_list)-1))
+				while random_index == (i*file_number+file_number) or random_index == (i*file_number+file_number):
+					random_index = random.randrange(0,(len(seed_hetero_sorted_list)-1))
+				
 				del seed_hetero_sorted_list[random_index]
 				"""
 				random_index = random.randrange(0,(len(seed_hetero_sorted_list)-1))
+				while random_index == (i*file_number+file_number) or random_index == (i*file_number+file_number):
+					random_index = random.randrange(0,(len(seed_hetero_sorted_list)-1))
+				
 				del seed_hetero_sorted_list[random_index]
 				"""
 			except:
@@ -290,85 +325,12 @@ def seed_extent(seed_dict, number_of_subfile):
 		hifi_process.wait()
 		file_number += 1
 
-def seed_add(seed_hetero_dict, revised_seed_dict):
-	#revised_seed_dict = {}
-	recovered_seed_dict = {}
-	removed_seed_dict = {}
-	hifi_dict = {}
-	#hifi_dict = seed_dict.copy()
-	#print "hifi_dict initial", len(hifi_dict)
-	input_subfile_name = "imputed_haplotype_new.txt"
-	hifi_dict = load_hifi_result(input_subfile_name, hifi_dict)
-	for position, seed in seed_hetero_dict.iteritems():
-		if position not in revised_seed_dict:
-			removed_seed_dict[position] = seed
-	print len(removed_seed_dict)
-	for position, seed in removed_seed_dict.iteritems():
-		recovered_seed_dict[position] = hifi_dict[position]
-	
-	"""
-	
-	seed_sorted_list = sort_dict_by_key(seed_dict)
-	hifi_sorted_list = sort_dict_by_key(hifi_dict)
-	
-	hifi_sorted_pos_list = []
-	j = 0
-	while j < len(hifi_sorted_list):
-		hifi_sorted_pos_list.append(hifi_sorted_list[j][0])
-		j += 1
-	print
-	print "hifi_sorted_pos_list", len(hifi_sorted_pos_list)
-	for snp in seed_sorted_list:
-		position = snp[0]
-		#print position
-		pos_index = hifi_sorted_pos_list.index(position)
-		for new_pos in [(pos_index-1),(pos_index+1)]:
-			if new_pos < len(hifi_sorted_list):
-				seed = hifi_sorted_list[new_pos][1]
-				max_base = keywithmaxval(seed.allele_dict)
-				max_value = seed.allele_dict[max_base]
-				seed.allele_new_percentage = float(max_value)/float(number_of_subfile)
-				if seed.allele_new_percentage*100 == 100 and position in seed_dict:
-					seed.allele_new = max_base
-					revised_seed_dict[position] = seed
-	
-	
-		
-	seed_hetero_new_file = open(currentPath + "hetero.txt", "w")
-	print >> seed_hetero_new_file, "rsID \t pos \t std_F \t std_M \t seed_ori \t seed_new \t seed_new_perc"
-
-	hifi_sorted_list = sort_dict_by_key(hifi_dict) 
-	for snp in hifi_sorted_list:
-		position = snp[0]
-		seed = snp[1]
-		max_base = keywithmaxval(seed.allele_dict)
-		max_value = seed.allele_dict[max_base]
-		seed.allele_new_percentage = float(max_value)/float(number_of_subfile)
-		if seed.allele_new_percentage*100 == 100 and position in seed_dict:
-			seed.allele_new = max_base
-			revised_seed_dict[position] = seed
-		if position in seed_hetero_dict and seed.allele_ori != max_base and seed.allele_new_percentage*100 >= 80:
-			hap_std = hap_std_dict[position]
-			allele_dict = hifi_dict[position].allele_dict
-			line = seed.rsID + "\t" + str(seed.position) + "\t" + hap_std[2] + "\t" + \
-					hap_std[3] + "\t" + seed.allele_ori + "\t" + max_base + "\t" + str(seed.allele_new_percentage) + "\t" + str(allele_dict['A']+allele_dict['T']+allele_dict['C']+allele_dict['G'])
-			print >> seed_hetero_new_file, line		
-		if position == pos_deleted:
-			print hifi_dict[position].allele_dict
-			
-	seed_hetero_new_file.close()	
-	"""
-	print "new seed total number", len(recovered_seed_dict)
-	output_revised_seed("haplotype_recoved.txt", recovered_seed_dict)
-	return recovered_seed_dict
 
 
-def output_revised_seed(filename, revised_seed_dict):
-	seed_new_file = open(currentPath + filename, "w")
+def output_revised_seed(revised_seed_dict):
+	seed_new_file = open(currentPath + "haplotype_new.txt", "w")
 	print >> seed_new_file, seed_title_info
-	revised_seed_sorted_list = sort_dict_by_key(revised_seed_dict) 	# need to sort the snps by position
-	for snp in revised_seed_sorted_list:
-		seed = snp[1]
+	for position, seed in revised_seed_dict.iteritems():
 		line = seed.rsID + "\t" + str(seed.position) + "\t" + seed.allele_new
 		print >> seed_new_file, line
 	seed_new_file.close()
@@ -447,26 +409,20 @@ def seed_correction(seed_file, chr_name, mode):
 		seed_spliter(seed_dict, number_of_subfile)
 		seed_extract(seed_dict)
 		seed_std_compare("haplotype_new.txt", chr_name)
-	elif mode == "extent":
-		seed_extent(seed_dict, number_of_subfile)
-		seed_add(seed_dict)
-		seed_std_compare("haplotype_new.txt", chr_name)
-	elif mode == "add":
-		revised_seed_dict = seed_extract(seed_dict)
-		seed_add(seed_hetero_dict, revised_seed_dict)
-		seed_std_compare("haplotype_recoved.txt", chr_name)
+	elif mode == None:
+		pass
 	else:
 		revised_seed_dict = seed_extract(seed_dict)
 		same_to_B_dict = seed_std_compare("haplotype_new.txt", chr_name)
 		print same_to_B_dict
 		file_name = "refHaplos.txt"
-		"""
+		
 		hifiAccuCheck("imputed_haplotype_1.txt", chr_name)
-		for position, seed in same_to_B_dict.iteritems():
-			calculate_maf(file_name, position)	
-		error_seed_distance(seed_dict, same_to_B_dict)
-		error_seed_distance(seed_hetero_dict, same_to_B_dict)
-		"""
+		#for position, seed in same_to_B_dict.iteritems():
+		#	calculate_maf(file_name, position)	
+		#error_seed_distance(seed_dict, same_to_B_dict)
+		#error_seed_distance(seed_hetero_dict, same_to_B_dict)
+		
 		
 		
 		
@@ -479,7 +435,11 @@ def seed_correction(seed_file, chr_name, mode):
 	os.system("mkdir -p new")
 	os.system("cp haplotype_new* imputed_haplotype_* new")
 	os.system("mv haplotype_new.txt haplotype.txt")
-"""	
+"""
+
+#def seed_extent():
+	
+
 
 
 if __name__=='__main__':
@@ -487,15 +447,11 @@ if __name__=='__main__':
 	seed_file = options.seedFile
 	chr_name = options.chrName
 	mode = options.mode	
-	seed_correction(seed_file, chr_name, mode)
-	"""
-	for i in range (0,2):
+	for i in range (0,5):
 		seed_correction(seed_file, chr_name, mode)
 		os.system("mkdir -p " + str(i))
-		os.system("mv haplotype_new* imputed_haplotype_* haplotype_?.txt haplotype_10.txt " + str(i))
+		os.system("cp haplotype_new* imputed_haplotype_* " + str(i))
 		os.system("mv haplotype_new.txt haplotype.txt")
-	"""
-		
 
 
 

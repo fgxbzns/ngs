@@ -6,12 +6,26 @@
 # June 22, 2013, added purity. >= 0.90 max_value will be kept as seed. A. B, X, homo will be kept as seeds.
 # quality score check. ord('!')-33 > 13
 
-import os, glob, subprocess, random, operator, time, sys
+import os, glob, subprocess, random, operator, time
 from optparse import OptionParser
 
-from tools import file_path, program_path, data_record_path, currentPath
-from tools import sort_dict_by_key, load_raw_data, removeN, keywithmaxval
+program_path = "/home/guoxing/tool/morehouse"
+file_path = "/home/guoxing/disk2/solid/common_files/"
 
+currentPath = os.getcwd() + '/'
+
+quality_score_dict = { '!':0, '\"':1, '#':2, '$':3, '%':4, '&':5, '\'':6, '(':7, 
+					')':8, '*':9, '+':10, ',':11, '-':12, '.':13 }
+
+
+def getTotalBaseNum(fileName):
+	totalBase = 0
+	f = open(currentPath+fileName, "r")
+	for line in f:
+		if not line.startswith('>'):
+			totalBase += len(line.strip())
+	return totalBase
+	f.close()
 
 # A from Father, B from Mother
 class snp:
@@ -34,31 +48,36 @@ class read:
 		me.quality_score_sequence = quality_score_sequence
 		me.read_length = read_length
 		me.covered_snp = covered_snp
-
+	
+def keywithmaxval(dict):
+     """ a) create a list of the dict's keys and values; 
+         b) return the key with the max value """  
+     v=list(dict.values())
+     k=list(dict.keys())
+     return k[v.index(max(v))]
 
 # start time
 start = time.time()		
 		
-def get_args():
-	desc="variation call"
-	usage = "snpPick_solid -i haplotypeFile -c chr#" 
-	parser = OptionParser(usage = usage)
-	parser.add_option("-i", "--haplotype", type="string", dest="haplotypeFile",help = "Input File Name", default="null")
-	parser.add_option("-s", "--sam", type="string", dest="samFile",help = "Input File Name", default="null")
-	parser.add_option("-d", "--threshold", type="string", dest="threshold",help = "Input the depth threshold", default="3")
-	parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="chr11")
-	(options, args) = parser.parse_args()
-	if options.chrName == "null" or options.samFile == "null":
-		print "parameters missing..."
-		print usage
-		sys.exit(1)
-	return options
+# Reading options
+usage = "usage: %prog [options] arg1" 
+parser = OptionParser(usage = usage) 
+parser.add_option("-i", "--haplotype", type="string", dest="haplotypeFile",help = "Input File Name", default="null")
+parser.add_option("-s", "--sam", type="string", dest="samFile",help = "Input File Name", default="null")
+parser.add_option("-d", "--threshold", type="string", dest="threshold",help = "Input the depth threshold", default="3")
+parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="chr11")
 
-options = get_args()
+
+
+(options, args) = parser.parse_args()
+
 haplotype_file = options.haplotypeFile
 sam_file = options.samFile
 depth_threshold = int(options.threshold)
 chr_name = options.chrName
+
+#if haplotype_file == "null":
+	#print "Please input the haplotype file name"
 
 #haplotype_file = "NA12878_hap_new_refed.txt"	# simulation data chr6
 #haplotype_file = "ASW_chr11_child_hap_refed.txt"	# solid song_5_2 chr11
@@ -69,9 +88,8 @@ genotype_file = "genotype_NA10847_"+chr_name+".txt"	# for all
 
 if sam_file == "null":
 	print "Please input the sam file name"
-if haplotype_file == "null":
-	print "Please input the haplotype file name"
 	
+
 sam_file_name = sam_file[:(len(sam_file)-4)] + "_" + str(depth_threshold)
 
 print "haplotype file: ", haplotype_file

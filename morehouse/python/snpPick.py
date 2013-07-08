@@ -14,14 +14,6 @@ currentPath = os.getcwd() + '/'
 quality_score_dict = { '!':0, '\"':1, '#':2, '$':3, '%':4, '&':5, '\'':6, '(':7, 
 					')':8, '*':9, '+':10, ',':11, '-':12, '.':13 }
 
-def getTotalBaseNum(fileName):
-	totalBase = 0
-	f = open(currentPath+fileName, "r")
-	for line in f:
-		if not line.startswith('>'):
-			totalBase += len(line.strip())
-	return totalBase
-	f.close()
 
 # A from Father, B from Mother
 class snp:
