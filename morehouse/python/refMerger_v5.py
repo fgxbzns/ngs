@@ -83,7 +83,6 @@ snp_sorted_list.sort(key=lambda x: x[0]) # sort by key
 
 # keep only the snps that are available in ref data
 #genotype_input_file_name = "genotype_NA12878_chr6.txt"	# for simulation data
-#genotype_input_file_name = "genotype_NA10847_chr11.txt"	# for solid song_5_2 chr11
 genotype_input_file_name = "genotype_NA10847_"+chr_name+".txt"	
 #genotype_input_file_name = "genotype_NA12878_"+chr_name+".txt"	
 
