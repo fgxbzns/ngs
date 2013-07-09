@@ -238,17 +238,22 @@ def seed_extract(seed_dict):
 	return revised_seed_dict
 
 
-def seed_extent(seed_dict, number_of_subfile):
-	print "seed_hetero_dict new", len(seed_hetero_dict)
-	seed_hetero_sorted_list = sort_dict_by_key(seed_hetero_dict) 
-	seed_number_ceilling = int(math.ceil(float(len(seed_hetero_sorted_list))/100)*100)
-	#print "seed_hetero_number_ceilling: ", seed_number_ceilling
-	seed_removed_in_each_subfile = seed_number_ceilling/number_of_subfile
-	print "hetero_seed_removed_in_each_subfile: ", seed_removed_in_each_subfile
-		
+def seed_extent(seed_dict, revised_seed_dict, number_of_subfile):
+	removed_seed_dict = {}
+	for position, seed in seed_hetero_dict.iteritems():
+		if position not in revised_seed_dict:
+			removed_seed_dict[position] = seed
+	print "removed_seed_dict", len(removed_seed_dict)
+	seed_number_ceilling = int(math.ceil(float(len(removed_seed_dict))/100)*100)
+	seed_added_in_each_subfile = seed_number_ceilling/number_of_subfile
+	print "hetero_seed_added_in_each_subfile: ", seed_added_in_each_subfile
+	
+	revised_seed_list = sort_dict_by_key(revised_seed_dict)
+	removed_seed_list = sort_dict_by_key(removed_seed_dict)
+	
 	seed_homo_sorted_list = [x for x in seed_homo_dict.iteritems()]
 	
-	print "seed_hetero_sorted_list", len(seed_hetero_sorted_list)
+	print "revised_seed_dict", len(revised_seed_dict)
 	file_number = 1
 	while file_number <= number_of_subfile:	
 		output_subfile_name = seed_file_name + "_" + str(file_number) + ".txt"
@@ -260,14 +265,13 @@ def seed_extent(seed_dict, number_of_subfile):
 		seed_hetero_sorted_list_bkup = copy.deepcopy(seed_hetero_sorted_list)
 		
 		i = 0 
-		while i < int(seed_removed_in_each_subfile):	# remove 5% seed
-			try:		
-				random_index = random.randrange(0,(len(seed_hetero_sorted_list)-1))		
-				del seed_hetero_sorted_list[random_index]
-				"""
-				random_index = random.randrange(0,(len(seed_hetero_sorted_list)-1))
-				del seed_hetero_sorted_list[random_index]
-				"""
+		while i < int(seed_added_in_each_subfile):	# remove 5% seed
+			try:
+				index = i*file_number+file_number
+				position = removed_seed_list[index][0]
+				if position not in revised_seed_dict:
+					revised_seed_dict[position] = removed_seed_list[index][1]
+				
 			except:
 				pass
 			i += 1
