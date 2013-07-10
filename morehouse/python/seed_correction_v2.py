@@ -58,6 +58,7 @@ def load_seed_data(file_name):
 		seed.rsID = elements[0].strip()
 		seed.position = int(elements[1].strip())
 		seed.allele_ori = elements[2].strip()
+		seed.allele_new = elements[2].strip()
 		seed_dict[position] = seed
 	return (seed_title_info, seed_dict)
 
@@ -65,7 +66,8 @@ def load_hap_std(file_name):
 	hap_std_dict = {}
 	data_dict = load_raw_data(file_name)[1]
 	for position, elements in data_dict.iteritems():
-		if elements[2].strip() != "N" and elements[3].strip() != "N":
+		""" ??? N X """
+		if elements[2].strip() != "N" and elements[3].strip() != "N": 
 			try:
 				position = elements[1].strip()
 				position = int(position)
@@ -220,7 +222,8 @@ def seed_extract(seed_dict):
 		max_base = keywithmaxval(seed.allele_dict)
 		max_value = seed.allele_dict[max_base]
 		seed.allele_new_percentage = float(max_value)/float(number_of_subfile)
-		if seed.allele_new_percentage*100 >= 100 and seed.allele_new == seed.allele_ori and position in seed_dict:
+		""" ??? """
+		if seed.allele_new_percentage*100 >= 100 and max_base == seed.allele_ori and position in seed_dict:
 			seed.allele_new = max_base
 			revised_seed_dict[position] = seed
 		if position in seed_hetero_dict and seed.allele_ori != max_base and seed.allele_new_percentage*100 >= 80:
@@ -237,18 +240,14 @@ def seed_extract(seed_dict):
 	output_revised_seed("haplotype_new.txt", revised_seed_dict)
 	return revised_seed_dict
 
-
-def seed_extent(seed_dict, revised_seed_dict, number_of_subfile):
-	removed_seed_dict = {}
-	for position, seed in seed_hetero_dict.iteritems():
-		if position not in revised_seed_dict:
-			removed_seed_dict[position] = seed
+def seed_expand(seed_dict, revised_seed_dict, number_of_subfile):
+	removed_seed_dict = dict_substract(seed_hetero_dict, revised_seed_dict)
+	
 	print "removed_seed_dict", len(removed_seed_dict)
 	seed_number_ceilling = int(math.ceil(float(len(removed_seed_dict))/100)*100)
 	seed_added_in_each_subfile = seed_number_ceilling/number_of_subfile
 	print "hetero_seed_added_in_each_subfile: ", seed_added_in_each_subfile
-	
-	revised_seed_list = sort_dict_by_key(revised_seed_dict)
+		
 	removed_seed_list = sort_dict_by_key(removed_seed_dict)
 	
 	seed_homo_sorted_list = [x for x in seed_homo_dict.iteritems()]
@@ -260,10 +259,7 @@ def seed_extent(seed_dict, revised_seed_dict, number_of_subfile):
 		#print "output: ", output_subfile_name
 		output_subfile = open(currentPath + output_subfile_name, "w")
 		print >> output_subfile, seed_title_info
-
-		#sub_seed_list.append(seed_hetero_sorted_list[-1])	
-		seed_hetero_sorted_list_bkup = copy.deepcopy(seed_hetero_sorted_list)
-		
+		revised_seed_dict_bkup = copy.deepcopy(revised_seed_dict)	
 		i = 0 
 		while i < int(seed_added_in_each_subfile):	# remove 5% seed
 			try:
@@ -271,20 +267,21 @@ def seed_extent(seed_dict, revised_seed_dict, number_of_subfile):
 				position = removed_seed_list[index][0]
 				if position not in revised_seed_dict:
 					revised_seed_dict[position] = removed_seed_list[index][1]
-				
+				else:
+					print "seed already in new seed dict"				
 			except:
 				pass
 			i += 1
 
-		print "seed_hetero_sorted_list new", len(seed_hetero_sorted_list)
-		sub_seed_list = seed_hetero_sorted_list + seed_homo_sorted_list	# add the homo snps to seed
-		sub_seed_list.sort(key=lambda x: x[0]) # sort by key
-		print len(sub_seed_list)
-		for seed in sub_seed_list:
+		print "revised_seed_dict new", len(revised_seed_dict)
+	
+		revised_seed_list = sort_dict_by_key(revised_seed_dict)
+		
+		for seed in revised_seed_list:
 			line = seed[1].rsID + "\t" + str(seed[1].position) + "\t" + seed[1].allele_ori
 			print >> output_subfile, line	
 		output_subfile.close()
-		seed_hetero_sorted_list = copy.deepcopy(seed_hetero_sorted_list_bkup)
+		revised_seed_dict = copy.deepcopy(revised_seed_dict_bkup)
 		
 		if file_number < (number_of_subfile-1):
 			hifi = program_path + "hifi_fu " + output_subfile_name + " &"
@@ -297,10 +294,12 @@ def seed_extent(seed_dict, revised_seed_dict, number_of_subfile):
 def seed_add(seed_hetero_dict, revised_seed_dict):
 	#revised_seed_dict = {}
 	recovered_seed_dict = {}
-	removed_seed_dict = {}
+	removed_seed_dict = dict_substract(seed_hetero_dict, revised_seed_dict)
 	hifi_dict = {}
 	#hifi_dict = seed_dict.copy()
 	#print "hifi_dict initial", len(hifi_dict)
+	"""
+	# single run check difference
 	input_subfile_name = "imputed_haplotype_new.txt"
 	hifi_dict = load_hifi_result(input_subfile_name, hifi_dict)
 	for position, seed in seed_hetero_dict.iteritems():
@@ -309,7 +308,29 @@ def seed_add(seed_hetero_dict, revised_seed_dict):
 	print len(removed_seed_dict)
 	for position, seed in removed_seed_dict.iteritems():
 		recovered_seed_dict[position] = hifi_dict[position]
+	"""
 	
+	
+	file_number = 1
+	while file_number <= number_of_subfile:	
+		input_subfile_name = "imputed_haplotype_ori_" + str(file_number) + ".txt"
+		hifi_dict = load_hifi_result(input_subfile_name, hifi_dict)
+		file_number += 1
+	print "hifi_dict size: ", len(hifi_dict)
+	a = 0
+	for position, snp in removed_seed_dict.iteritems():
+		if position in hifi_dict:
+			seed = hifi_dict[position]
+			max_base = keywithmaxval(seed.allele_dict)
+			a += 1
+			max_value = seed.allele_dict[max_base]
+			seed.allele_new_percentage = float(max_value)/float(number_of_subfile)
+			if seed.allele_new_percentage*100 >= 80 and max_base == seed_hetero_dict[position].allele_ori:
+				seed.allele_new = max_base
+				recovered_seed_dict[position] = seed
+	
+	revised_seed_dict = dict_add(revised_seed_dict, recovered_seed_dict)
+		
 	"""
 	
 	seed_sorted_list = sort_dict_by_key(seed_dict)
@@ -364,6 +385,7 @@ def seed_add(seed_hetero_dict, revised_seed_dict):
 	"""
 	print "new seed total number", len(recovered_seed_dict)
 	output_revised_seed("haplotype_recoved.txt", recovered_seed_dict)
+	output_revised_seed("haplotype_new.txt", revised_seed_dict)
 	return recovered_seed_dict
 
 
@@ -452,13 +474,16 @@ def seed_correction(seed_file, chr_name, mode):
 		seed_extract(seed_dict)
 		seed_std_compare("haplotype_new.txt", chr_name)
 	elif mode == "extent":
-		seed_extent(seed_dict, number_of_subfile)
-		seed_add(seed_dict)
+		#revised_seed_dict = seed_extract(seed_dict)
+		revised_seed_dict = load_seed_data("haplotype_new.txt")[1]
+		seed_expand(seed_dict, revised_seed_dict, number_of_subfile)
+		seed_add(seed_hetero_dict, revised_seed_dict)
 		seed_std_compare("haplotype_new.txt", chr_name)
 	elif mode == "add":
-		revised_seed_dict = seed_extract(seed_dict)
+		#revised_seed_dict = seed_extract(seed_dict)
+		revised_seed_dict = load_seed_data("haplotype_new.txt")[1]
 		seed_add(seed_hetero_dict, revised_seed_dict)
-		seed_std_compare("haplotype_recoved.txt", chr_name)
+		seed_std_compare("haplotype_new.txt", chr_name)
 	else:
 		revised_seed_dict = seed_extract(seed_dict)
 		same_to_B_dict = seed_std_compare("haplotype_new.txt", chr_name)
@@ -491,14 +516,21 @@ if __name__=='__main__':
 	seed_file = options.seedFile
 	chr_name = options.chrName
 	mode = options.mode	
-	seed_correction(seed_file, chr_name, mode)
+	#seed_correction(seed_file, chr_name, mode)
 	"""
+	# for removing error seed
 	for i in range (0,2):
 		seed_correction(seed_file, chr_name, mode)
 		os.system("mkdir -p " + str(i))
 		os.system("mv haplotype_new* imputed_haplotype_* haplotype_?.txt haplotype_10.txt " + str(i))
 		os.system("mv haplotype_new.txt haplotype.txt")
 	"""
+	# for adding new seed
+	for i in range (3,10):
+		seed_correction(seed_file, chr_name, mode)
+		os.system("mkdir -p " + str(i))
+		os.system("cp haplotype_new* imputed_haplotype_* haplotype_ori_?.txt haplotype_ori_10.txt haplotype_recoved.txt " + str(i))
+		#os.system("cp haplotype_recoved.txt haplotype_new.txt")
 		
 
 

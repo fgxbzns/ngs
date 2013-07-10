@@ -49,6 +49,19 @@ def list_to_line(list):
 		line += a + "\t"
 	return line
 
+def dict_substract(seed_hetero_dict, revised_seed_dict):
+	removed_seed_dict = {}
+	for position, seed in seed_hetero_dict.iteritems():
+		if position not in revised_seed_dict:
+			removed_seed_dict[position] = seed
+	return removed_seed_dict
+
+def dict_add(revised_seed_dict, recovered_seed_dict):
+	for position, seed in recovered_seed_dict.iteritems():
+		if position not in revised_seed_dict:
+			revised_seed_dict[position] = seed
+	return revised_seed_dict
+
 def sort_dict_by_key(input_dict):
 	sorted_list = []
 	sorted_list = [x for x in input_dict.iteritems()] 

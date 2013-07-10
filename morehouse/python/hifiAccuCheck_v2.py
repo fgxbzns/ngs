@@ -38,12 +38,13 @@ def allele_similarity(hifi_result_dict, hifi_std_dict):
 			elements_std = hifi_std_dict[position]
 			std_A = elements_std[2].strip()
 			std_B = elements_std[3].strip()
-			if hifi_A == std_A:
-				same_to_A += 1
-			if hifi_A == std_B:
-				same_to_B += 1
-	print "similarity, same_to_A", same_to_A
-	print "similarity, same_to_B", same_to_B
+			if hifi_A != hifi_B:
+				if hifi_A == std_A:
+					same_to_A += 1
+				if hifi_A == std_B:
+					same_to_B += 1
+	#print "similarity, same_to_A", same_to_A
+	#print "similarity, same_to_B", same_to_B
 	if same_to_A >= same_to_B:
 		return "similar_to_A"
 	else:

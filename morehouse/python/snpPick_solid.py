@@ -9,35 +9,30 @@
 import os, glob, subprocess, random, operator, time, sys
 from optparse import OptionParser
 
-from tools import file_path, program_path, data_record_path, currentPath
-from tools import sort_dict_by_key, load_raw_data, removeN, keywithmaxval
+from tools import *
 
 
 # A from Father, B from Mother
-class snp:
-	def __init__(me, rsID, position, A, B, covered_reads_list, allele_dict):
-		me.rsID = rsID
-		me.position = position
-		me.A = A
-		me.B = B
-		me.covered_reads_list = covered_reads_list
-		me.allele_dict = allele_dict
+class snps:
+	def __init__(self):
+		self.rsID = ""
+		self.position = 0
+		self.A = ""
+		self.B = ""
+		self.covered_reads_list = []
+		self.allele_dict = {'A':0, 'T':0, 'C':0, 'G':0}
 
 # class to store reads from sam file
 class read:
-	def __init__(me, qName, flag, rName, start_position, read_sequence, quality_score_sequence, read_length, covered_snp):
-		me.qName = qName
-		me.flag = flag
-		me.rName = rName
-		me.start_position = start_position
-		me.read_sequence = read_sequence
-		me.quality_score_sequence = quality_score_sequence
-		me.read_length = read_length
-		me.covered_snp = covered_snp
-
-
-# start time
-start = time.time()		
+	def __init__(self, qName, flag, rName, start_position, read_sequence, quality_score_sequence, read_length, covered_snp):
+		self.qName = qName
+		self.flag = flag
+		self.rName = rName
+		self.start_position = start_position
+		self.read_sequence = read_sequence
+		self.quality_score_sequence = quality_score_sequence
+		self.read_length = read_length
+		self.covered_snp = covered_snp
 		
 def get_args():
 	desc="variation call"
@@ -54,6 +49,27 @@ def get_args():
 		sys.exit(1)
 	return options
 
+def load_hap_std(file_name):
+	hap_std_dict = {}
+	title_haplotype = load_raw_data(file_name)[0]
+	data_dict = load_raw_data(file_name)[1]
+	for position, elements in data_dict.iteritems():
+		if True:
+			try:
+				snp = snps()
+				snp.rsID = elements[0]
+				snp.position = int(position)
+				snp.A = elements[2].strip()
+				snp.B = elements[3].strip()
+				hap_std_dict[position] = snp
+			except ValueError:
+				print "error in ", file_name, position
+	return (title_haplotype, hap_std_dict)	
+
+
+# start time
+start = time.time()		
+
 options = get_args()
 haplotype_file = options.haplotypeFile
 sam_file = options.samFile
@@ -61,10 +77,8 @@ depth_threshold = int(options.threshold)
 chr_name = options.chrName
 
 #haplotype_file = "NA12878_hap_new_refed.txt"	# simulation data chr6
-#haplotype_file = "ASW_chr11_child_hap_refed.txt"	# solid song_5_2 chr11
 haplotype_file = "ASW_"+chr_name+"_child_hap_refed.txt"	# for all
 
-#genotype_file = "genotype_NA10847_chr11.txt"	# solid song_5_2 chr11
 genotype_file = "genotype_NA10847_"+chr_name+".txt"	# for all
 
 if sam_file == "null":
@@ -75,14 +89,10 @@ if haplotype_file == "null":
 sam_file_name = sam_file[:(len(sam_file)-4)] + "_" + str(depth_threshold)
 
 print "haplotype file: ", haplotype_file
-print "genotype_file file: ", genotype_file
+print "genotype_file : ", genotype_file
 print "sam file: ", sam_file_name
 
 
-sam_path = currentPath
-
-inputFile_hap = open(file_path + haplotype_file, "r")
-inputFile_geno = open(file_path + genotype_file, "r")
 inputFile_sam = open(currentPath + sam_file, "r")
 
 outputFile_reads = open(currentPath + sam_file_name + "_reads.txt", "w")
@@ -94,37 +104,15 @@ outputFile_allele.write("Chromosome \t position \t Total Depth \t A_depth \t T_d
 data_record_file_name = sam_file_name + "_data_record.txt"
 data_record_file = open(currentPath + data_record_file_name, "w")
 
-# get haplotype info
-snp_dict={}
-title_haplotype = ""
 
-for line in inputFile_hap:
-	if line.startswith("rsID"):
-		title_haplotype = line.strip()
-	if not line.startswith("rsID"):
-		elements = line.strip().split()
-		rsID = elements[0].strip()
-		position = int(elements[1].strip())
-		A = elements[2].strip()
-		B = elements[3].strip()
-		covered_reads_list = []
-		allele_dict = {'A':0, 'T':0, 'C':0, 'G':0}
-		snp_dict[position] = snp(rsID, position, A, B, covered_reads_list, allele_dict)
 
-inputFile_hap.close()
+hap_std_tuple = load_hap_std(file_path + haplotype_file)
+title_haplotype = hap_std_tuple[0]
+snp_dict = hap_std_tuple[1]
 
-# get genotype info
-geno_dict = {}
+genotype_file = "genotype_NA10847_"+chr_name+".txt"	# for all
+geno_dict = load_raw_data(file_path + genotype_file)[1]
 
-for line in inputFile_geno:
-	if not line.startswith("rsID"):
-		elements = line.strip().split()
-		#rsID = elements[0].strip()
-		position = int(elements[1].strip())
-		alleles = elements[2].strip()
-		geno_dict[position] = alleles
-
-inputFile_geno.close()
 
 reads_list=[]
 insert_size = 0
@@ -197,6 +185,8 @@ print "total_reads_num", total_reads_num
 
 snp_sorted_list = [x for x in snp_dict.iteritems()] 
 snp_sorted_list.sort(key=lambda x: x[0]) # sort by key
+
+print "snp_sorted_list", len(snp_sorted_list)
 
 # output origial haplotype homo and hete alleles
 """
@@ -362,7 +352,7 @@ for snp_data in snp_sorted_list:
 		if pure and max_value > depth_threshold:
 			pure_total += 1
 			# check genotype to remove called base that does not in genotype
-			if max_base in geno_dict[snp.position]:	
+			if max_base in geno_dict[snp.position][2]:	
 				hifi_seed += 1	
 				hifi_pure_file.write(snp.rsID + "\t" + str(snp.position) + "\t" + max_base + "\n")	
 				
@@ -420,7 +410,7 @@ for snp_data in snp_sorted_list:
 			else:	# not in genotype, sequencing error???
 				not_in_genotype += 1
 				
-				not_in_genotype_file.write(snp.rsID + "\t" + str(snp.position) + "\t" + snp.A + "\t"+ snp.B + "\t" + max_base + "\t" + str(max_value) + "\t" + geno_dict[snp.position] + "\n")
+				not_in_genotype_file.write(snp.rsID + "\t" + str(snp.position) + "\t" + snp.A + "\t"+ snp.B + "\t" + max_base + "\t" + str(max_value) + "\t" + geno_dict[snp.position][2] + "\n")
 				if max_value not in not_in_genotype_dict:
 					not_in_genotype_dict[max_value] = 1
 				else:
@@ -507,7 +497,7 @@ hifi_pure_corrected_with_homo_file.write(title_haplotype + "\n")
 
 for geno_data in geno_sorted_list:
 	position = geno_data[0]
-	geno = geno_data[1]
+	geno = geno_data[1][2]
 	if geno[0] == geno[1]:
 		hifi_pure_corrected_with_homo_file.write("rs_g_homo" + "\t" + str(position) + "\t" + geno[0] + "\n")	
 	elif position in snp_dict:
