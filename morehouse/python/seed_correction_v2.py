@@ -237,10 +237,10 @@ def seed_extract(seed_dict):
 			
 	seed_hetero_new_file.close()	
 	print "new seed total number", len(revised_seed_dict)
-	output_revised_seed("haplotype_new.txt", revised_seed_dict)
+	output_revised_seed("haplotype.txt", revised_seed_dict)
 	return revised_seed_dict
 
-def seed_expand(seed_dict, revised_seed_dict, number_of_subfile):
+def seed_recover(seed_dict, revised_seed_dict, number_of_subfile):
 	removed_seed_dict = dict_substract(seed_hetero_dict, revised_seed_dict)
 	
 	print "removed_seed_dict", len(removed_seed_dict)
@@ -268,7 +268,16 @@ def seed_expand(seed_dict, revised_seed_dict, number_of_subfile):
 				if position not in revised_seed_dict:
 					revised_seed_dict[position] = removed_seed_list[index][1]
 				else:
-					print "seed already in new seed dict"				
+					print "seed already in new seed dict"
+				
+				random_pos = random.randrange(0,file_number)
+				while random_pos == position:
+					random_pos = random.randrange(0,file_number)
+				if random_pos not in revised_seed_dict:
+					revised_seed_dict[random_pos] = removed_seed_dict[random_pos]
+				else:
+					print "seed already in new seed dict"
+								
 			except:
 				pass
 			i += 1
@@ -389,6 +398,37 @@ def seed_add(seed_hetero_dict, revised_seed_dict):
 	return recovered_seed_dict
 
 
+
+def seed_expand(seed_file):
+	expanded_seed_dict = {}
+	hifi_dict = {}
+	revised_seed_dict = load_seed_data(seed_file)[1]
+	
+	hifi = program_path + "hifi_fu_qs " + seed_file + ""
+	hifi_process = subprocess.Popen(hifi, shell=True)
+	hifi_process.wait()
+	
+	hifi_file = "imputed_" + seed_file
+	hifi_dict = load_hifi_result(hifi_file, hifi_dict)
+	hifi_dict = dict_substract(hifi_dict, revised_seed_dict)
+	print "hifi_dict: ", len(hifi_dict)
+	
+	qscore_file = "qscore_" + seed_file
+	qscore_dict = load_raw_data(qscore_file)[1]
+	qscore_dict = dict_substract(qscore_dict, revised_seed_dict)
+	print "qscore_dict: ", len(qscore_dict)
+	
+	for position, seed in hifi_dict.iteritems():
+		if float(qscore_dict[position][3]) >= 0.90:
+			expanded_seed_dict[position] = seed
+	
+	revised_seed_dict = dict_add(revised_seed_dict, expanded_seed_dict)
+	
+	print "new seed total number", len(expanded_seed_dict)
+	output_revised_seed("haplotype_expanded.txt", expanded_seed_dict)
+	output_revised_seed("haplotype.txt", revised_seed_dict)
+	return revised_seed_dict
+
 def output_revised_seed(filename, revised_seed_dict):
 	seed_new_file = open(currentPath + filename, "w")
 	print >> seed_new_file, seed_title_info
@@ -473,10 +513,10 @@ def seed_correction(seed_file, chr_name, mode):
 		seed_spliter(seed_dict, number_of_subfile)
 		seed_extract(seed_dict)
 		seed_std_compare("haplotype_new.txt", chr_name)
-	elif mode == "extent":
+	elif mode == "recover":
 		#revised_seed_dict = seed_extract(seed_dict)
 		revised_seed_dict = load_seed_data("haplotype_new.txt")[1]
-		seed_expand(seed_dict, revised_seed_dict, number_of_subfile)
+		seed_recover(seed_dict, revised_seed_dict, number_of_subfile)
 		seed_add(seed_hetero_dict, revised_seed_dict)
 		seed_std_compare("haplotype_new.txt", chr_name)
 	elif mode == "add":
@@ -484,6 +524,26 @@ def seed_correction(seed_file, chr_name, mode):
 		revised_seed_dict = load_seed_data("haplotype_new.txt")[1]
 		seed_add(seed_hetero_dict, revised_seed_dict)
 		seed_std_compare("haplotype_new.txt", chr_name)
+	elif mode == "expand":
+		seed_expand(seed_file)
+		seed_std_compare("haplotype.txt", chr_name)
+		"""
+		seed_tuple = load_seed_data(seed_file)
+		seed_title_info = seed_tuple[0]
+		seed_dict = seed_tuple[1]
+
+		seed_spliter(seed_dict, number_of_subfile)
+		seed_extract(seed_dict)
+		seed_std_compare("haplotype.txt", chr_name)
+		
+		seed_tuple = load_seed_data(seed_file)
+		seed_title_info = seed_tuple[0]
+		seed_dict = seed_tuple[1]
+
+		seed_spliter(seed_dict, number_of_subfile)
+		seed_extract(seed_dict)
+		seed_std_compare("haplotype.txt", chr_name)
+		"""
 	else:
 		revised_seed_dict = seed_extract(seed_dict)
 		same_to_B_dict = seed_std_compare("haplotype_new.txt", chr_name)
@@ -525,13 +585,15 @@ if __name__=='__main__':
 		os.system("mv haplotype_new* imputed_haplotype_* haplotype_?.txt haplotype_10.txt " + str(i))
 		os.system("mv haplotype_new.txt haplotype.txt")
 	"""
+	"""
 	# for adding new seed
-	for i in range (3,10):
+	for i in range (0,4):
 		seed_correction(seed_file, chr_name, mode)
 		os.system("mkdir -p " + str(i))
 		os.system("cp haplotype_new* imputed_haplotype_* haplotype_ori_?.txt haplotype_ori_10.txt haplotype_recoved.txt " + str(i))
 		#os.system("cp haplotype_recoved.txt haplotype_new.txt")
-		
-
+	"""	
+	for i in range (0,2):
+		seed_correction(seed_file, chr_name, mode)
 
 

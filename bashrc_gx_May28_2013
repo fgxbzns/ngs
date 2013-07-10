@@ -134,6 +134,7 @@ alias makeGenoHap='$morehousePath/makeGenoHap_v1.py'
 alias snpPick_quake='$morehousePath/snpPick.py'
 alias hifi='$morehousePath/hifi'
 alias hifi_fu='$morehousePath/hifi_fu'
+alias hifi_fu_qs='$morehousePath/hifi_fu_qs'
 alias haplotypeExtractor='$morehousePath/haplotypeExtractor.py'
 alias processSolid='$morehousePath/processSolid.py'
 alias fileCheck='$morehousePath/fileCheck.py'
@@ -197,7 +198,7 @@ alias grep_position='$bash_path/grep_position.sh'
 #alias samtools='$disk2ToolPath/samtools-0.1.18/samtools'
 
 export hifiPath=/home/guoxing/disk2/ngs/morehouse/other
-alias hifi_i="$hifiPath/hifi_fu_with_imputing"
+#alias hifi_i="$hifiPath/hifi_fu_with_imputing"
 
 # other
 #alias solid2fastq='$morehousePath/other/solid2fastq_gx.pl'
