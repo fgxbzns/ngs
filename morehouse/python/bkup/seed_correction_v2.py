@@ -62,18 +62,6 @@ def load_seed_data(file_name):
 		seed_dict[position] = seed
 	return (seed_title_info, seed_dict)
 
-def load_seed_data_from_dict(data_dict):
-	seed_dict = {}
-	for position, elements in data_dict.iteritems():
-		seed = seeds()
-		seed.rsID = elements[0].strip()
-		seed.position = int(elements[1].strip())
-		seed.allele_ori = elements[2].strip()
-		seed.allele_new = elements[2].strip()
-		seed_dict[position] = seed
-	return seed_dict
-
-
 def load_hap_std(file_name):
 	hap_std_dict = {}
 	data_dict = load_raw_data(file_name)[1]
@@ -404,8 +392,66 @@ def seed_recover_extract(seed_hetero_dict, revised_seed_dict):
 	return recovered_seed_dict
 
 
-
-def seed_expand(seed_file):
+def seed_expand(seed_dict):
+	""" seed_dict here is the new seed after the previous process, should have > 99% seed accuracy """
+	
+	
+	seed_from_geno = dict_substract(geno_dict, seed_dict)
+	print len(seed_from_geno)
+	
+	
+	"""
+	print "seed_hetero_dict ori", len(seed_hetero_dict)
+	
+	seed_hetero_sorted_list = sort_dict_by_key(seed_hetero_dict) 
+	seed_number_ceilling = int(math.ceil(float(len(seed_hetero_sorted_list))/100)*100)
+	#print "seed_hetero_number_ceilling: ", seed_number_ceilling
+	seed_removed_in_each_subfile = seed_number_ceilling/number_of_subfile
+	print "hetero_seed_removed_in_each_subfile: ", seed_removed_in_each_subfile
+		
+	#seed_homo_sorted_list = [x for x in seed_homo_dict.iteritems()]
+	seed_homo_sorted_list = list(seed_homo_dict)
+	
+	print "ori seed dict size", len(seed_dict)
+	
+	file_number = 1
+	while file_number <= number_of_subfile:	
+		output_subfile_name = seed_file_name + "_" + str(file_number) + ".txt"
+		output_subfile = open(currentPath + output_subfile_name, "w")
+		print >> output_subfile, seed_title_info
+		seed_dict_bkup = copy.deepcopy(seed_dict)	
+		i = 0 
+		while i < int(seed_added_in_each_subfile):	# number of seed to be removed
+			try:
+				index = i*file_number+file_number
+				
+				
+				del seed_hetero_sorted_list[i*file_number+file_number]
+				
+				position = removed_seed_list[index][0]
+				if position not in revised_seed_dict:
+					revised_seed_dict[position] = removed_seed_list[index][1]
+				else:
+					print "seed already in new seed dict"
+				
+				random_pos = random.randrange(0,file_number)
+				while random_pos == position:
+					random_pos = random.randrange(0,file_number)
+				if random_pos not in revised_seed_dict:
+					revised_seed_dict[random_pos] = removed_seed_dict[random_pos]
+				else:
+					print "seed already in new seed dict"			
+			except:
+				pass
+			i += 1
+	
+	
+	
+	"""
+	
+	
+	
+	
 	expanded_seed_dict = {}
 	hifi_dict = {}
 	revised_seed_dict = load_seed_data(seed_file)[1]
@@ -427,10 +473,49 @@ def seed_expand(seed_file):
 	for position, seed in hifi_dict.iteritems():
 		if float(qscore_dict[position][3]) == 1.0 and position in geno_dict and seed.allele_new in geno_dict[position][2]:
 			expanded_seed_dict[position] = seed
-		
-		elif float(qscore_dict[position][3]) >= 0.6 and position in geno_dict and seed.allele_new in geno_dict[position][2]:
+		"""
+		elif float(qscore_dict[position][3]) >= 0.98 and position in geno_dict and seed.allele_new in geno_dict[position][2]:
 				a += 1
 				expanded_seed_dict[position] = seed
+			#pass
+		"""
+	print "a", a
+	revised_seed_dict = dict_add(revised_seed_dict, expanded_seed_dict)
+	
+	print "new seed total number", len(expanded_seed_dict)
+	#output_revised_seed("haplotype_expanded.txt", expanded_seed_dict)
+	#output_revised_seed("haplotype_t.txt", revised_seed_dict)
+	return revised_seed_dict
+
+"""
+
+def seed_expand(seed_file):
+	expanded_seed_dict = {}
+	hifi_dict = {}
+	revised_seed_dict = load_seed_data(seed_file)[1]
+	
+	hifi = program_path + "hifi_fu_qs " + seed_file + ""
+	hifi_process = subprocess.Popen(hifi, shell=True)
+	hifi_process.wait()
+	
+	hifi_file = "imputed_" + seed_file
+	hifi_dict = load_hifi_result(hifi_file, hifi_dict)
+	hifi_dict = dict_substract(hifi_dict, revised_seed_dict)
+	print "hifi_dict: ", len(hifi_dict)
+	
+	qscore_file = "qscore_" + seed_file
+	qscore_dict = load_raw_data(qscore_file)[1]
+	qscore_dict = dict_substract(qscore_dict, revised_seed_dict)
+	print "qscore_dict: ", len(qscore_dict)
+	a = 0
+	for position, seed in hifi_dict.iteritems():
+		if float(qscore_dict[position][3]) == 1.0 and position in geno_dict and seed.allele_new in geno_dict[position][2]:
+			expanded_seed_dict[position] = seed
+		
+		elif float(qscore_dict[position][3]) >= 0.98 and position in geno_dict and seed.allele_new in geno_dict[position][2]:
+				a += 1
+				expanded_seed_dict[position] = seed
+			#pass
 		
 	print "a", a
 	revised_seed_dict = dict_add(revised_seed_dict, expanded_seed_dict)
@@ -439,7 +524,7 @@ def seed_expand(seed_file):
 	output_revised_seed("haplotype_expanded.txt", expanded_seed_dict)
 	output_revised_seed("haplotype_t.txt", revised_seed_dict)
 	return revised_seed_dict
-
+"""
 def output_revised_seed(filename, revised_seed_dict):
 	seed_new_file = open(currentPath + filename, "w")
 	print >> seed_new_file, seed_title_info
@@ -447,16 +532,6 @@ def output_revised_seed(filename, revised_seed_dict):
 	for snp in revised_seed_sorted_list:
 		seed = snp[1]
 		line = seed.rsID + "\t" + str(seed.position) + "\t" + seed.allele_new
-		print >> seed_new_file, line
-	seed_new_file.close()
-	
-def output_revised_seed_dict(filename, revised_seed_dict):
-	seed_new_file = open(currentPath + filename, "w")
-	print >> seed_new_file, seed_title_info
-	revised_seed_sorted_list = sort_dict_by_key(revised_seed_dict) 	# need to sort the snps by position
-	for snp in revised_seed_sorted_list:
-		seed = snp[1]
-		line = seed[0] + "\t" + str(seed[1]) + "\t" + seed[2]
 		print >> seed_new_file, line
 	seed_new_file.close()
 	
@@ -557,17 +632,7 @@ def seed_correction(seed_file, chr_name, mode):
 	elif mode == "expand":
 		seed_std_compare("haplotype.txt", chr_name)
 		seed_expand(seed_file)
-		same_to_A_dict = seed_std_compare("haplotype_t.txt", chr_name)
-		same_to_A_dict = load_seed_data_from_dict(same_to_A_dict)
-		same_to_A_dict = dict_add(same_to_A_dict, seed_homo_dict)
-		output_revised_seed("haplotype_expanded.txt", same_to_A_dict)
-		
-		hifi = program_path + "hifi_fu haplotype_expanded.txt"
-		hifi_process = subprocess.Popen(hifi, shell=True)
-		hifi_process.wait()
-		
-		hifiAccuCheck("imputed_haplotype_expanded.txt", chr_name)
-		
+		seed_std_compare("haplotype_t.txt", chr_name)
 		"""
 		seed_tuple = load_seed_data(seed_file)
 		seed_title_info = seed_tuple[0]

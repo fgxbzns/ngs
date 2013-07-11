@@ -35,6 +35,26 @@ def load_raw_data(file_name):
 	fp.close()
 	return (title_info, data)
 
+
+def load_raw_data_line(file_name):		
+	title_info = ""
+	data = {}
+	fp = open(file_name, "r")
+	for line in fp:
+		if line.startswith("rsID"):
+			title_info = line.strip()
+		else:
+			elements = line.strip().split()
+			try:
+				# convert the position to int for sorting
+				data[int(elements[1])] = line
+			except ValueError:
+				#print "error in ", line
+				pass
+	fp.close()
+	return (title_info, data)
+
+
 # remove the snps with "N" in std hap
 def removeN(hifi_std_dict):
 	temp_dict = {}
@@ -60,6 +80,7 @@ def dict_add(revised_seed_dict, recovered_seed_dict):
 	for position, seed in recovered_seed_dict.iteritems():
 		if position not in revised_seed_dict:
 			revised_seed_dict[position] = seed
+		else: print position
 	return revised_seed_dict
 
 def sort_dict_by_key(input_dict):
