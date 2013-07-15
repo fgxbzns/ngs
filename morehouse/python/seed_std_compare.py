@@ -6,15 +6,14 @@
 import os, glob, subprocess, random, operator, time, sys
 from optparse import OptionParser
 
-from tools import file_path, data_record_path, currentPath
-from tools import sort_dict_by_key, load_raw_data
+from tools import *
 
 def seed_std_compare(seed_input_file, chr_name):
 	std_file_name = "ASW_"+chr_name+"_child_hap_refed.txt"
 	std_input_file = file_path + std_file_name
-	snp_hap_std_dict = load_raw_data(std_input_file)[1]
+	snp_hap_std_dict = load_raw_data(std_input_file, raw_data_format)[1]
 	
-	snp_hap_seed_dict = load_raw_data(seed_input_file)[1]
+	snp_hap_seed_dict = load_raw_data(seed_input_file, raw_data_format)[1]
 	seed_file_name = seed_input_file[:seed_input_file.find('.')].strip()
 	print "snp_hap_std_total_number", len(snp_hap_std_dict)
 	print "snp_hap_seed_total_number", len(snp_hap_seed_dict)

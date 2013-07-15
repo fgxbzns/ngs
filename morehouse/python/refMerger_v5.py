@@ -7,8 +7,7 @@
 import os, glob, subprocess, random, operator, time
 from optparse import OptionParser
 
-from tools import file_path, data_record_path, currentPath
-from tools import sort_dict_by_key, load_raw_data
+from tools import *
 
 
 def get_args():

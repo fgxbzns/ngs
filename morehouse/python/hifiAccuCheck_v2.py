@@ -5,7 +5,9 @@
 import os, glob, subprocess, random, operator, time
 from optparse import OptionParser
 from tools import *
-from tools import sort_dict_by_key, load_raw_data, removeN
+#from tools import file_path, program_path, data_record_path, currentPath
+#from tools import sort_dict_by_key, load_raw_data, wccount, keywithmaxval
+
 
 data_record_path = "/home/guoxing/disk2/solid/common_files/data_record/"
 
@@ -108,12 +110,12 @@ def output_different_snps(different_position_dict):
 def hifiAccuCheck (hifi_result_file, chr_name):
 	#hap_std_file_name = "NA12878_hap_new_refed.txt"	# simulation data
 	hap_std_file_name = file_path + "ASW_"+chr_name+"_child_hap_refed.txt"	
-	hifi_std_dict = load_raw_data(hap_std_file_name)[1]
+	hifi_std_dict = load_raw_data(hap_std_file_name, raw_data_format)[1]
 	
 	hifi_std_dict = removeN(hifi_std_dict)
 	hap_std_total_number = len(hifi_std_dict)
 	
-	hifi_result_dict = load_raw_data(hifi_result_file)[1]
+	hifi_result_dict = load_raw_data(hifi_result_file, raw_data_format)[1]
 	hifi_result_total_number = len(hifi_result_dict)
 	
 	print "hap_std_total_number", hap_std_total_number

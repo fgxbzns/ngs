@@ -23,7 +23,7 @@ class seeds:
 
 def load_seed_data(file_name):
     seed_dict = {}
-    data_tuple = load_raw_data(file_name)
+    data_tuple = load_raw_data(file_name, raw_data_format)
     seed_title_info = data_tuple[0]
     data_dict = data_tuple[1]
     for position, elements in data_dict.iteritems():
@@ -36,7 +36,7 @@ def load_seed_data(file_name):
 
 def load_hap_std(file_name):
     hap_std_dict = {}
-    data_dict = load_raw_data(file_name)[1]
+    data_dict = load_raw_data(file_name, raw_data_format)[1]
     for position, elements in data_dict.iteritems():
         if elements[2].strip() != "N" and elements[3].strip() != "N":
             try:

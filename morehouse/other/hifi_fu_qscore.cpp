@@ -74,12 +74,22 @@ int main(int argc, char** argv)
 	char genotype[32];
 	char refhap[32];
 	char impute[32];
+	char qscore[32];
 	strcpy(haplotype,argv[1]);
 	//strcpy(genotype,argv[2]);
-	strcpy(refhap,argv[2]);
+	//strcpy(refhap,argv[3]);
 	strcpy(impute,"imputed_");
 	strncat(impute,haplotype,32);
-		
+	strcpy(qscore,"qscore_");
+	strncat(qscore,haplotype,32);
+	
+
+	//haplotype_ID = haplotype.substr(10,1)
+	
+	//vector<char> temp(haplotype.begin()+10. haplotype.begin()+11);
+//	haplotype_ID = temp
+	//strncpy(haplotype_ID, haplotype+10, 1);
+	
 	//==========================
 	//Runtime caculation
 	clock_t start, finish;
@@ -183,7 +193,7 @@ int main(int argc, char** argv)
 	fclose(fp);	
 	
 //3> open reference haplotypes file
-	if((err = fopen_s(&fp,refhap,"rt"))!=NULL)
+	if((err = fopen_s(&fp,"refHaplos.txt","rt"))!=NULL)
 	{
 		printf("Can not open reference haplotypes file!");
 		return 0;
@@ -1427,9 +1437,12 @@ fu */	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	}
 	fclose(fpo);
+	* 
+*/
 	//==========================================================================
 	//Added on 03/23/2012
- 	fpo=fopen("quality_score.txt","w");	
+ 	//fpo=fopen("quality_score.txt","w");	
+ 	fpo=fopen(qscore,"w");
 	fprintf(fpo,"rsNo pos QS_geno QS_haplo\n");
 	for(int i=0;i<snpsum_hgr;i++)
 	{
@@ -1439,7 +1452,7 @@ fu */	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	}
 	fclose(fpo);
 
-*/
+
 
 	//==========================================================================
 	//Added on 03/16/2012

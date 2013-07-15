@@ -10,6 +10,8 @@ import os, glob, subprocess, random, operator, time, sys
 from optparse import OptionParser
 
 from tools import *
+from hifiAccuCheck_v2 import hifiAccuCheck
+from seed_std_compare import seed_std_compare
 
 
 # A from Father, B from Mother
@@ -51,8 +53,8 @@ def get_args():
 
 def load_hap_std(file_name):
 	hap_std_dict = {}
-	title_haplotype = load_raw_data(file_name)[0]
-	data_dict = load_raw_data(file_name)[1]
+	title_haplotype = load_raw_data(file_name, raw_data_format)[0]
+	data_dict = load_raw_data(file_name, raw_data_format)[1]
 	for position, elements in data_dict.iteritems():
 		if True:
 			try:
@@ -111,7 +113,7 @@ title_haplotype = hap_std_tuple[0]
 snp_dict = hap_std_tuple[1]
 
 genotype_file = "genotype_NA10847_"+chr_name+".txt"	# for all
-geno_dict = load_raw_data(file_path + genotype_file)[1]
+geno_dict = load_raw_data(file_path + genotype_file, raw_data_format)[1]
 
 
 reads_list=[]
@@ -340,7 +342,7 @@ for snp_data in snp_sorted_list:
 				hete_B_max_file.write(snp.rsID + "\t" + str(snp.position) + "\t" + snp.B + "\t" + max_base + "\t" + str(max_value) + "\n")
 		"""
 		pure = False
-		if float(max_value)/float(len(snp.covered_reads_list)) >= 0.90:
+		if float(max_value)/float(len(snp.covered_reads_list)) >= 0.70:
 			pure = True
 		"""
 		pure = True
@@ -506,7 +508,7 @@ for geno_data in geno_sorted_list:
 			max_base = keywithmaxval(snp.allele_dict)
 			max_value = snp.allele_dict[max_base]	
 			pure = False
-			if float(max_value)/float(len(snp.covered_reads_list)) >= 0.90:
+			if float(max_value)/float(len(snp.covered_reads_list)) >= 0.50:
 				pure = True
 			"""
 			for base in base_list:
@@ -514,7 +516,8 @@ for geno_data in geno_sorted_list:
 					if snp.allele_dict[base] != 0:
 						pure = False
 			"""
-			if pure and max_value > depth_threshold:
+			#if pure and max_value > depth_threshold:
+			if max_value > depth_threshold:
 				if max_base == snp.A or max_base == snp.B:	#check genotype
 					if max_base == snp.A and max_base != snp.B:							
 						hifi_pure_corrected_with_homo_file.write(snp.rsID + "\t" + str(snp.position) + "\t" + max_base + "\n")				
@@ -538,11 +541,11 @@ hifi_pure_corrected_with_homo_file.close()
 coverage_distribution_file = open(currentPath + sam_file_name + "_coverage_distribution.txt", "w")
 coverage_distribution_file.write("coverage depth \t A \t B \t X \t not_ABX \t percentage \n")
 
-print "A: ", A_dict			
-print "B: ", B_dict
-print "X: ", X_dict
-print "not_ABX: ", not_ABX_dict
-print "not_in_genotype_dict: ", not_in_genotype_dict
+#print "A: ", A_dict			
+#print "B: ", B_dict
+#print "X: ", X_dict
+#print "not_ABX: ", not_ABX_dict
+#print "not_in_genotype_dict: ", not_in_genotype_dict
 
 
 for key, value in A_dict.iteritems():
@@ -685,3 +688,5 @@ data_record_file.close()
 outputFile_reads.close()
 outputFile_allele.close()
 
+
+seed_std_compare(hifi_pure_corrected_with_homo_file_name, chr_name)

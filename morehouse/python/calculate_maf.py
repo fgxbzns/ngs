@@ -6,11 +6,10 @@
 import os, glob, subprocess, random, operator, time, sys
 from optparse import OptionParser
 
-from tools import file_path, data_record_path, currentPath
-from tools import sort_dict_by_key, load_raw_data
+from tools import *
 
 def calculate_maf(file_name, position):
-	hap_ref_dict = load_raw_data(file_name)[1]
+	hap_ref_dict = load_raw_data(file_name, raw_data_format)[1]
 	alleles = hap_ref_dict[position]
 	alleles = alleles[2:]
 	#print "total allele: ", len(alleles)
@@ -41,7 +40,7 @@ if __name__=='__main__':
 	options = get_args()
 	file_name = "refHaplos.txt"
 	position = int(options.position)
-	#hap_ref_dict = load_raw_data(file_name)[1]
+	#hap_ref_dict = load_raw_data(file_name, raw_data_format)[1]
 	calculate_maf(file_name, position)
 	#calculate_maf(hap_ref_dict, position)
 

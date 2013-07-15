@@ -6,10 +6,14 @@
 import os, glob, subprocess, random, operator, time, sys
 from optparse import OptionParser
 
+"""cannot import other files"""
+
 file_path = "/home/guoxing/disk2/solid/common_files/"
 program_path = "/home/guoxing/disk2/ngs/morehouse/python/"
 data_record_path = "/home/guoxing/disk2/solid/common_files/data_record/"
 currentPath = os.getcwd() + '/'
+
+raw_data_format = "list"
 
 quality_score_dict = { '!':0, '\"':1, '#':2, '$':3, '%':4, '&':5, '\'':6, '(':7, 
 					')':8, '*':9, '+':10, ',':11, '-':12, '.':13 }
@@ -17,7 +21,7 @@ quality_score_dict = { '!':0, '\"':1, '#':2, '$':3, '%':4, '&':5, '\'':6, '(':7,
 def usage():
 	print "%s [seed_file] [chr]" % sys.argv[0]
 
-def load_raw_data(file_name):		
+def load_raw_data(file_name, format):		
 	title_info = ""
 	data = {}
 	fp = open(file_name, "r")
@@ -28,32 +32,21 @@ def load_raw_data(file_name):
 			elements = line.strip().split()
 			try:
 				# convert the position to int for sorting
-				data[int(elements[1])] = elements
+				if format == "list":
+					data[int(elements[1])] = elements
+				elif format == "string":
+					data[int(elements[1])] = line
 			except ValueError:
 				#print "error in ", line
 				pass
 	fp.close()
 	return (title_info, data)
 
-
-def load_raw_data_line(file_name):		
-	title_info = ""
-	data = {}
-	fp = open(file_name, "r")
-	for line in fp:
-		if line.startswith("rsID"):
-			title_info = line.strip()
-		else:
-			elements = line.strip().split()
-			try:
-				# convert the position to int for sorting
-				data[int(elements[1])] = line
-			except ValueError:
-				#print "error in ", line
-				pass
-	fp.close()
-	return (title_info, data)
-
+def hifi_run(file_name, chr_name):
+	hifi = program_path + "hifi_fu " + file_name
+	hifi_process = subprocess.Popen(hifi, shell=True)
+	hifi_process.wait()
+	#hifiAccuCheck("imputed_" + file_name, chr_name)
 
 # remove the snps with "N" in std hap
 def removeN(hifi_std_dict):
