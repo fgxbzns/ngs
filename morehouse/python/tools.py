@@ -35,7 +35,7 @@ def load_raw_data(file_name, format):
 				if format == "list":
 					data[int(elements[1])] = elements
 				elif format == "string":
-					data[int(elements[1])] = line
+					data[int(elements[1])] = line.strip()
 			except ValueError:
 				#print "error in ", line
 				pass
@@ -80,6 +80,7 @@ def sort_dict_by_key(input_dict):
 	sorted_list = []
 	sorted_list = [x for x in input_dict.iteritems()] 
 	sorted_list.sort(key=lambda x: x[0]) # sort by key
+	#sorted_list.sort(key=lambda x: x[1]) # sort by value
 	return sorted_list
 
 def wccount(file_name):
@@ -104,3 +105,8 @@ def keywithmaxval(dict):
      v=list(dict.values())
      k=list(dict.keys())
      return k[v.index(max(v))]
+
+
+
+
+
