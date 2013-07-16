@@ -66,7 +66,7 @@ static double	q_score_geno = 0;
 int main(int argc, char** argv)
 {
 	
-	if(argc!=2){
+	if(argc!=4){
 		printf("The parameter number was wrong!\n");
 		return 0;
 	}
@@ -74,11 +74,17 @@ int main(int argc, char** argv)
 	char genotype[32];
 	char refhap[32];
 	char impute[32];
+	char qscore[32];
 	strcpy(haplotype,argv[1]);
-	//strcpy(genotype,argv[2]);
-	strcpy(refhap,argv[2]);
+	strcpy(genotype,argv[2]);
+	strcpy(refhap,argv[3]);
 	strcpy(impute,"imputed_");
 	strncat(impute,haplotype,32);
+	//strncat(impute,genotype,32);
+	//strncat(impute,refhap,32);
+	
+	strcpy(qscore,"qscore_");
+	strncat(qscore,haplotype,32);
 		
 	//==========================
 	//Runtime caculation
@@ -146,7 +152,7 @@ int main(int argc, char** argv)
 	fclose(fp);
 
 //2> open genotype file
-	if((err = fopen_s(&fp,"genotype.txt","rt"))!=NULL)
+	if((err = fopen_s(&fp,genotype,"rt"))!=NULL)
 	{
 		printf("Can not open genotype file!");
 		return 0;
@@ -1430,6 +1436,8 @@ fu */	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//==========================================================================
 	//Added on 03/23/2012
  	fpo=fopen("quality_score.txt","w");	
+ */
+	fpo=fopen(qscore,"w");
 	fprintf(fpo,"rsNo pos QS_geno QS_haplo\n");
 	for(int i=0;i<snpsum_hgr;i++)
 	{
@@ -1439,7 +1447,7 @@ fu */	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	}
 	fclose(fpo);
 
-*/
+
 
 	//==========================================================================
 	//Added on 03/16/2012
