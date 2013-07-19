@@ -152,7 +152,7 @@ def seed_error_remove(seed_dict):
 		start_pos = 0
 	end_pos = start_pos + 500
 	print start_pos, end_pos
-	del seed_hetero_sorted_lishaplotype.txtt[pos_index]
+	del seed_hetero_sorted_list[pos_index]
 	print "seed_hetero_sorted_list new", len(seed_hetero_sorted_list)
 	"""
 	print "seed_hetero_sorted_list", len(seed_hetero_sorted_list)
@@ -468,7 +468,7 @@ def seed_expand_ref():
 		seed_ref_difference_dict_bkup = seed_ref_difference_dict.copy()
 		geno_dict_bkup = geno_dict.copy()
 		i = 0 
-		while i < int(ref_removed_in_each_subfile*3):			
+		while i < int(ref_removed_in_each_subfile):			
 			try:
 						
 				forward_index = i*number_of_subfile+file_number
@@ -583,7 +583,7 @@ def seed_recover_extract_ref():
 	print "qscore_dict size: ", len(qscore_dict)
 	
 	
-	
+	"""
 	#a_file = open("expanded_seed.txt", "w")
 	for position, snp in seed_ref_difference_dict.iteritems():
 		if position in hifi_dict:
@@ -591,14 +591,39 @@ def seed_recover_extract_ref():
 			max_base = keywithmaxval(seed.allele_dict)
 			max_value = seed.allele_dict[max_base]
 			seed.allele_new_percentage = float(max_value)/float(number_of_subfile)
-			"""each difference position should only have consistent value in 9 of 10 files. it is deleted at least twice."""
-			if seed.allele_new_percentage*100 >= 90 and position in geno_dict and max_base in geno_dict[position][2]:	# ref
-				#if True:
-				if position in qscore_dict and qscore_dict[position]/float(number_of_subfile-1) >= 0.90:
+			#each difference position should only have consistent value in 9 of 10 files. it is deleted at least twice.
+			if seed.allele_new_percentage*100 >= 80 and position in geno_dict and max_base in geno_dict[position][2]:	# ref
+				if True:
+				#if position in qscore_dict and qscore_dict[position]/float(number_of_subfile-1) >= 0.80:
 					seed.allele_new = max_base
 					recovered_seed_dict[position] = seed
 	#			print >> a_file, position, max_base, max_value, seed.allele_new_percentage, seed.allele_dict
 	#a_file.close()
+	"""
+	hifi_sorted_list = sort_dict_by_key(hifi_dict)
+	hifi_sorted_pos_list = []
+	j = 0
+	while j < len(hifi_sorted_list):
+		hifi_sorted_pos_list.append(hifi_sorted_list[j][0])
+		j += 1
+	print "hifi_sorted_pos_list", len(hifi_sorted_pos_list)
+	for position, snp in seed_dict.iteritems():
+		pos_index = hifi_sorted_pos_list.index(position)
+		start_position = (pos_index-1) if pos_index-1 >=0 else 0
+		end_position = (pos_index+1) if (pos_index+1) < len(hifi_sorted_list) else len(hifi_sorted_list)-1
+		for new_pos in range (start_position, end_position):
+			#if hifi_sorted_list[new_pos][0] not in seed_dict:
+			if hifi_sorted_list[new_pos][0] in seed_ref_difference_dict: #and new_pos in hifi_sorted_list:
+				seed = hifi_sorted_list[new_pos][1]
+				max_base = keywithmaxval(seed.allele_dict)
+				max_value = seed.allele_dict[max_base]
+				seed.allele_new_percentage = float(max_value)/float(number_of_subfile)
+				if seed.allele_new_percentage*100 >= 80 and position in geno_dict and max_base in geno_dict[position][2]:
+					#if True:
+					if position in qscore_dict and qscore_dict[position]/float(number_of_subfile-1) >= 0.80:
+						seed.allele_new = max_base
+						recovered_seed_dict[hifi_sorted_list[new_pos][0]] = seed
+	
 	
 	print "seed_dict seed number", len(seed_dict)
 	revised_seed_dict = dict_add(seed_dict, recovered_seed_dict)
@@ -960,7 +985,7 @@ if __name__=='__main__':
 		os.system("cp haplotype_new* imputed_haplotype_* haplotype_ori_?.txt haplotype_ori_10.txt haplotype_recoved.txt " + str(i))
 		#os.system("cp haplotype_recoved.txt haplotype_new.txt")
 	"""
-	for i in range (0,3):
+	for i in range (0,1):
 		seed_correction(seed_file, chr_name, mode)
 	
 

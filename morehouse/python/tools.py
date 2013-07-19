@@ -73,7 +73,9 @@ def dict_add(revised_seed_dict, recovered_seed_dict):
 	for position, seed in recovered_seed_dict.iteritems():
 		if position not in revised_seed_dict:
 			revised_seed_dict[position] = seed
-		else: print position
+		else: 
+			print position
+			pass
 	return revised_seed_dict
 
 def sort_dict_by_key(input_dict):
@@ -106,7 +108,19 @@ def keywithmaxval(dict):
      k=list(dict.keys())
      return k[v.index(max(v))]
 
-
-
+# group the seed into homo and hetero groups
+def group_seed(seed_dict, geno_dict):
+	seed_homo_dict = {}
+	seed_hetero_dict = {}
+	for position, snp in seed_dict.iteritems():
+		if position in geno_dict:	# pos in seed may not be in geno
+			geno_allele = geno_dict[position][2]
+			if geno_allele[0] == geno_allele[1]:
+				seed_homo_dict[position] = snp
+			else:
+				seed_hetero_dict[position] = snp
+		else:
+			seed_hetero_dict[position] = snp
+	return (seed_homo_dict, seed_hetero_dict)
 
 
