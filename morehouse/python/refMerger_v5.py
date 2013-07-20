@@ -116,7 +116,9 @@ def ref_preprocess(geno_dict, hap_ref_dict):
 	ref_tulpe = compare_geno_ref(geno_dict, hap_ref_dict)
 	ref_homo_dict = ref_tulpe[0]
 	geno_ref_not_consistent = ref_tulpe[1]
+	geno_n_dict = ref_tulpe[2]
 	hap_ref_dict = dict_substract(hap_ref_dict, geno_ref_not_consistent)
+	hap_ref_dict = dict_substract(hap_ref_dict, geno_n_dict)
 	hap_ref_dict = dict_substract(hap_ref_dict, ref_homo_dict)
 	return hap_ref_dict
 

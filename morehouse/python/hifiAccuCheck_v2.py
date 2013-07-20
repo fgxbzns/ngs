@@ -93,18 +93,11 @@ def compare_std_result(hifi_result_dict, hifi_std_dict):
 	return (same_to_A_dict, same_to_B_dict, same_to_AB_dict, not_same_to_AB_dict, different_position_dict, same_position_total_number, different_position_total_number)
 
 
-def output_different_snps(different_position_dict):
-	difference_output_file_name = "hifi_difference_position.txt"
-	difference_output_file = open(currentPath + difference_output_file_name, "w")
-	for position, elements in different_position_dict.iteritems():
-		"""
-		line = ""
-		for a in elements:
-			line += a + "\t"
-		print >> difference_output_file, line
-		"""
-		print >> difference_output_file, list_to_line(elements)
-	difference_output_file.close()
+def output_dict(file_name, dict, hifi_std_dict):
+	output_file = open(currentPath + file_name, "w")
+	for position, elements in dict.iteritems():
+		print >> output_file, list_to_line(elements), "std:", list_to_line(hifi_std_dict[position])
+	output_file.close()
 
 
 def hifiAccuCheck (hifi_result_file, chr_name):
@@ -130,9 +123,12 @@ def hifiAccuCheck (hifi_result_file, chr_name):
 	different_position_dict = compare_tuple[4]
 	same_position_total_number = compare_tuple[5]
 	different_position_total_number = compare_tuple[6]
-	
-	output_different_snps(different_position_dict)
-	
+	"""
+	output_dict("same_to_A_dict.txt", same_to_A_dict, hifi_std_dict)
+	output_dict("same_to_B_dict.txt", same_to_B_dict, hifi_std_dict)
+	output_dict("not_same_to_AB_dict.txt", not_same_to_AB_dict, hifi_std_dict)
+	output_dict("different_position_dict.txt", different_position_dict, hifi_std_dict)
+	"""
 	same_A_total_number = len(same_to_A_dict)
 	same_B_total_number = len(same_to_B_dict)
 	same_AB_total_number = len(same_to_AB_dict)

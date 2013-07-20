@@ -370,6 +370,24 @@ print len(geno_homo_dict)
 print len(geno_hetero_dict)
 """?????"""
 
+def combine_called_seed_geno(called_seed_dict, geno_hetero_dict):
+	for position, geno_data in geno_homo_dict.iteritems():
+		if position not in called_seed_dict:
+			snp = snps()
+			snp.rsID = geno_data[0]
+			snp.position = int(position)
+			snp.max_allele = geno_data[2]
+			called_seed_dict[position] = snp
+			
+
+print "called_seed_dict", len(called_seed_dict)
+combine_called_seed_geno(called_seed_dict, geno_hetero_dict)
+print "called_seed_dict", len(called_seed_dict)
+combined_seed_file_name = sam_file_name + "_combined_seed.txt"
+title_info = title_haplotype
+output_seed_file(combined_seed_file_name, title_info, called_seed_dict)
+
+"""
 for geno_data in geno_sorted_list:
 	position = geno_data[0]
 	geno = geno_data[1][2]
@@ -399,7 +417,7 @@ for geno_data in geno_sorted_list:
 						
 	
 hifi_pure_corrected_with_homo_file.close()		
-
+"""
 # caulculate the coverage distribution for each snp
 coverage_distribution_file = open(currentPath + sam_file_name + "_coverage_distribution.txt", "w")
 coverage_distribution_file.write("coverage depth \t A \t B \t X \t not_ABX \t percentage \n")
@@ -434,11 +452,13 @@ print "run time is: " + run_time + "s"
 data_record_file.write("run time is: " + run_time + "s \n")
 data_record_file.close()
 
+
+
 seed_std_compare(called_seed_file_name, chr_name)
-seed_std_compare(hifi_pure_corrected_with_homo_file_name, chr_name)
+#seed_std_compare(hifi_pure_corrected_with_homo_file_name, chr_name)
 
 
-
+seed_std_compare(combined_seed_file_name, chr_name)
 
 
 # compare with ori hap file			

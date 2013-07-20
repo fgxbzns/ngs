@@ -74,7 +74,7 @@ def dict_add(revised_seed_dict, recovered_seed_dict):
 		if position not in revised_seed_dict:
 			revised_seed_dict[position] = seed
 		else: 
-			print position
+			#print position
 			pass
 	return revised_seed_dict
 
