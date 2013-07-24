@@ -93,7 +93,7 @@ def compare_geno_ref(geno_dict, hap_ref_dict):
 	print "ref_homo", len(ref_homo_dict)
 	return (ref_homo_dict, geno_ref_not_consistent, geno_n_dict)
 
-def load_hap_ref_data():
+def load_hap_ref_data(chr_name):
 	ref_title_info = ""
 	hap_ref_dict = {}
 	for infile in glob.glob(os.path.join(file_path,"*"+chr_name+"_???.phased")):	# add * for chrX
@@ -157,23 +157,18 @@ def make_hifi_files():
 	output_files("genotype.txt", geno_title_info, hifi_geno_dict)
 	output_files("refHaplos.txt", ref_title_info, hifi_ref_dict)
 
-
-if __name__=='__main__':
-		
+def refMerger(haplotype_file, chr_name):
 	global seed_title_info
 	global seed_dict
 	global geno_title_info
 	global geno_dict
 	global hap_ref_dict
 	global ref_title_info
-	
-	options = get_args()
-	haplotype_file = options.haplotypeFile
-	chr_name = options.chrName
+	global raw_data_format_ref
 	
 	raw_data_format_ref = "string"
 		
-	ref_tulpe = load_hap_ref_data()
+	ref_tulpe = load_hap_ref_data(chr_name)
 	ref_title_info = ref_tulpe[0]
 	hap_ref_dict = ref_tulpe[1]		
 	
@@ -199,3 +194,11 @@ if __name__=='__main__':
 	print "hap_ref_dict after process", len(hap_ref_dict)
 	
 	make_hifi_files()
+
+
+if __name__=='__main__':
+	options = get_args()
+	haplotype_file = options.haplotypeFile
+	chr_name = options.chrName
+	refMerger(haplotype_file, chr_name)
+	
