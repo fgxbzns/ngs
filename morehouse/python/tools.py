@@ -3,7 +3,7 @@
 # Common tools
 #######################################################################################
 
-import os, glob, subprocess, random, operator, time, sys
+import os, glob, subprocess, random, operator, time, sys, math
 from optparse import OptionParser
 
 """cannot import other files"""

@@ -609,19 +609,19 @@ def seed_recover_extract_ref():
 	print "hifi_sorted_pos_list", len(hifi_sorted_pos_list)
 	for position, snp in seed_hetero_dict.iteritems():
 		pos_index = hifi_sorted_pos_list.index(position)
-		expand_range = 2
+		expand_range = 3
 		start_position = (pos_index-expand_range) if pos_index-expand_range >=0 else 0
 		end_position = (pos_index+expand_range) if (pos_index+expand_range) < len(hifi_sorted_list) else len(hifi_sorted_list)-1
 		for new_pos in range (start_position, end_position):
-			#if hifi_sorted_list[new_pos][0] not in seed_dict:
-			if hifi_sorted_list[new_pos][0] in seed_ref_difference_dict: #and new_pos in hifi_sorted_list:
+			#if hifi_sorted_list[new_pos][0] in seed_ref_difference_dict: #and new_pos in hifi_sorted_list:
+			if hifi_sorted_list[new_pos][0] in seed_ref_difference_dict and math.fabs(hifi_sorted_list[new_pos][0] - position) < 5000:
 				seed = hifi_sorted_list[new_pos][1]
 				max_base = keywithmaxval(seed.allele_dict)
 				max_value = seed.allele_dict[max_base]
 				seed.allele_new_percentage = float(max_value)/float(number_of_subfile)
 				if seed.allele_new_percentage*100 >= 0.70: #and position in geno_dict and max_base in geno_dict[position][2]:
-					#if True:
-					if position in qscore_dict and qscore_dict[position]/float(number_of_subfile-2) >= 0.70:
+					if True:
+					#if position in qscore_dict and qscore_dict[position]/float(number_of_subfile-2) >= 0.70:
 						seed.allele_new = max_base
 						recovered_seed_dict[hifi_sorted_list[new_pos][0]] = seed
 	
@@ -629,7 +629,7 @@ def seed_recover_extract_ref():
 	print "seed_dict seed number", len(seed_dict)
 	revised_seed_dict = dict_add(seed_dict, recovered_seed_dict)
 	
-	print "recoved seed number", len(recovered_seed_dict)
+	print "recovered seed number", len(recovered_seed_dict)
 	print "new seed total number", len(revised_seed_dict)
 	output_revised_seed("haplotype_recoved.txt", recovered_seed_dict)
 	file_name = "haplotype_expanded.txt"
@@ -931,9 +931,12 @@ def seed_correction(seed_file, chr_name, mode):
 		seed_std_compare("haplotype.txt", chr_name)
 		"""
 	elif mode == "ref":
+		file_name = "haplotype_expanded.txt"
 		seed_expand_ref()
 		seed_recover_extract_ref()
-		seed_std_compare("haplotype_expanded.txt", chr_name)
+		seed_std_compare(file_name, chr_name)
+		#hifi_run(file_name, chr_name)
+		#hifiAccuCheck("imputed_"+file_name, chr_name)
 	elif mode == "refe":
 		#seed_expand_ref()
 		file_name = "haplotype_expanded.txt"
@@ -942,10 +945,10 @@ def seed_correction(seed_file, chr_name, mode):
 		same_to_A_dict = load_seed_data_from_dict(same_to_A_dict)
 		same_to_A_dict = dict_add(same_to_A_dict, seed_homo_dict)
 		output_revised_seed("haplotype_a.txt", same_to_A_dict)
-
+		"""
 		hifi_run(file_name, chr_name)
 		hifiAccuCheck("imputed_"+file_name, chr_name)
-		"""
+		
 		file_name = "haplotype_a.txt"
 		hifi_run(file_name, chr_name)
 		hifiAccuCheck("imputed_"+file_name, chr_name)
@@ -992,22 +995,33 @@ if __name__=='__main__':
 	chr_name = options.chrName
 	mode = options.mode	
 	#seed_correction(seed_file, chr_name, mode)
-	
+	"""
 	# for removing error seed
-	for i in range (0,5):
+	for i in range (0,1):
 		seed_correction(seed_file, chr_name, mode)
 		os.system("mkdir -p " + str(i))
 		os.system("cp haplotype_new* imputed_haplotype_* haplotype_?.txt " + str(i))
 		os.system("cp haplotype_new.txt haplotype.txt")
 		
-	"""
+	
 	# for adding new seed
 	for i in range (0,4):
 		seed_correction(seed_file, chr_name, mode)
 		os.system("mkdir -p " + str(i))
 		os.system("cp haplotype_new* imputed_haplotype_* haplotype_ori_?.txt haplotype_ori_10.txt haplotype_recoved.txt " + str(i))
 		#os.system("cp haplotype_recoved.txt haplotype_new.txt")
-	
+	"""
+	# for ref expand
+	for i in range (0,3):
+		mode = "ref"
+		seed_correction(seed_file, chr_name, mode)
+		os.system("cp haplotype_nexpanded.txt haplotype.txt")
+		for j in range (0,5):
+			mode = "split"
+			seed_correction(seed_file, chr_name, mode)
+		os.system("cp haplotype_new.txt haplotype.txt")	
+		mode = "ref"
+	"""
 	for i in range (0,1):
 		seed_correction(seed_file, chr_name, mode)
 	"""

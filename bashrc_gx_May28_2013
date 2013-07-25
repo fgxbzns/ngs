@@ -5,7 +5,7 @@ alias df='df -h'	#disk
 # Alias of cd
 alias cd1='cd ..'
 alias cd2='cd ../..'
-Alias cd3='cd ../../..'
+alias cd3='cd ../../..'
 alias cd4='cd ../../../..'
 alias cd5='cd ../../../../..'
 

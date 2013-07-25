@@ -13,6 +13,7 @@ class snps:
 		self.position = 0
 		self.A = ""
 		self.B = ""
+		self.depth = 0
 		self.covered_reads_list = []
 		self.allele_dict = {'A':0, 'T':0, 'C':0, 'G':0}
 		self.consistence = True
@@ -21,16 +22,16 @@ class snps:
 		self.max_allele_percentage = 0
 
 # class to store reads from sam file
-class read:
-	def __init__(self, qName, flag, chrName, start_position, read_sequence, quality_score_sequence, read_length, covered_snp):
-		self.qName = qName
-		self.flag = flag
-		self.chrName = chrName
-		self.start_position = start_position
-		self.read_sequence = read_sequence
-		self.quality_score_sequence = quality_score_sequence
-		self.read_length = read_length
-		self.covered_snp = covered_snp
+class reads:
+	def __init__(self):
+		self.qName = ""
+		self.flag = ""
+		self.chrName = ""
+		self.start_position = 0
+		self.read_sequence = ""
+		self.quality_score_sequence = ""
+		self.read_length = 0
+		self.covered_snp = ""
 		
 def get_args():
 	desc="variation call"
@@ -89,7 +90,7 @@ def variant_call_pair_end(sam_file, chr_dict):
 				if read_ID_first == read_ID_second:		# check if the two reads belong to the same pair
 					""" keep the pair as long as one read is not multiple mapping"""
 					""" check if the reads from the same pair are mapped to the same chr	"""
-					if chrName_first.startswith("chr") and (chrName_first == chrName_second) and ((not is_multiple_maping(elements_first)) or (not is_multiple_maping(elements_second))): 
+					if chrName_first.startswith("chr8") and (chrName_first == chrName_second) and ((not is_multiple_maping(elements_first)) or (not is_multiple_maping(elements_second))): 
 						
 						if chrName_first not in chr_dict:
 							chr_dict[chrName_first] = {}
@@ -110,7 +111,17 @@ def variant_call_pair_end(sam_file, chr_dict):
 							quality_score_symbol = quality_score_sequence_first[i]
 							if (not covered_snp == 'N') and ((ord(quality_score_symbol)-33) > quality_score_threshold):	# check quality_score
 								covered_snp_total_number += 1
-								chr_dict[chrName_first][current_base_position].covered_reads_list.append(read(qName_first, flag_first, chrName_first, start_position_first, read_sequence_first, quality_score_sequence_first, read_length_first, covered_snp))					
+								chr_dict[chrName_first][current_base_position].depth += 1
+								"""
+								read = reads()
+								read.qName = qName_first
+										
+								read.flag = flag_first
+								read.chrName = chrName_first
+								read.start_position = start_position_first
+								read.covered_snp = covered_snp
+								"""
+								#chr_dict[chrName_first][current_base_position].covered_reads_list.append(read)					
 								for base, value in chr_dict[chrName_second][current_base_position].allele_dict.iteritems():
 									if base == covered_snp:
 										chr_dict[chrName_second][current_base_position].allele_dict[base] += 1		
@@ -132,7 +143,17 @@ def variant_call_pair_end(sam_file, chr_dict):
 							quality_score_symbol = quality_score_sequence_second[i]
 							if (not covered_snp == 'N') and ((ord(quality_score_symbol)-33) > quality_score_threshold):
 								covered_snp_total_number += 1
-								chr_dict[chrName_first][current_base_position].covered_reads_list.append(read(qName_second, flag_second, chrName_second, start_position_second, read_sequence_second, quality_score_sequence_second, read_length_second, covered_snp))					
+								chr_dict[chrName_first][current_base_position].depth += 1
+								"""
+								read = reads()
+								read.qName = qName_second
+								
+								read.flag = flag_self.covered_reads_list = []second
+								read.chrName = chrName_second
+								read.start_position = start_position_second
+								read.covered_snp = covered_snp	
+								"""
+								#chr_dict[chrName_first][current_base_position].covered_reads_list.append(read)					
 								for base, value in chr_dict[chrName_second][current_base_position].allele_dict.iteritems():
 									if base == covered_snp:
 										chr_dict[chrName_second][current_base_position].allele_dict[base] += 1	
@@ -154,13 +175,14 @@ def output_coverage_info(chr_dict):
 		for data in chr_sub_sorted_list:
 			position = data[0]
 			snp = data[1]
-			coverage = len(snp.covered_reads_list)
+			#coverage = len(snp.covered_reads_list)
 			allele_dict = snp.allele_dict
+			depth = snp.depth
 			max_allele = keywithmaxval(allele_dict)
 			max_allele_number = allele_dict[max_allele]
-			print >> output_file, chr, position, coverage,max_allele, max_allele_number, allele_dict["A"], allele_dict["T"], allele_dict["C"], allele_dict["G"]
-			for reads in snp.covered_reads_list:
-				print >> output_file, reads.qName, reads.flag, reads.start_position, reads.covered_snp, reads.read_sequence, reads.quality_score_sequence
+			print >> output_file, chr, position, depth, max_allele, max_allele_number, allele_dict["A"], allele_dict["T"], allele_dict["C"], allele_dict["G"]
+			#for reads in snp.covered_reads_list:
+			#	print >> output_file, reads.qName, reads.flag, reads.start_position, reads.covered_snp, reads.read_sequence, reads.quality_score_sequence
 	output_file.close()
 
 def snpPick(sam_file):
@@ -190,8 +212,8 @@ def snpPick(sam_file):
 	for chr, chr_sub_dict in chr_dict.iteritems():
 		print chr, len(chr_sub_dict)
 	
-	print chr_dict['chr12'][23241515].covered_reads_list[0].read_sequence
-	print chr_dict['chr12'][23241515].allele_dict
+	#print chr_dict['chr12'][23241515].covered_reads_list[0].read_sequence
+	#print chr_dict['chr12'][23241515].allele_dict
 	
 	output_coverage_info(chr_dict)
 

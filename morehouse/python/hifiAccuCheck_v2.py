@@ -58,6 +58,7 @@ def compare_std_result(hifi_result_dict, hifi_std_dict):
 	same_to_X_dict = {}
 	same_to_N_dict = {}
 	same_to_AB_dict = {}
+	AT_GC_dict = {}
 	not_same_to_AB_dict = {}
 	different_position_dict = {}
 	same_position_total_number = 0
@@ -71,26 +72,30 @@ def compare_std_result(hifi_result_dict, hifi_std_dict):
 			elements_std = hifi_std_dict[position]
 			std_A = elements_std[2].strip()
 			std_B = elements_std[3].strip()
-			if similarity == "similar_to_B":		# for solid data 4 and 6, the hifi seed is from mother (B)
-				hifi_A, hifi_B = hifi_B, hifi_A
-				# the hifi seed is from father, A				
-			if hifi_A == std_A:	#A is A
-				if hifi_B == std_B:
+			if (std_A == "A" and std_B == "T") or (std_A == "C" and std_B == "G") or (std_A == "T" and std_B == "A") or (std_A == "G" and std_B == "C"):
+				AT_GC_dict[position] = elements_hifi
+			#if True:
+			else:	
+				if similarity == "similar_to_B":		# for solid data 4 and 6, the hifi seed is from mother (B)
+					hifi_A, hifi_B = hifi_B, hifi_A
+					# the hifi seed is from father, A				
+				if hifi_A == std_A:	#A is A
+					if hifi_B == std_B:
+						same_to_AB_dict[position] = elements_hifi
+					else:
+						same_to_A_dict[position] = elements_hifi
+				elif hifi_B == std_B:
+					same_to_B_dict[position] = elements_hifi
+				elif std_A == "X" or std_B == "X" or std_A == "N" or std_B == "N":
 					same_to_AB_dict[position] = elements_hifi
 				else:
-					same_to_A_dict[position] = elements_hifi
-			elif hifi_B == std_B:
-				same_to_B_dict[position] = elements_hifi
-			elif std_A == "X" or std_B == "X" or std_A == "N" or std_B == "N":
-				same_to_AB_dict[position] = elements_hifi
-			else:
-				not_same_to_AB_dict[position] = elements_hifi
-			same_position_total_number += 1			
+					not_same_to_AB_dict[position] = elements_hifi
+				same_position_total_number += 1			
 		else:
 			different_position_total_number += 1
 			different_position_dict[position] = elements_hifi
 			
-	return (same_to_A_dict, same_to_B_dict, same_to_AB_dict, not_same_to_AB_dict, different_position_dict, same_position_total_number, different_position_total_number)
+	return (same_to_A_dict, same_to_B_dict, same_to_AB_dict, not_same_to_AB_dict, different_position_dict, same_position_total_number, different_position_total_number, AT_GC_dict)
 
 
 def output_dict(file_name, dict, hifi_std_dict):
@@ -123,6 +128,7 @@ def hifiAccuCheck (hifi_result_file, chr_name):
 	different_position_dict = compare_tuple[4]
 	same_position_total_number = compare_tuple[5]
 	different_position_total_number = compare_tuple[6]
+	AT_GC_dict_number = len(compare_tuple[7])
 	"""
 	output_dict("same_to_A_dict.txt", same_to_A_dict, hifi_std_dict)
 	output_dict("same_to_B_dict.txt", same_to_B_dict, hifi_std_dict)
@@ -142,6 +148,7 @@ def hifiAccuCheck (hifi_result_file, chr_name):
 	print "same_AB_total_number", same_AB_total_number
 	print "same_A_total_number", same_A_total_number
 	print "same_B_total_number", same_B_total_number
+	print "AT_GC_dict_number", AT_GC_dict_number
 	print "not_same_AB_total_number", not_same_AB_total_number
 	print "pencentage in common", pencentage_in_common
 	print "accuracy", accuracy
