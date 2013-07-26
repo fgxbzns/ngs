@@ -609,7 +609,7 @@ def seed_recover_extract_ref():
 	print "hifi_sorted_pos_list", len(hifi_sorted_pos_list)
 	for position, snp in seed_hetero_dict.iteritems():
 		pos_index = hifi_sorted_pos_list.index(position)
-		expand_range = 3
+		expand_range = 2
 		start_position = (pos_index-expand_range) if pos_index-expand_range >=0 else 0
 		end_position = (pos_index+expand_range) if (pos_index+expand_range) < len(hifi_sorted_list) else len(hifi_sorted_list)-1
 		for new_pos in range (start_position, end_position):
@@ -620,8 +620,8 @@ def seed_recover_extract_ref():
 				max_value = seed.allele_dict[max_base]
 				seed.allele_new_percentage = float(max_value)/float(number_of_subfile)
 				if seed.allele_new_percentage*100 >= 0.70: #and position in geno_dict and max_base in geno_dict[position][2]:
-					if True:
-					#if position in qscore_dict and qscore_dict[position]/float(number_of_subfile-2) >= 0.70:
+					#if True:
+					if position in qscore_dict and qscore_dict[position]/float(number_of_subfile-2) >= 0.70:
 						seed.allele_new = max_base
 						recovered_seed_dict[hifi_sorted_list[new_pos][0]] = seed
 	
@@ -841,14 +841,7 @@ def seed_correction(seed_file, chr_name, mode):
 	global geno_title_info
 	global seed_file_name
 	global number_of_subfile
-	
-	
-	start = time.time()	
-	options = get_args()
-	seed_file = options.seedFile
-	chr_name = options.chrName
-	mode = options.mode	
-	
+		
 	ref_file_name = "refHaplos.txt"
 	ref_tuple = load_raw_data(ref_file_name, raw_data_format)
 	ref_title_info = ref_tuple[0]
@@ -941,10 +934,11 @@ def seed_correction(seed_file, chr_name, mode):
 		#seed_expand_ref()
 		file_name = "haplotype_expanded.txt"
 		seed_recover_extract_ref()
-		same_to_A_dict = seed_std_compare(file_name, chr_name)
+		seed_tuple = seed_std_compare(file_name, chr_name)
+		same_to_A_dict = seed_tuple[0]
 		same_to_A_dict = load_seed_data_from_dict(same_to_A_dict)
 		same_to_A_dict = dict_add(same_to_A_dict, seed_homo_dict)
-		output_revised_seed("haplotype_a.txt", same_to_A_dict)
+		#output_revised_seed("haplotype_a.txt", same_to_A_dict)
 		"""
 		hifi_run(file_name, chr_name)
 		hifiAccuCheck("imputed_"+file_name, chr_name)
@@ -954,11 +948,57 @@ def seed_correction(seed_file, chr_name, mode):
 		hifiAccuCheck("imputed_"+file_name, chr_name)
 		"""
 	else:
+		
+		"""check error seed"""
+		file_name = "haplotype_expanded.txt"
+		seed_tuple = seed_std_compare(file_name, chr_name)
+		same_to_A_dict = seed_tuple[0]
+		same_to_A_dict = load_seed_data_from_dict(same_to_A_dict)
+		same_to_B_dict = seed_tuple[1]
+		same_to_B_dict = load_seed_data_from_dict(same_to_B_dict)
+		#output_revised_seed("haplotype_A.txt", same_to_A_dict)
+		#output_revised_seed("haplotype_B.txt", same_to_B_dict)
+		position = 409399
+		position = 1109818
+		position = 128659696
+		
+		temp_dict = {}
+		temp_dict[position] = same_to_B_dict[position]
+		print position, same_to_B_dict[position].allele_new
+		print position, hap_std_dict[position][2], hap_std_dict[position][3]
+		temp_dict[position].allele_new = hap_std_dict[position][2]
+		print position, temp_dict[position].allele_new
+		#same_to_A_dict = dict_add(same_to_A_dict, temp_dict)
+		same_to_A_dict = dict_add(same_to_A_dict, seed_homo_dict)
+		
+		output_revised_seed("haplotype_one.txt", same_to_A_dict)
+		seed_tuple = seed_std_compare("haplotype_one.txt", chr_name)
+		
+		hifi_run("haplotype_one.txt", chr_name)
+		hifi_dict = {}
+		hifi_dict = load_hifi_result("imputed_haplotype_one.txt", hifi_dict)
+		a = 0
+		hifi_B_dict = {}
+		hifi_B_dict[position] = same_to_B_dict[position]
+		for position, snp in same_to_B_dict.iteritems():
+			
+			if snp.allele_new != hifi_dict[position].allele_new:
+				a += 1
+				hifi_B_dict[position] = hifi_dict[position]
+				print position, snp.allele_new, hifi_dict[position].allele_new, 
+				if position in hap_std_dict:
+					print hap_std_dict[position][2], hap_std_dict[position][3]
+		print a
+		file_name = "refHaplos.txt"
+		for position, seed in hifi_B_dict.iteritems():
+			calculate_maf(file_name, position)
+		#output_revised_seed("haplotype_hifi_B.txt", hifi_B_dict)
+		
 		#pass
 		#compare_std_geno_ref()
 		#compare_geno_ref()
 		#generate_std_seed(8000)
-		
+		"""
 		seed_12000 = load_raw_data("haplotype_a.txt", raw_data_format)[1]
 		seed_std = load_raw_data("haplotype_std.txt", raw_data_format)[1]
 		difference_dict = dict_substract(seed_std, seed_12000)
@@ -967,7 +1007,7 @@ def seed_correction(seed_file, chr_name, mode):
 		added_dict = dict_add(seed_12000, seed_std)
 		output_revised_seed_dict("haplotype_12000_std_added.txt", added_dict)
 		
-		"""
+		
 		revised_seed_dict = seed_error_remove_extract(seed_dict)
 		same_to_B_dict = seed_std_compare("haplotype_new.txt", chr_name)
 		print same_to_B_dict
@@ -1010,19 +1050,21 @@ if __name__=='__main__':
 		os.system("mkdir -p " + str(i))
 		os.system("cp haplotype_new* imputed_haplotype_* haplotype_ori_?.txt haplotype_ori_10.txt haplotype_recoved.txt " + str(i))
 		#os.system("cp haplotype_recoved.txt haplotype_new.txt")
-	"""
+	
 	# for ref expand
-	for i in range (0,3):
+	for i in range (0,10):
+		print "########### ref #########", i
 		mode = "ref"
 		seed_correction(seed_file, chr_name, mode)
-		os.system("cp haplotype_nexpanded.txt haplotype.txt")
-		for j in range (0,5):
+		os.system("cp haplotype_expanded.txt haplotype.txt")
+		for j in range (0,10):
+			print "*************** split *************",  j, "ref", i
 			mode = "split"
 			seed_correction(seed_file, chr_name, mode)
-		os.system("cp haplotype_new.txt haplotype.txt")	
+			os.system("cp haplotype_new.txt haplotype.txt")	
 		mode = "ref"
 	"""
 	for i in range (0,1):
 		seed_correction(seed_file, chr_name, mode)
-	"""
+	
 

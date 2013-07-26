@@ -2,6 +2,8 @@
 
 # location /home/guoxing/tool/morehouse
 
+"""July 24 2013, do not count At, CG snps  """
+
 import os, glob, subprocess, random, operator, time
 from optparse import OptionParser
 from tools import *
@@ -72,10 +74,10 @@ def compare_std_result(hifi_result_dict, hifi_std_dict):
 			elements_std = hifi_std_dict[position]
 			std_A = elements_std[2].strip()
 			std_B = elements_std[3].strip()
-			if (std_A == "A" and std_B == "T") or (std_A == "C" and std_B == "G") or (std_A == "T" and std_B == "A") or (std_A == "G" and std_B == "C"):
-				AT_GC_dict[position] = elements_hifi
-			#if True:
-			else:	
+			#if (std_A == "A" and std_B == "T") or (std_A == "C" and std_B == "G") or (std_A == "T" and std_B == "A") or (std_A == "G" and std_B == "C"):
+			#	AT_GC_dict[position] = elements_hifi
+			if True:
+			#else:	
 				if similarity == "similar_to_B":		# for solid data 4 and 6, the hifi seed is from mother (B)
 					hifi_A, hifi_B = hifi_B, hifi_A
 					# the hifi seed is from father, A				
@@ -89,7 +91,10 @@ def compare_std_result(hifi_result_dict, hifi_std_dict):
 				elif std_A == "X" or std_B == "X" or std_A == "N" or std_B == "N":
 					same_to_AB_dict[position] = elements_hifi
 				else:
-					not_same_to_AB_dict[position] = elements_hifi
+					if (std_A == "A" and std_B == "T") or (std_A == "C" and std_B == "G") or (std_A == "T" and std_B == "A") or (std_A == "G" and std_B == "C"):
+						AT_GC_dict[position] = elements_hifi
+					else:
+						not_same_to_AB_dict[position] = elements_hifi
 				same_position_total_number += 1			
 		else:
 			different_position_total_number += 1
@@ -141,7 +146,7 @@ def hifiAccuCheck (hifi_result_file, chr_name):
 	not_same_AB_total_number = len(not_same_to_AB_dict)
 	
 	pencentage_in_common = format(float(same_position_total_number)/float(hifi_result_total_number)*100, "0.3f")
-	accuracy = format(float(same_A_total_number + same_B_total_number + same_AB_total_number)/float(same_position_total_number)*100, "0.3f")	
+	accuracy = format(float(same_A_total_number + same_B_total_number + same_AB_total_number)/float(same_position_total_number-AT_GC_dict_number)*100, "0.3f")	
 	
 	print "same_position_total_number", same_position_total_number
 	print "different_position_total_number", different_position_total_number
@@ -169,7 +174,7 @@ def hifiAccuCheck (hifi_result_file, chr_name):
 	print >> accuracy_output_file, "accuracy: ", accuracy
 	
 	accuracy_output_file.close()
-	
+	"""
 	# record data
 	data_record_file_name = "solid_process_4.txt"
 	data_record_file = open(data_record_path + data_record_file_name, "a")
@@ -178,7 +183,7 @@ def hifiAccuCheck (hifi_result_file, chr_name):
 	cmd = "grep hifi_data hifi_accuracy.txt >> " + data_record_path + data_record_file_name
 	#print cmd
 	#os.system(cmd)
-
+	"""
 if __name__=='__main__':
 	options = get_args()
 	chr_name = options.chrName

@@ -123,4 +123,11 @@ def group_seed(seed_dict, geno_dict):
 			seed_hetero_dict[position] = snp
 	return (seed_homo_dict, seed_hetero_dict)
 
+def time():
+	
+	start = time.time()	
+	end = time.time()
+	run_time = str(format((end - start), "0.3f"))
+	print "run time is: " + run_time + "s"
+
 

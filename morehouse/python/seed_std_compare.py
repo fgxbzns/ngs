@@ -77,7 +77,11 @@ def seed_std_compare(seed_input_file, chr_name):
 	print >> compare_output_file, "homo seed", seed_same_to_AB
 	print >> compare_output_file, "seed_not_AB", seed_not_AB	
 	compare_output_file.close()
-	return same_to_A_dict
+	print same_to_B_dict
+	for pos, snp in same_to_B_dict.iteritems():
+		print snp_hap_std_dict[pos]
+	
+	return (same_to_A_dict, same_to_B_dict)
 
 """
 def usage():
