@@ -16,6 +16,13 @@ def getTotalBaseNum(fileName):
 	return totalBase
 	f.close()
 
+def wccount(file_name):
+    out = subprocess.Popen(['wc', '-l', file_name],
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.STDOUT
+                         ).communicate()[0]
+    return int(out.partition(b' ')[0])
+
 # Reading options
 usage = "usage: %prog [options] arg1" 
 parser = OptionParser(usage = usage) 
@@ -25,8 +32,6 @@ parser.add_option("-s", "--startLine", type="string", dest="startLine",help = "s
 parser.add_option("-e", "--endLine", type="string", dest="endLine",help = "end line", default="null")
 parser.add_option("-t", "--totalLine", dest="totalLine",help = "total number of lines", default=False)
 parser.add_option("-p", "--percentage", type="string", dest="percentage",help = "percentage of total lines", default="null")
-
-
 
 (options, args) = parser.parse_args()
 
@@ -70,10 +75,13 @@ if startLine != "null" and endLine != "null":
 	outputFile.close()
 
 if totalLine:
+	"""
 	i = 0
 	for line in inputFile_ori:
 		i += 1
 	print "total line is: ", i
+	"""
+	print "total line is: ", wccount(inputfile)
 	
 if percentage != "null":
 	percentage = float(percentage)

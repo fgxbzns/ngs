@@ -3,7 +3,7 @@
 import os, glob, subprocess, random, operator, time, sys, math
 from optparse import OptionParser
 
-""" this works well for small files """
+""" this works well for small files, saves data in dict"""
 
 currentPath = os.getcwd() + '/'
 
