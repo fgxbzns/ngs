@@ -14,7 +14,7 @@ def list_to_line(list):
 	return line
 
 def output_title():
-	output_file_name = "combined_vxf.txt"
+	output_file_name = "combined_vcf.txt"
 	output_file = ouput_data(output_file_name, "w")
 	title_info = "@chr \t pos \t"
 	for file_info in file_name_list:
@@ -157,12 +157,11 @@ def file_combine():
 	
 	options = get_args()
 	chr_name = options.chrName
-	mode = options.mode
-	if mode == "all":
+	a_file_name = options.a_file_name
+	b_file_name = options.b_file_name
+	if a_file_name == "null" and b_file_name == "null":
 		file_tuple = get_file_name_list()
 	else:
-		a_file_name = options.a_file_name
-		b_file_name = options.b_file_name
 		file_tuple = get_file_name_list_2(a_file_name, b_file_name)
 	
 	file_name_list = file_tuple[0]
@@ -196,7 +195,6 @@ def get_args():
 	parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="null")
 	parser.add_option("-a", "--afile", type="string", dest="a_file_name",help = "Input file Name", default="null")
 	parser.add_option("-b", "--bfile", type="string", dest="b_file_name",help = "Input file Name", default="null")
-	parser.add_option("-m", "--mode", type="string", dest="mode",help = "Input combine mode", default="all")
 	(options, args) = parser.parse_args()
 	
 	if options.chrName == "null":
