@@ -148,6 +148,8 @@ def combine_data(file_1, file_2, output_file_name):
 			line += list_to_line(list_2[2:])
 			print >> output_file, line
 			line_2 = fp_2.readline()
+	fp_1.close()
+	fp_2.close()
 	output_file.close()
 			
 def file_combine():

@@ -599,7 +599,7 @@ def seed_recover_extract_ref():
 	print "hifi_sorted_pos_list", len(hifi_sorted_pos_list)
 	
 	position_distance = 5000
-	expand_range = 1
+	expand_range = 2
 	#while position_distance <= 5000:
 	#	recovered_seed_dict = {}
 	print "current position_distance", position_distance
@@ -614,9 +614,9 @@ def seed_recover_extract_ref():
 				max_base = keywithmaxval(seed.allele_dict)
 				max_value = seed.allele_dict[max_base]
 				seed.allele_new_percentage = float(max_value)/float(number_of_subfile)
-				if seed.allele_new_percentage*100 >= 0.70: #and position in geno_dict and max_base in geno_dict[position][2]:
+				if seed.allele_new_percentage*100 >= 0.80: #and position in geno_dict and max_base in geno_dict[position][2]:
 					#if True:
-					if position in qscore_dict and qscore_dict[position]/float(number_of_subfile-2) >= 0.70:
+					if position in qscore_dict and qscore_dict[position]/float(number_of_subfile-2) >= 0.80:
 						seed.allele_new = max_base
 						recovered_seed_dict[hifi_sorted_list[new_pos][0]] = seed
 	
@@ -649,7 +649,7 @@ def seed_expand_geno():
 	seed_geno_difference_sorted_list = sort_dict_by_key(seed_geno_difference_dict)
 	
 	random_geno_seed_dict = {}
-	geno_seed_selected_number = 200
+	geno_seed_selected_number = 1000
 	for i in range (0, geno_seed_selected_number):
 		random_index = random.randrange(0,len(seed_geno_difference_dict))
 		position = seed_geno_difference_sorted_list[random_index][0]
@@ -955,79 +955,96 @@ def generate_std_seed(seed_number):
 		hifi_run(file_name, chr_name)
 		hifiAccuCheck("imputed_"+file_name, chr_name)
 
-def combine_hifi_seed():
+def combine_hifi_seed(ori_seed_file):
 	
 	revised_seed_dict = {}
 	hifi_dict = {}
+	
+	ori_seed_tuple = load_seed_data(ori_seed_file)
+	ori_seed_dict = ori_seed_tuple[1]
 		
 	for i in range (0,ref_cycle_number):
 		input_subfile_name = "haplotype_expanded.txt_" + str(i)
 		hifi_dict = load_hifi_result(input_subfile_name, hifi_dict)
 	
+	print "hifi_dict seed total number", len(hifi_dict)
+	
 	for position, snp in hifi_dict.iteritems():
-		seed = hifi_dict[position]
-		max_base = keywithmaxval(seed.allele_dict)
-		max_value = seed.allele_dict[max_base]
-		seed.allele_new_percentage = float(max_value)/float(ref_cycle_number)
-		if seed.allele_new_percentage == 1.00:
-			seed.allele_new = max_base
-			revised_seed_dict[position] = seed
+		if position not in ori_seed_dict:
+			seed = hifi_dict[position]
+			max_base = keywithmaxval(seed.allele_dict)
+			max_value = seed.allele_dict[max_base]
+			seed.allele_new_percentage = float(max_value)/float(ref_cycle_number)
+			if seed.allele_new_percentage == 1.00:
+				seed.allele_new = max_base
+				revised_seed_dict[position] = seed
+			else:
+				#print seed.allele_new_percentage 
+				pass
 
 	print "consistent seed total number", len(revised_seed_dict)
-	revised_seed_dict = dict_add(seed_dict, revised_seed_dict)
+	revised_seed_dict = dict_add(ori_seed_dict, revised_seed_dict)
 	print "new seed total number", len(revised_seed_dict)
-	output_revised_seed("haplotype.txt", revised_seed_dict)
-	seed_std_compare("haplotype.txt", chr_name)
+	output_filename = "haplotype.txt"
+	output_revised_seed(output_filename, revised_seed_dict)
+	seed_std_compare(output_filename, chr_name)
 
 def multple_ref_expand(seed_file, chr_name, mode):
 	#global seed_dict
 	global ref_cycle_number
-	ref_cycle_number = 5
-	for i in range (0,5):
+	ref_cycle_number = 3
+	sub_cycle = 2
+	
+	os.system("cp haplotype.txt haplotype_ori.txt")
+	
+	for i in range (0,1):
+		"""
 		print "########### overall expand cycle #########", i
 		for j in range (0,ref_cycle_number):
+			os.system("cp haplotype_ori.txt haplotype.txt")
 			mode = "ref"
 			print "########### ref expand cycle #########", j
 			seed_correction(seed_file, chr_name, mode)
 			os.system("cp haplotype_expanded.txt haplotype.txt")
 			
-			
-			for k in range (0,3):
+			for k in range (0,sub_cycle):
 				print "*************** split *************",  k
 				mode = "split"
 				seed_correction(seed_file, chr_name, mode)
 				os.system("cp haplotype_new.txt haplotype.txt")	
-		
-		file_name = "haplotype_expanded.txt"
-		output_file = file_name + "_" + str(j)
-		os.system("cp haplotype_expanded.txt " + output_file)
 			
-		combine_hifi_seed()
-	
-		for j in range (0,3):
+			os.system("cp haplotype_new.txt haplotype_expanded.txt")
+			file_name = "haplotype_expanded.txt"
+			output_file = file_name + "_" + str(j)
+			os.system("cp haplotype_expanded.txt " + output_file)
+		"""
+		print "*************** combine expanded hifi results *************"
+		combine_hifi_seed("haplotype_ori.txt")
+		"""
+		for j in range (0,sub_cycle):
 			print "*************** split *************",  j
 			mode = "split"
 			seed_correction(seed_file, chr_name, mode)
 			os.system("cp haplotype_new.txt haplotype.txt")	
-			
-		for j in range (0,3):
+		"""	
+		for j in range (0,sub_cycle):
 			print "*************** geno expand *************",  j
 			mode = "geno"
 			seed_correction(seed_file, chr_name, mode)
 			os.system("cp haplotype_expanded.txt haplotype.txt")	
 		
-			for k in range (0,3):
+			for k in range (0,sub_cycle):
 				print "*************** split *************",  k
 				mode = "split"
 				seed_correction(seed_file, chr_name, mode)
 				os.system("cp haplotype_new.txt haplotype.txt")	
 		
-		for j in range (0,3):
+		for j in range (0,sub_cycle):
 			print "*************** split *************",  j
 			mode = "split"
 			seed_correction(seed_file, chr_name, mode)
 			os.system("cp haplotype_new.txt haplotype.txt")	
-
+		
 	
 	file_name = "haplotype.txt"
 	hifi_run(file_name, chr_name)
@@ -1190,6 +1207,10 @@ def seed_correction(seed_file, chr_name, mode):
 		seed_geno_extract()
 		file_name = "haplotype_expanded.txt"
 		seed_std_compare(file_name, chr_name)
+	
+	elif mode == "combine":
+		combine_hifi_seed()
+	
 		
 	else:
 		
