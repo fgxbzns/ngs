@@ -649,7 +649,7 @@ def seed_expand_geno():
 	seed_geno_difference_sorted_list = sort_dict_by_key(seed_geno_difference_dict)
 	
 	random_geno_seed_dict = {}
-	geno_seed_selected_number = 1000
+	geno_seed_selected_number = 200
 	for i in range (0, geno_seed_selected_number):
 		random_index = random.randrange(0,len(seed_geno_difference_dict))
 		position = seed_geno_difference_sorted_list[random_index][0]
@@ -983,21 +983,25 @@ def multple_ref_expand(seed_file, chr_name, mode):
 	#global seed_dict
 	global ref_cycle_number
 	ref_cycle_number = 5
-	for i in range (0,3):
+	for i in range (0,5):
 		print "########### overall expand cycle #########", i
 		for j in range (0,ref_cycle_number):
 			mode = "ref"
 			print "########### ref expand cycle #########", j
 			seed_correction(seed_file, chr_name, mode)
-			file_name = "haplotype_expanded.txt"
-			output_file = file_name + "_" + str(j)
-			os.system("cp haplotype_expanded.txt " + output_file)
-			"""
-			mode = "split"
 			os.system("cp haplotype_expanded.txt haplotype.txt")
-			seed_correction(seed_file, chr_name, mode)
-			os.system("cp haplotype_new.txt haplotype.txt")	
-			"""
+			
+			
+			for k in range (0,3):
+				print "*************** split *************",  k
+				mode = "split"
+				seed_correction(seed_file, chr_name, mode)
+				os.system("cp haplotype_new.txt haplotype.txt")	
+		
+		file_name = "haplotype_expanded.txt"
+		output_file = file_name + "_" + str(j)
+		os.system("cp haplotype_expanded.txt " + output_file)
+			
 		combine_hifi_seed()
 	
 		for j in range (0,3):
@@ -1012,8 +1016,8 @@ def multple_ref_expand(seed_file, chr_name, mode):
 			seed_correction(seed_file, chr_name, mode)
 			os.system("cp haplotype_expanded.txt haplotype.txt")	
 		
-			for j in range (0,2):
-				print "*************** split *************",  j
+			for k in range (0,3):
+				print "*************** split *************",  k
 				mode = "split"
 				seed_correction(seed_file, chr_name, mode)
 				os.system("cp haplotype_new.txt haplotype.txt")	
