@@ -33,27 +33,6 @@ class reads:
 		self.read_length = 0
 		self.covered_snp = ""
 		
-def get_args():
-	desc="variation call"
-	usage = "snpPick_fish -s sam_file" 
-	parser = OptionParser(usage = usage)
-	parser.add_option("-s", "--sam", type="string", dest="samFile",help = "Input File Name", default="null")
-	(options, args) = parser.parse_args()
-	if options.samFile == "null":
-		print "parameters missing..."
-		print usage
-		sys.exit(1)
-	return options
-
-def is_multiple_maping(elements):
-	multiple_maping = False
-	try:
-		XA = elements_first[21].strip()
-		multiple_maping_first = True
-	except:
-		pass
-	return multiple_maping
-
 def variant_call_pair_end(sam_file, chr_dict):
 	
 	inputfile_sam = open(currentPath + sam_file, "r")
@@ -223,6 +202,18 @@ def snpPick(sam_file):
 
 	#data_record_file.write("run time is: " + run_time + "s \n")
 	#data_record_file.close()
+
+def get_args():
+	desc="variation call"
+	usage = "snpPick_fish -s sam_file" 
+	parser = OptionParser(usage = usage)
+	parser.add_option("-s", "--sam", type="string", dest="samFile",help = "Input File Name", default="null")
+	(options, args) = parser.parse_args()
+	if options.samFile == "null":
+		print "parameters missing..."
+		print usage
+		sys.exit(1)
+	return options
 	
 if __name__=='__main__':
 	options = get_args()

@@ -17,7 +17,8 @@
 
 #define LINECAPACITY 10000
 #define RSCAPACITY 40
-#define MAFSTEP 0.01
+//#define MAFSTEP 0.01	ori minor allele frequence step
+#define MAFSTEP 0.1
 #define IMPUTORTABLEWIDTH 1024
 #define MAXCOMPARELEN 1000
 #define WINI 16
@@ -78,6 +79,7 @@ int main(int argc, char** argv)
 	strcpy(haplotype,argv[1]);
 	strcpy(genotype,argv[2]);
 	strcpy(refhap,argv[3]);
+	
 	strcpy(impute,"imputed_");
 	strncat(impute,haplotype,32);
 	//strncat(impute,genotype,32);

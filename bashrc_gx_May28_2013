@@ -198,6 +198,7 @@ alias sam_dump='$sratools_path/sam-dump'
 export bash_path=/home/guoxing/disk2/ngs/bash
 alias solid_bash='$bash_path/solid_bash.sh'
 alias grep_position='$bash_path/grep_position.sh'
+alias seperate_sam_by_chr='$bash_path/seperate_sam_by_chr.sh'
 
  #NGS programs
 #export disk2ToolPath=/home/guoxing/disk2/tool

@@ -7,6 +7,7 @@ import os, glob, subprocess, random, operator, time, sys
 from optparse import OptionParser
 
 from tools import *
+from calculate_maf import calculate_maf
 
 def seed_std_compare(seed_input_file, chr_name):
 	std_file_name = "ASW_"+chr_name+"_child_hap_refed.txt"
@@ -82,9 +83,10 @@ def seed_std_compare(seed_input_file, chr_name):
 	"""
 	print same_to_B_dict
 	"""
+	file_name = "refHaplos.txt"
 	for pos, snp in same_to_B_dict.iteritems():
 		print snp_hap_std_dict[pos]
-	
+		#calculate_maf(file_name, pos)
 	return (same_to_A_dict, same_to_B_dict)
 	
 """
