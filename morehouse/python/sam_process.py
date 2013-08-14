@@ -16,6 +16,7 @@ def is_multiple_maping(elements):
 	return multiple_maping
 
 def pair_end_filter(sam_file):
+	"""filter the reads by pair_end info"""
 	sam_file_name = sam_file[:(len(sam_file)-4)]
 	print "pair_end_filter: ", sam_file_name
 	output_file = open(sam_file_name + "_pairend.sam", "w")

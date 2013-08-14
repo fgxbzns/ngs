@@ -70,45 +70,39 @@ int main(int argc, char** argv)
 		return 0;
 	}
 */
+	if(argc == 1){
+		haplotype = "haplotype.txt"
+		genotype = "genotype.txt"
+		refhap = "refHaplos.txt"
+	}
+	
+	if(argc == 2){
+		haplotype = "haplotype.txt"
+		genotype = "genotype.txt"
+		refhap = "refHaplos.txt"
+	}
+	
+	
 	char haplotype[32];
 	char genotype[32];
 	char refhap[32];
-	double MAFSTEP = 0.1;
-		
-	if(argc == 1){
-		strcpy(haplotype,"haplotype.txt");
-		strcpy(genotype,"genotype.txt");
-		strcpy(refhap,"refHaplos.txt");
-	}
+	char maf_step[32];
 	
-	else if(argc == 2){
-		strcpy(haplotype,argv[1]);
-		strcpy(genotype,"genotype.txt");
-		strcpy(refhap,"refHaplos.txt");
-	}
-	
-	else if(argc == 4){
-		strcpy(haplotype,argv[1]);
-		strcpy(genotype,argv[2]);
-		strcpy(refhap,argv[3]);
-	}
-	
-	else if(argc == 5){
-		strcpy(haplotype,argv[1]);
-		strcpy(genotype,argv[2]);
-		strcpy(refhap,argv[3]);
-		MAFSTEP = atof(argv[4]);	// alternative strtod
-	}
-	else {
-		printf("The parameter number was wrong!\n");
-		return 0;
-	}
-
 	char impute[32];
 	char qscore[32];
-
+	strcpy(haplotype,argv[1]);
+	strcpy(genotype,argv[2]);
+	strcpy(refhap,argv[3]);
+	
+	// input mafstep
+	double MAFSTEP = 0.1;
+	MAFSTEP = atof(argv[4]);	// alternative strtod
+	
+	
 	strcpy(impute,"imputed_");
 	strncat(impute,haplotype,32);
+	//strncat(impute,genotype,32);
+	//strncat(impute,refhap,32);
 	
 	strcpy(qscore,"qscore_");
 	strncat(qscore,haplotype,32);

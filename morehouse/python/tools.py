@@ -2,9 +2,10 @@
 #######################################################################################
 # Common tools
 #######################################################################################
-
+from __future__ import division
 import os, glob, subprocess, random, operator, time, sys, math
 from optparse import OptionParser
+
 
 """cannot import other files"""
 
@@ -44,7 +45,7 @@ def load_raw_data(file_name, format):
 	return (title_info, data)
 
 def hifi_run(file_name, chr_name):
-	hifi = program_path + "hifi_fu " + file_name
+	hifi = program_path + "hifi_fu_ref " + file_name + " genotype.txt refHaplos.txt 0.10"
 	hifi_process = subprocess.Popen(hifi, shell=True)
 	hifi_process.wait()
 	#hifiAccuCheck("imputed_" + file_name, chr_name)
