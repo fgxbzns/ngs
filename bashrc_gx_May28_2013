@@ -183,6 +183,7 @@ alias calculate_maf='$morehousePath/calculate_maf.py'
 alias sqlite='$morehousePath/sqlite.py'
 alias data_filter='$morehousePath/data_filter.py'
 
+alias cluster='$morehousePath/cluster.py'
 
 
 # other programs
