@@ -46,13 +46,13 @@ def seed_std_compare(seed_input_file, chr_name):
 			elements_seed = snp_hap_seed_dict[position]
 			seed_A = elements_seed[2].strip()
 			#seed_A = elements_seed[3].strip() # for solid data 4 and 6, chr from mother
-			if seed_A == std_A:
+			if seed_A == std_A :
 				if seed_A == std_B:
 					seed_same_to_AB += 1
-				else:
+				elif std_B != "N":
 					seed_same_to_A += 1	
 					same_to_A_dict[position] = elements_seed		
-			elif seed_A == std_B:
+			elif seed_A == std_B and std_A != "N":
 				seed_same_to_B += 1
 				same_to_B_dict[position] = elements_seed
 			elif std_A == "X" or std_B == "X":

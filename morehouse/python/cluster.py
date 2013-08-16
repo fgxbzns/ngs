@@ -3,36 +3,42 @@
 # 
 #######################################################################################
 
-import os, glob, subprocess, random, operator, time, sys
+import os, glob, subprocess, random, operator, time, sys, copy
 from optparse import OptionParser
 
 from tools import *
 
 def ref_convert(file_name):
+	global medium_maf_num
+	
 	maf_upper_bound = 0.5
-	maf_lower_bound = 0.5
-	total_person_number = 0
+	maf_lower_bound = 0.1
+	total_haplotype_number = 0
 	minor_allele_dict = {}
 	hap_ref_dict = load_raw_data(file_name, raw_data_format)[1]
+	"""
 	print list_to_line(hap_ref_dict[36918909])
 	print list_to_line(hap_ref_dict[36916028])
 	print list_to_line(hap_ref_dict[36918576])
-
-	#total_person_number = len(list(hap_ref_dict)[0][1])
-	total_person_number = 372
-	maf_upper_num = int(total_person_number * maf_upper_bound)
-	maf_lower_num = int(total_person_number * maf_lower_bound)
-	print maf_upper_num, maf_lower_num
+	"""
+	key = hap_ref_dict.iterkeys().next()
+	total_haplotype_number = len(hap_ref_dict[key][2:])
+	#print "total_haplotype_number", total_haplotype_number
+	maf_upper_num = int(total_haplotype_number * maf_upper_bound)
+	maf_lower_num = int(total_haplotype_number * maf_lower_bound)
+	medium_maf_num = int(total_haplotype_number * 0.5)
+	#print maf_upper_num, maf_lower_num
 	
 	for pos, ref in hap_ref_dict.iteritems():
 		alleles = ref[2:]
 		minor_allele_number = len(alleles)
 		unique_alleles = set(alleles)
 		alleles_number = len(unique_alleles)
-		if alleles_number == 1 or alleles_number > 2:
+		if alleles_number > 2:		
+			print "more than two alleles in: ", pos
+			sys.exit(1)
+		elif alleles_number == 1:
 			pass
-			#print "error in: ", pos
-			#sys.exit(1)
 		else:
 			maf_list = []
 			for allele in unique_alleles:
@@ -50,39 +56,97 @@ def ref_convert(file_name):
 			if minor_allele_number <= maf_upper_num and minor_allele_number >= maf_lower_num:
 				if minor_allele_number not in minor_allele_dict:
 					minor_allele_dict[minor_allele_number] = []
-				for i in range(len(ref)):
-					if ref[i] == major_allele:
-						ref[i] = "1"
-					if ref[i] == minor_allele:
-						ref[i] = "2"
-#				print ref
-				minor_allele_dict[minor_allele_number].append(ref)
-	print len(minor_allele_dict)
-	#for num, snp_list in minor_allele_dict.iteritems():
-    #           print num, len(snp_list)
+				"""To deal with maf 0.5 snps. problem is each snp will be duplicated and will form a pair with itself"""
+				if minor_allele_number == medium_maf_num:
+					temp_ref = copy.deepcopy(ref)
+					for i in range(len(temp_ref)):
+						if temp_ref[i] == major_allele:
+							temp_ref[i] = "1"
+						if temp_ref[i] == minor_allele:
+							temp_ref[i] = "2"
+					minor_allele_dict[minor_allele_number].append(temp_ref)
+					
+					temp_ref = copy.deepcopy(ref)
+					for i in range(len(temp_ref)):
+						if temp_ref[i] == major_allele:
+							temp_ref[i] = "2"
+						if temp_ref[i] == minor_allele:
+							temp_ref[i] = "1"
+					minor_allele_dict[minor_allele_number].append(temp_ref)			
+				else:
+					for i in range(len(ref)):
+						temp_ref = ref
+						if temp_ref[i] == major_allele:
+							temp_ref[i] = "1"
+						if temp_ref[i] == minor_allele:
+							temp_ref[i] = "2"
+					minor_allele_dict[minor_allele_number].append(temp_ref)
+	print len(minor_allele_dict), " different alleles"
 	return minor_allele_dict
 		
-def find_cluster(minor_allele_dict):
-	total_cluster_number = 0
+def get_cluster(file_name):
+	minor_allele_dict = ref_convert(file_name)
+	ref_cluster_dict = {}
 	for num, snp_list in minor_allele_dict.iteritems():
-		print num, len(snp_list)
+		ref_cluster_dict[num] = []
 		while len(snp_list) > 1:
-			cluster_list = []
+			cluster_dict = {}
 			current_snp = snp_list.pop(0)
-			cluster_list.append(current_snp)
+			cluster_dict[current_snp[1]] = current_snp
 			for snp in snp_list:
-				if current_snp[2:] == snp[2:]:
-					cluster_list.append(snp)
-#					snp_list.remove(snp)
-			if len(cluster_list) > 1:
-				total_cluster_number += len(cluster_list)
-				print "cluster size: ", len(cluster_list)
-				for snps in cluster_list:
-					print snps[0], snps[1]# list_to_line(snps[2:])
+				"""to remove snps pair with itself"""
+				if current_snp[2:] == snp[2:] and snp[1] not in cluster_dict:		  
+					cluster_dict[snp[1]] = snp
+			if len(cluster_dict) > 1:
+				#print "cluster size: ", len(cluster_dict)
+				for pos, snps in cluster_dict.iteritems():
+					#print snps[0], snps[1]# list_to_line(snps[2:])
 					if snps in snp_list:		
 						snp_list.remove(snps)
-	print total_cluster_number
+				ref_cluster_dict[num].append(cluster_dict)	
+	#print "size old", len(ref_cluster_dict)
+	ref_cluster_dict = clean_half_maf_cluster(ref_cluster_dict)
+	#print "size new", len(ref_cluster_dict)
+	ref_cluster_dict = convert_to_allele(file_name, ref_cluster_dict)
+	print_cluster(ref_cluster_dict)
+	return ref_cluster_dict
 
+def convert_to_allele(file_name, ref_cluster_dict):
+	""""convert 1,2 back to ATCG"""
+	hap_ref_dict = load_raw_data(file_name, raw_data_format)[1]
+	for num, snp_list in ref_cluster_dict.iteritems():
+		for i in range(len(snp_list)):
+			for pos, snps in snp_list[i].iteritems():
+				snp_list[i][pos] = hap_ref_dict[int(pos)]
+				#print hap_ref_dict[int(pos)]
+				#print snp_list[i][pos]
+		ref_cluster_dict[num] = snp_list
+	return ref_cluster_dict
+
+def clean_half_maf_cluster(ref_cluster_dict):
+	
+	if medium_maf_num in ref_cluster_dict:
+		medium_maf_list = ref_cluster_dict[medium_maf_num]
+		for first_cluster_dict in medium_maf_list:
+			for second_cluster_dict in medium_maf_list:
+				if first_cluster_dict.keys() == second_cluster_dict.keys():
+					medium_maf_list.remove(second_cluster_dict)
+		ref_cluster_dict[medium_maf_num] = medium_maf_list
+	
+	return ref_cluster_dict
+
+def print_cluster(ref_cluster_dict):
+	total_cluster_number = 0
+	for num, snp_list in ref_cluster_dict.iteritems():
+		print "minor allele number: ", num, len(snp_list)
+		for cluster_dict in snp_list:
+			#print "cluster size: ", len(cluster_dict)
+			total_cluster_number += len(cluster_dict)
+			for pos, snps in cluster_dict.iteritems():
+				#print snps[0], snps[1] # list_to_line(snps[2:])
+				pass
+	print "total_cluster_number", total_cluster_number
+		
 def get_args():
 	desc="calculate_maf"
 	usage = "" 
@@ -97,6 +161,5 @@ def get_args():
 
 if __name__=='__main__':
 	options = get_args()
-	file_name = "refHaplos.txt"
-	minor_allele_dict = ref_convert(file_name)
-	find_cluster(minor_allele_dict)
+	file_name = options.ref_name
+	get_cluster(file_name)
