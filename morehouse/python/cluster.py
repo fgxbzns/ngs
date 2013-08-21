@@ -8,11 +8,11 @@ from optparse import OptionParser
 
 from tools import *
 
-def ref_convert(file_name):
+def ref_convert(file_name, maf_upper_bound, maf_lower_bound):
 	global medium_maf_num
 	
-	maf_upper_bound = 0.5
-	maf_lower_bound = 0.1
+	#maf_upper_bound = 0.5
+	#maf_lower_bound = 0.1
 	total_haplotype_number = 0
 	minor_allele_dict = {}
 	hap_ref_dict = load_raw_data(file_name, raw_data_format)[1]
@@ -84,8 +84,8 @@ def ref_convert(file_name):
 	print len(minor_allele_dict), " different alleles"
 	return minor_allele_dict
 		
-def get_cluster(file_name):
-	minor_allele_dict = ref_convert(file_name)
+def get_cluster(file_name, maf_upper_bound, maf_lower_bound):
+	minor_allele_dict = ref_convert(file_name, maf_upper_bound, maf_lower_bound)
 	ref_cluster_dict = {}
 	for num, snp_list in minor_allele_dict.iteritems():
 		ref_cluster_dict[num] = []
@@ -152,6 +152,8 @@ def get_args():
 	usage = "" 
 	parser = OptionParser(usage = usage, description=desc) 
 	parser.add_option("-i", "--ref", type="string", dest="ref_name",help = "Input ref file name", default="null")
+	parser.add_option("-u", "--upper", type="float", dest="maf_upper_bound",help = "maf_upper_bound", default=0.5)
+	parser.add_option("-l", "--lower", type="float", dest="maf_lower_bound",help = "maf_lower_bound", default=0.2)
 	(options, args) = parser.parse_args()
 	if options.ref_name == "null":
 		print "parameters missing..."
@@ -162,4 +164,6 @@ def get_args():
 if __name__=='__main__':
 	options = get_args()
 	file_name = options.ref_name
-	get_cluster(file_name)
+	maf_upper_bound = options.maf_upper_bound
+	maf_lower_bound = options.maf_lower_bound
+	get_cluster(file_name, maf_upper_bound, maf_lower_bound)
