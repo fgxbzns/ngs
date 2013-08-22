@@ -1038,7 +1038,7 @@ def update_cluster():
 	ref_file_name = "refHaplos.txt"
 	global ref_cluster_dict
 	maf_upper_bound = 0.5
-	maf_lower_bound = 0.49
+	maf_lower_bound = 0.1
 	ref_cluster_dict = get_cluster(ref_file_name, maf_upper_bound, maf_lower_bound)
 	
 	added_by_cluster = 0
@@ -1082,7 +1082,7 @@ def update_cluster():
 	revised_seed_dict = dict_add(seed_dict, revised_seed_dict)
 	output_filename = "haplotype_cluster.txt"
 	output_revised_seed(output_filename, seed_dict)
-	#seed_std_compare(output_filename, chr_name)
+	seed_std_compare(output_filename, chr_name)
 	
 	
 	"""

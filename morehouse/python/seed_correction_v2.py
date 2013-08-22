@@ -1069,7 +1069,7 @@ def multple_ref_expand(seed_file, chr_name, mode):
 	print "seed_dict after", len(seed_dict)
 	seed_dict = seed_dict_bkup.copy()
 	"""
-	
+	cluster_dict
 	
 	#return revised_seed_dict	
 
