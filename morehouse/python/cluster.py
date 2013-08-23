@@ -153,7 +153,7 @@ def get_args():
 	parser = OptionParser(usage = usage, description=desc) 
 	parser.add_option("-i", "--ref", type="string", dest="ref_name",help = "Input ref file name", default="null")
 	parser.add_option("-u", "--upper", type="float", dest="maf_upper_bound",help = "maf_upper_bound", default=0.5)
-	parser.add_option("-l", "--lower", type="float", dest="maf_lower_bound",help = "maf_lower_bound", default=0.2)
+	parser.add_option("-l", "--lower", type="float", dest="maf_lower_bound",help = "maf_lower_bound", default=0.1)
 	(options, args) = parser.parse_args()
 	if options.ref_name == "null":
 		print "parameters missing..."
