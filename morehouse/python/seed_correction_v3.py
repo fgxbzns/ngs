@@ -483,8 +483,8 @@ def seed_recover_extract_ref():
 		hifi_sorted_pos_list.append(hifi_sorted_list[i][0])
 	#print "hifi_sorted_pos_list", len(hifi_sorted_pos_list)
 	
-	position_distance = 3000
-	expand_range = 1
+	position_distance = 5000
+	expand_range = 2
 	#while position_distance <= 5000:
 	#	recovered_seed_dict = {}
 	#print "current position_distance", position_distance
@@ -694,7 +694,7 @@ def seed_geno_extract():
 				max_base = keywithmaxval(seed.allele_dict)
 				max_value = seed.allele_dict[max_base]
 				seed.allele_new_percentage = float(max_value)/float(number_of_subfile)
-				if seed.allele_new_percentage >= 0.80 and max_base == geno_dict[position][2][geno_allele_index]:
+				if seed.allele_new_percentage >= 0.90 and max_base == geno_dict[position][2][geno_allele_index]:
 					if position in qscore_dict and qscore_dict[position]/float(number_of_subfile) >= 0.90:
 						added_seed += 1
 						seed.allele_new = max_base
@@ -872,17 +872,17 @@ def multple_geno_expand(seed_file, chr_name, mode):
 		seed_correction(seed_file, chr_name, mode)
 		exp_file_name = "haplotype_expanded.txt"
 		same_to_A_dict, same_to_B_dict = seed_std_compare(exp_file_name, chr_name)
-		if len(same_to_B_dict) > 0:
+		if len(same_to_B_dict) > 1000:
 			os.system("cp haplotype_ori.txt haplotype.txt")
 		else:
 			os.system("cp haplotype_expanded.txt haplotype.txt")
-			
+		"""
 		os.system("cp haplotype.txt haplotype_ori.txt")
 		mode = "ref"
 		seed_correction(seed_file, chr_name, mode)
 		exp_file_name = "haplotype_expanded.txt"
 		same_to_A_dict, same_to_B_dict = seed_std_compare(exp_file_name, chr_name)
-		if len(same_to_B_dict) > 0:
+		if len(same_to_B_dict) > 1:
 			os.system("cp haplotype_ori.txt haplotype.txt")
 		else:
 			os.system("cp haplotype_expanded.txt haplotype.txt")
@@ -892,11 +892,11 @@ def multple_geno_expand(seed_file, chr_name, mode):
 		seed_correction(seed_file, chr_name, mode)
 		exp_file_name = "haplotype_expanded.txt"
 		same_to_A_dict, same_to_B_dict = seed_std_compare(exp_file_name, chr_name)
-		if len(same_to_B_dict) > 0:
+		if len(same_to_B_dict) > 1:
 			os.system("cp haplotype_ori.txt haplotype.txt")
 		else:
 			os.system("cp haplotype_expanded.txt haplotype.txt")
-		
+		"""
 			
 def update_cluster():
 	print "****update_cluster running*****"
@@ -905,7 +905,7 @@ def update_cluster():
 	ref_file_name = "refHaplos.txt"
 	global ref_cluster_dict
 	maf_upper_bound = 0.5
-	maf_lower_bound = 0.45
+	maf_lower_bound = 0.1
 	ref_cluster_dict = get_cluster(ref_file_name, maf_upper_bound, maf_lower_bound)
 	
 	added_by_cluster = 0
