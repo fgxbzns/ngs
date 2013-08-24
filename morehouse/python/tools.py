@@ -63,6 +63,10 @@ def list_to_line(list):
 	for a in list:
 		line += a + "\t"
 	return line
+	"""
+	a = ['a', 'b', 'c']
+	print "".join(a)
+	"""
 
 def dict_substract(seed_hetero_dict, revised_seed_dict):
 	removed_seed_dict = {}
