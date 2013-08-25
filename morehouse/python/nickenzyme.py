@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #######################################################################################
-# 
+# find enzyme cut seq in dna seq
 #######################################################################################
 
 import os, glob, subprocess, random, operator, time, sys, copy
@@ -17,40 +17,9 @@ def enzyme_search(enzyme_seq, DNA_seq):
 	else:
 	   print "No match!!"
 	   return False
-"""
+
 def seq_convert(enzyme_seq):
 	temp_seq = ""
-	for letter in enzyme_seq:
-		if letter == "W":
-			temp_seq += "[AT]"
-		elif letter == "S":
-			temp_seq += "[CG]"
-		elif letter == "M":
-			temp_seq += "[AC]"
-		elif letter == "K":
-			temp_seq += "[GT]"
-		elif letter == "R":
-			temp_seq += "[AG]"
-		elif letter == "Y":
-			temp_seq += "[CT]"
-		elif letter == "B":
-			temp_seq += "[CGT]"
-		elif letter == "D":
-			temp_seq += "[AGT]"
-		elif letter == "H":
-			temp_seq += "[ACT]"
-		elif letter == "V":
-			temp_seq += "[ACG]"
-		elif letter == "N":
-			temp_seq += "[ACGT]"
-		else:
-			temp_seq += letter
-	return temp_seq
-"""
-def seq_convert(enzyme_seq):
-	temp_seq = ""
-	#symbol = ['W', 'S', 'M', 'K', 'R', 'Y', 'B', 'D', 'H', 'V', 'N']
-	#base = ['AT', 'CG', 'AC', 'GT', 'AG', 'CT', 'CGT', 'AGT', 'ACT', 'ACG', 'ACGT']
 	symbol_dict = {'A':'A', 'C':'C', 'G':'G', 'T':'T', 'U':'U', 'W':'[AT]', 'S':'[CG]', \
 				'M':'[AC]', 'K':'[GT]', 'R':'[AG]', 'Y':'[CT]', 'B':'[CGT]', 'D':'[AGT]', 'H':'[ACT]', 'V':'[ACG]', 'N':'[ACGT]'}	
 	for letter in enzyme_seq:
