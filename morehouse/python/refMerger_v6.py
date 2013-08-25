@@ -144,7 +144,7 @@ def make_hifi_files():
 	hap_ref_sorted_list = sort_dict_by_key(hap_ref_dict)
 	for snp in hap_ref_sorted_list:
 		position = snp[0]
-		if position <= int(last_seed_position) and position not in seed_XN_dict:  
+		if position <= int(last_seed_position) and position not in hap_std_XN_dict:  
 			hifi_ref_dict[position] = hap_ref_dict[position]
 			#outputFile.write(snp[1] + "\n")
 			if position in seed_dict:
@@ -167,7 +167,7 @@ def refMerger(haplotype_file, chr_name):
 	global hap_ref_dict
 	global ref_title_info
 	global raw_data_format_ref
-	global seed_XN_dict
+	global hap_std_XN_dict
 	
 	raw_data_format_ref = "string"
 		
@@ -184,12 +184,19 @@ def refMerger(haplotype_file, chr_name):
 	
 	seed_file = haplotype_file
 	seed_title_info, seed_dict = load_raw_data(seed_file, raw_data_format_ref)
-	seed_XN_dict = {}
-	for pos, snp in seed_dict.iteritems():
-		if snp[2] == "N" or snp[3] == "N" or snp[2] == "X" or snp[3] == "X":
-			seed_XN_dict[pos] = snp
-	print "seed_XN_dict size: ", len(seed_XN_dict)
+	
 	print "seed_file is :", seed_file
+	
+	hap_std_file = file_path + "ASW_"+chr_name+"_child_hap_refed.txt"	
+	hap_std_title_info, hap_std_dict = load_raw_data(hap_std_file)
+	hap_std_XN_dict = {}
+	for pos, snp in hap_std_dict.iteritems():
+		#snp = str_snp.split()
+		#print snp
+		if snp[2] == "N" or snp[3] == "N" or snp[2] == "X" or snp[3] == "X":
+			hap_std_XN_dict[int(pos)] = snp
+			#print snp
+	print "hap_std_XN_dict size: ", len(hap_std_XN_dict)
 	
 	print "hap_ref_dict before process", len(hap_ref_dict)
 	hap_ref_dict = ref_preprocess(geno_dict, hap_ref_dict)

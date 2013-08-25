@@ -23,7 +23,7 @@ quality_score_dict = { '!':0, '\"':1, '#':2, '$':3, '%':4, '&':5, '\'':6, '(':7,
 def usage():
 	print "%s [seed_file] [chr]" % sys.argv[0]
 
-def load_raw_data(file_name, format):		
+def load_raw_data(file_name, raw_data_format = "list"):		
 	title_info = ""
 	data = {}
 	fp = open(file_name, "r")
@@ -34,9 +34,9 @@ def load_raw_data(file_name, format):
 			elements = line.strip().split()
 			try:
 				# convert the position to int for sorting
-				if format == "list":
+				if raw_data_format == "list":
 					data[int(elements[1])] = elements
-				elif format == "string":
+				elif raw_data_format == "string":
 					data[int(elements[1])] = line.strip()
 			except ValueError:
 				#print "error in ", line
