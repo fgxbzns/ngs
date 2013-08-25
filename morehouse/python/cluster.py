@@ -108,7 +108,7 @@ def get_cluster(file_name, maf_upper_bound, maf_lower_bound):
 	ref_cluster_dict = clean_half_maf_cluster(ref_cluster_dict)
 	#print "size new", len(ref_cluster_dict)
 	ref_cluster_dict = convert_to_allele(file_name, ref_cluster_dict)
-	print_cluster(ref_cluster_dict)
+	#print_cluster(ref_cluster_dict)
 	return ref_cluster_dict
 
 def convert_to_allele(file_name, ref_cluster_dict):

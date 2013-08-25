@@ -163,7 +163,7 @@ def output_revised_seed_with_error(revised_seed_dict, same_to_B_dict):
 def hifi_process(file_number, number_of_subfile, hap_subfile_name, geno_subfile_name="genotype.txt", ref_subfile_name="refHaplos.txt"):
 	maf_step = float(random.randrange(10, 40))/(100.0)
 	print "maf_step is: ", maf_step
-	if file_number < (number_of_subfile-3):
+	if file_number < (number_of_subfile-5):
 		hifi = program_path + "hifi_fu_ref " + hap_subfile_name + " " + geno_subfile_name + " " + ref_subfile_name + " " + str(maf_step) + " &"
 	else:
 		hifi = program_path + "hifi_fu_ref " + hap_subfile_name + " " + geno_subfile_name + " " + ref_subfile_name + " " + str(maf_step) + ""	# make sure the other hifi processes are finished
@@ -864,7 +864,7 @@ def multple_ref_expand(seed_file, chr_name, mode):
 
 def multple_geno_expand(seed_file, chr_name, mode):
 	
-	sub_cycle = 10
+	sub_cycle = 100
 	
 	for i in range (0,sub_cycle):
 		os.system("cp haplotype.txt haplotype_ori.txt")
@@ -872,17 +872,17 @@ def multple_geno_expand(seed_file, chr_name, mode):
 		seed_correction(seed_file, chr_name, mode)
 		exp_file_name = "haplotype_expanded.txt"
 		same_to_A_dict, same_to_B_dict = seed_std_compare(exp_file_name, chr_name)
-		if len(same_to_B_dict) > 1000:
+		if len(same_to_B_dict) > 0:
 			os.system("cp haplotype_ori.txt haplotype.txt")
 		else:
 			os.system("cp haplotype_expanded.txt haplotype.txt")
-		"""
+		
 		os.system("cp haplotype.txt haplotype_ori.txt")
 		mode = "ref"
 		seed_correction(seed_file, chr_name, mode)
 		exp_file_name = "haplotype_expanded.txt"
 		same_to_A_dict, same_to_B_dict = seed_std_compare(exp_file_name, chr_name)
-		if len(same_to_B_dict) > 1:
+		if len(same_to_B_dict) > 0:
 			os.system("cp haplotype_ori.txt haplotype.txt")
 		else:
 			os.system("cp haplotype_expanded.txt haplotype.txt")
@@ -892,11 +892,11 @@ def multple_geno_expand(seed_file, chr_name, mode):
 		seed_correction(seed_file, chr_name, mode)
 		exp_file_name = "haplotype_expanded.txt"
 		same_to_A_dict, same_to_B_dict = seed_std_compare(exp_file_name, chr_name)
-		if len(same_to_B_dict) > 1:
+		if len(same_to_B_dict) > 0:
 			os.system("cp haplotype_ori.txt haplotype.txt")
 		else:
 			os.system("cp haplotype_expanded.txt haplotype.txt")
-		"""
+		
 			
 def update_cluster():
 	print "****update_cluster running*****"
@@ -905,7 +905,7 @@ def update_cluster():
 	ref_file_name = "refHaplos.txt"
 	global ref_cluster_dict
 	maf_upper_bound = 0.5
-	maf_lower_bound = 0.1
+	maf_lower_bound = 0.3
 	ref_cluster_dict = get_cluster(ref_file_name, maf_upper_bound, maf_lower_bound)
 	
 	added_by_cluster = 0
