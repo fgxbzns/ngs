@@ -181,6 +181,139 @@ def load_hap_qscore(number_of_subfile):
 	return (hifi_dict, qscore_dict)
 
 
+def compare_std_hap_ref():
+	ref_file_name = "refHaplos.txt"
+	hap_ref_dict = load_raw_data(ref_file_name, raw_data_format)[1]
+
+	std_x_dict = {}
+	std_not_in_ref_dict = {}
+	ref_homo = 0
+
+	for position, snp in hap_std_dict.iteritems():
+		if position in hap_ref_dict:
+			exist_in_ref = False
+			std_A = snp[2]
+			std_B = snp[3]
+			alleles = hap_ref_dict[position]
+			alleles = alleles[2:]
+			unique_alleles = list(set(alleles))
+			n_alleles = len(unique_alleles)
+			if n_alleles == 0 or n_alleles > 2:
+				print "error in: ", position
+				sys.exit(1)
+			else:
+				try:
+					if n_alleles == 1:
+						ref_homo += 1
+					if std_A == std_B:
+						if n_alleles == 2:
+							if std_A == unique_alleles[0] or std_A == unique_alleles[1]:
+								exist_in_ref = True
+						if n_alleles == 1:
+							if std_A == unique_alleles[0]:
+								exist_in_ref = True
+					else:
+						if n_alleles == 2:
+							if (std_A == unique_alleles[0] and std_B == unique_alleles[1]) or (std_A == unique_alleles[1] and std_B == unique_alleles[0]):
+								exist_in_ref = True
+							if n_alleles == 1:	# hetero_std, homo_ref
+								pass
+					if not exist_in_ref:
+						if std_A == 'X':
+							std_x_dict[position] = list_to_line(snp)
+						else:
+							std_not_in_ref_dict[position] = list_to_line(snp)
+							print position, unique_alleles, n_alleles, std_A, std_B, geno_dict[position][2]
+				except:
+					#print position, unique_alleles, n_alleles
+					pass
+	print "std_x_dict: ", len(std_x_dict)
+	print "std_not_in_ref_dict: ", len(std_not_in_ref_dict)
+	print "ref_homo", ref_homo
+
+
+def compare_geno_ref():
+	ref_file_name = "refHaplos.txt"
+	hap_ref_dict = load_raw_data(ref_file_name, raw_data_format)[1]
+
+	std_x_dict = {}
+	std_n_dict = {}
+	std_not_in_ref_dict = {}
+	ref_homo = 0
+
+	for position, snp in geno_dict.iteritems():
+		if position in hap_ref_dict:
+			exist_in_ref = False
+			std_A = snp[2][0]
+			std_B = snp[2][1]
+			alleles = hap_ref_dict[position]
+			alleles = alleles[2:]
+			unique_alleles = list(set(alleles))
+			n_alleles = len(unique_alleles)
+			if n_alleles == 0 or n_alleles > 2:
+				print "error in: ", position
+				sys.exit(1)
+			else:
+				try:
+					if n_alleles == 1:
+						ref_homo += 1
+					if std_A == std_B:
+						if n_alleles == 2:
+							if std_A == unique_alleles[0] or std_A == unique_alleles[1]:
+								exist_in_ref = True
+						if n_alleles == 1:
+							if std_A == unique_alleles[0]:
+								exist_in_ref = True
+					else:
+						if n_alleles == 2:
+							if (std_A == unique_alleles[0] and std_B == unique_alleles[1]) or (std_A == unique_alleles[1] and std_B == unique_alleles[0]):
+								exist_in_ref = True
+							if n_alleles == 1:	# hetero_std, homo_ref
+								pass
+					if not exist_in_ref:
+						if std_A == 'X':
+							std_x_dict[position] = list_to_line(snp)
+						if std_A == 'N':
+							std_n_dict[position] = list_to_line(snp)
+						else:
+							std_not_in_ref_dict[position] = list_to_line(snp)
+							print position, unique_alleles, n_alleles, std_A, std_B, geno_dict[position][2]
+				except:
+					#print position, unique_alleles, n_alleles
+					pass
+	print "std_x_dict: ", len(std_x_dict)
+	print "std_n_dict: ", len(std_n_dict)
+	print "std_not_in_ref_dict: ", len(std_not_in_ref_dict)
+	print "ref_homo", ref_homo
+
+def generate_std_seed(seed_number):
+		revised_seed_dict = load_seed_data(file_path+"ASW_chr9_child_hap_refed.txt")[1]
+		revised_seed_list = sort_dict_by_key(revised_seed_dict)
+
+		group_tuple = group_seed(revised_seed_dict, geno_dict)
+		seed_homo_dict = group_tuple[0]
+		seed_hetero_dict = group_tuple[1]
+
+		seed_hetero_list = sort_dict_by_key(seed_hetero_dict)
+
+		selected_seed_dict = {}
+		i = 0
+		while i < seed_number-1:
+			random_index = random.randrange(0,(len(seed_hetero_list)-1))
+			while revised_seed_list[random_index][0] in selected_seed_dict:
+				random_index = random.randrange(0,(len(seed_hetero_list)-1))
+			selected_seed_dict[seed_hetero_list[random_index][0]] = seed_hetero_list[random_index][1]
+			i += 1
+		selected_seed_dict[revised_seed_list[-1][0]] = revised_seed_list[-1][1]
+
+		file_name = "haplotype_std.txt"
+		output_revised_seed(file_name, selected_seed_dict)
+		seed_std_compare(file_name, chr_name)
+		hifi_run(file_name, chr_name)
+		hifiAccuCheck("imputed_"+file_name, chr_name)
+
+
+
 def seed_error_remove(seed_dict):
 	# reduce error seed from ori seed
 	global seed_hetero_dict
@@ -694,8 +827,10 @@ def seed_geno_extract():
 				max_base = keywithmaxval(seed.allele_dict)
 				max_value = seed.allele_dict[max_base]
 				seed.allele_new_percentage = float(max_value)/float(number_of_subfile)
-				if seed.allele_new_percentage >= 0.90 and max_base == geno_dict[position][2][geno_allele_index]:
-					if position in qscore_dict and qscore_dict[position]/float(number_of_subfile) >= 0.90:
+				#if seed.allele_new_percentage >= 0.90 and max_base == geno_dict[position][2][geno_allele_index]:
+				#	if position in qscore_dict and qscore_dict[position]/float(number_of_subfile) >= 0.90:
+				if max_base == hap_ref_dict[position][2]:
+					if True:
 						added_seed += 1
 						seed.allele_new = max_base
 						revised_seed_dict[position] = seed
@@ -918,9 +1053,6 @@ def update_cluster():
 					seed_1 = seed_dict[int(pos_1)].allele_ori
 					try:
 						index_1 = ref_1.index(seed_1)
-						#print pos_1, seed_1
-						#print ref_1
-						#print pos_1, seed_1, index_1, "in seed"
 						for pos_2, ref_2 in cluster_dict.iteritems():
 							if pos_2 != pos_1 and int(pos_2) not in seed_dict:
 								cluster_seed = ref_2[index_1]
@@ -1121,6 +1253,10 @@ def seed_correction(seed_file, chr_name, mode):
 			else:
 				maf_step += 0.05
 		"""
+	elif mode == "compare":
+		#compare_std_hap_ref()
+		#compare_geno_ref()
+		generate_std_seed(8000)
 	else:
 		clean_up()
 		"""check error seed"""
@@ -1170,9 +1306,7 @@ def seed_correction(seed_file, chr_name, mode):
 		#output_revised_seed("haplotype_hifi_B.txt", hifi_B_dict)
 		
 		#pass
-		#compare_std_geno_ref()
-		#compare_geno_ref()
-		#generate_std_seed(8000)
+		
 		"""
 		"""
 		seed_12000 = load_raw_data("haplotype_a.txt", raw_data_format)[1]
@@ -1261,4 +1395,6 @@ if __name__=='__main__':
 		seed_correction(seed_file, chr_name, mode)
 		#multple_ref_expand(seed_file, chr_name, mode)
 	
+
+
 

@@ -109,6 +109,7 @@ def get_cluster(file_name, maf_upper_bound, maf_lower_bound):
 	#print "size new", len(ref_cluster_dict)
 	ref_cluster_dict = convert_to_allele(file_name, ref_cluster_dict)
 	#print_cluster(ref_cluster_dict)
+	output_cluster(ref_cluster_dict, maf_upper_bound, maf_lower_bound)
 	return ref_cluster_dict
 
 def convert_to_allele(file_name, ref_cluster_dict):
@@ -146,6 +147,18 @@ def print_cluster(ref_cluster_dict):
 				#print snps[0], snps[1] # list_to_line(snps[2:])
 				pass
 	print "total_cluster_number", total_cluster_number
+
+def output_cluster(ref_cluster_dict, maf_upper_bound, maf_lower_bound):
+	cluster_file_name = "cluster_" + str(maf_upper_bound) + "_" + str(maf_lower_bound) + ".txt"
+	cluster_file = open(currentPath + cluster_file_name, "w")
+	for num, snp_list in ref_cluster_dict.iteritems():
+		print >> cluster_file, ">", num
+		for i in range(len(snp_list)):
+			line = ""
+			for pos, snps in snp_list[i].iteritems():
+				line += str(pos) + "\t"
+			print >> cluster_file, line
+	cluster_file.close()
 		
 def get_args():
 	desc="calculate_maf"
@@ -153,7 +166,7 @@ def get_args():
 	parser = OptionParser(usage = usage, description=desc) 
 	parser.add_option("-i", "--ref", type="string", dest="ref_name",help = "Input ref file name", default="null")
 	parser.add_option("-u", "--upper", type="float", dest="maf_upper_bound",help = "maf_upper_bound", default=0.5)
-	parser.add_option("-l", "--lower", type="float", dest="maf_lower_bound",help = "maf_lower_bound", default=0.1)
+	parser.add_option("-l", "--lower", type="float", dest="maf_lower_bound",help = "maf_lower_bound", default=0.01)
 	(options, args) = parser.parse_args()
 	if options.ref_name == "null":
 		print "parameters missing..."

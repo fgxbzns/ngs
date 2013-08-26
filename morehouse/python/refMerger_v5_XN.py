@@ -8,6 +8,7 @@ keep only the snps that are available in ref data
 assume last_haplotype_position is the smallest in all three. Make sure the last position in three files is the same. Limited by current version of hifi.
 #seed_output_file_name = haplotype_file[:haplotype_file.find(".")]+"_refed.txt"	# for making hap_refed file
 Aug 25, 2013, try removing all X, N snps from hap, geno and ref
+Results showed XN do not have much impact on the hifi result in accuracy. Use refMerger_v5.py for future study
 """
 
 
