@@ -817,10 +817,12 @@ def seed_geno_extract():
 			qscore_dict = load_qscore_result(qscore_subfile_name, qscore_dict)
 		#print "qscore_dict size: ", len(qscore_dict)
 		
-		random_geno_seed_sorted_list = sort_dict_by_key(random_geno_seed_dict)
+		#random_geno_seed_sorted_list = sort_dict_by_key(random_geno_seed_dict)
+		hifi_dict_sorted_list = sort_dict_by_key(hifi_dict)
 		
 		added_seed = 0
-		for snp in random_geno_seed_sorted_list:	
+		for snp in hifi_dict_sorted_list:	
+		#for snp in random_geno_seed_sorted_list:	
 			position = snp[0]
 			if position not in revised_seed_dict and position in hifi_dict:
 				seed = hifi_dict[position]
@@ -829,7 +831,7 @@ def seed_geno_extract():
 				seed.allele_new_percentage = float(max_value)/float(number_of_subfile)
 				#if seed.allele_new_percentage >= 0.90 and max_base == geno_dict[position][2][geno_allele_index]:
 				#	if position in qscore_dict and qscore_dict[position]/float(number_of_subfile) >= 0.90:
-				if max_base == hap_ref_dict[position][2]:
+				if position in hap_std_dict and max_base == hap_std_dict[position][2]:
 					if True:
 						added_seed += 1
 						seed.allele_new = max_base
@@ -1337,7 +1339,7 @@ def seed_correction(seed_file, chr_name, mode):
 		seed_std_compare("haplotype_without_error.txt", chr_name)
 		output_revised_seed_with_error(revised_seed_dict, same_to_B_dict)
 		"""
-	clean_up()
+	#clean_up()
 
 if __name__=='__main__':
 	options = get_args()

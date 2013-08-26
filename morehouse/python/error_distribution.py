@@ -30,7 +30,7 @@ seed_file = options.hifiSeed
 #hap_ref_file_name = "NA12878_hap_new_refed.txt"	# simulation data
 hap_ref_file_name = "ASW_"+chr_name+"_child_hap_refed.txt"	
 
-hap_hifi_file_name = "imputedhaplotype.txt"
+hap_hifi_file_name = "imputed_haplotype.txt_4663"
 
 inputFile_hap_ref = open(file_path + hap_ref_file_name, "r")
 inputFile_hap_hifi = open(currentPath + hap_hifi_file_name, "r")
