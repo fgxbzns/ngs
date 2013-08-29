@@ -24,21 +24,6 @@ def output_dict(filename, title_info, dict):
 		print >> seed_new_file, line
 	output_file.close()
 
-def get_args():
-	desc="Compare seed and std hap, to check purity of seed"
-
-	usage = "seed_std_compare -i seed_file -c chr#" 
-	parser = OptionParser(usage = usage, description=desc) 
-	parser.add_option("-i", "--haplotype", type="string", dest="haplotypeFile",help = "Input File Name", default="null")
-	parser.add_option("-s", "--genotype", type="string", dest="genotypeFile",help = "Input File Name", default="null")
-	parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="chr11")
-	(options, args) = parser.parse_args()
-	if options.haplotypeFile == "null" or options.chrName == "null":
-		print "parameters missing..."
-		print usage
-		sys.exit(1)
-	return options
-
 def compare_geno_ref(geno_dict, hap_ref_dict):
 
 	geno_x_dict = {}
@@ -130,7 +115,7 @@ def output_files(file_name, title_info, dict):
 		print >> outpuf_file, element[1]
 	outpuf_file.close()
 
-def make_hifi_files():
+def make_hifi_files(remPercent):
 	common_snp_number = 0
 	hifi_seed_dict = {}
 	hifi_geno_dict = {}
@@ -138,8 +123,17 @@ def make_hifi_files():
 	
 	last_seed_position = sort_dict_by_key(seed_dict)[-1][0]
 	#print "last_haplotype_position", last_seed_position
+	hap_ref_sorted_list = sort_dict_by_key(hap_ref_dict)
+	
+	hap_ref_size = len(hap_ref_dict)
+	for i in range(int(remPercent*hap_ref_size)):		
+		random_index = random.randrange(0,(hap_ref_size-1))
+		position = hap_ref_sorted_list[random_index][0]
+		if position in hap_ref_dict:
+			del hap_ref_dict[position]				
 	
 	hap_ref_sorted_list = sort_dict_by_key(hap_ref_dict)
+
 	for snp in hap_ref_sorted_list:
 		position = snp[0]
 		if position <= int(last_seed_position):  
@@ -157,7 +151,7 @@ def make_hifi_files():
 	output_files("genotype.txt", geno_title_info, hifi_geno_dict)
 	output_files("refHaplos.txt", ref_title_info, hifi_ref_dict)
 
-def refMerger(haplotype_file, chr_name):
+def refMerger(haplotype_file, chr_name, remPercent):
 	global seed_title_info
 	global seed_dict
 	global geno_title_info
@@ -193,12 +187,28 @@ def refMerger(haplotype_file, chr_name):
 	hap_ref_dict = ref_preprocess(geno_dict, hap_ref_dict)
 	print "hap_ref_dict after process", len(hap_ref_dict)
 	
-	make_hifi_files()
+	make_hifi_files(remPercent)
 
+def get_args():
+	desc="Compare seed and std hap, to check purity of seed"
+
+	usage = "seed_std_compare -i seed_file -c chr#" 
+	parser = OptionParser(usage = usage, description=desc) 
+	parser.add_option("-i", "--haplotype", type="string", dest="haplotypeFile",help = "Input File Name", default="null")
+	parser.add_option("-s", "--genotype", type="string", dest="genotypeFile",help = "Input File Name", default="null")
+	parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="null")
+	parser.add_option("-p", "--pct", type="float", dest="remPercent",help = "percent of ref removed", default=0)
+	(options, args) = parser.parse_args()
+	if options.haplotypeFile == "null" or options.chrName == "null":
+		print "parameters missing..."
+		print usage
+		sys.exit(1)
+	return options
 
 if __name__=='__main__':
 	options = get_args()
 	haplotype_file = options.haplotypeFile
 	chr_name = options.chrName
-	refMerger(haplotype_file, chr_name)
+	remPercent = options.remPercent
+	refMerger(haplotype_file, chr_name, remPercent)
 	

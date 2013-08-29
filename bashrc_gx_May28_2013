@@ -131,7 +131,7 @@ alias file_combine='$morehousePath/file_combine_v3.py'
 alias file_combine_cnv='$morehousePath/file_combine_cnv.py'
 #alias snpCoverage='$morehousePath/snpCoverage_v5.py'
 #alias refMerger4='$morehousePath/refMerger_v4.py'
-alias refMerger='$morehousePath/refMerger_v6.py'
+alias refMerger='$morehousePath/refMerger_v5.py'
 alias hifiAccuCheck='$morehousePath/hifiAccuCheck_v2.py'
 #alias hifiAccuCheck_v3='$morehousePath/hifiAccuCheck_v3.py'
 alias makeGenoHap='$morehousePath/makeGenoHap_v1.py'
@@ -184,6 +184,7 @@ alias sqlite='$morehousePath/sqlite.py'
 alias data_filter='$morehousePath/data_filter.py'
 
 alias cluster='$morehousePath/cluster.py'
+alias nickenzyme='$morehousePath/nickenzyme.py'
 
 
 # other programs
