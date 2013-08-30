@@ -1,5 +1,6 @@
 #!/usr/bin/python
 #######################################################################################
+# Guoxing Fu Aug 29, 2013
 # find enzyme cut seq in dna seq
 #######################################################################################
 
@@ -13,10 +14,10 @@ def enzyme_search(enzyme_seq, DNA_seq):
 	matchObj = re.search( enzyme_seq, DNA_seq, re.M|re.I)
 	if matchObj:
 	   #print "find in", DNA_seq, matchObj.group()
-	   return True
+	   return (True, matchObj.group())
 	else:
 	   #print "No match!!"
-	   return False
+	   return (False, "no match")
 
 def seq_convert(enzyme_seq):
 	temp_seq = ""
@@ -57,14 +58,14 @@ def check_dna_seq(en_list, seq_list):
 	output3=open('output.txt','w') 
 	for pos, seq, recseq in seq_list:
 	    for enzyme_name, enzyme_cut in en_list:
-	    	cut_in_seq = enzyme_search(enzyme_cut, seq)
-	    	cut_in_recseq = enzyme_search(enzyme_cut, recseq)
+	    	cut_in_seq, matched_seq = enzyme_search(enzyme_cut, seq)
+	    	cut_in_recseq, matched_recseq = enzyme_search(enzyme_cut, recseq)
 	    	if (cut_in_seq and not cut_in_recseq) or (not cut_in_seq and cut_in_recseq):
-	            print >> output3, pos, seq, recseq, enzyme_name, enzyme_cut
+	            print >> output3, pos, seq, recseq, enzyme_name, enzyme_cut, "matched_seq: ",matched_seq, "matched_recseq: ", matched_recseq
 	output3.close()
 
 def get_args():
-	desc="calculate_maf"
+	desc="./nickenzyme.py -e enzyme_file -s seq_file"
 	usage = "" 
 	parser = OptionParser(usage = usage, description=desc) 
 	parser.add_option("-e", "--en", type="string", dest="en_name",help = "Input enzyme file name", default="null")

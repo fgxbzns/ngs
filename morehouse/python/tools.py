@@ -130,10 +130,22 @@ def group_seed(seed_dict, geno_dict):
 	return (seed_homo_dict, seed_hetero_dict)
 
 def time():
-	
 	start = time.time()	
 	end = time.time()
 	run_time = str(format((end - start), "0.3f"))
 	print "run time is: " + run_time + "s"
 
-
+# group the seed into homo and hetero groups
+def group_seed(seed_dict, geno_dict):
+	seed_homo_dict = {}
+	seed_hetero_dict = {}
+	for position, snp in seed_dict.iteritems():
+		if position in geno_dict:	# pos in seed may not be in geno
+			geno_allele = geno_dict[position][2]
+			if geno_allele[0] == geno_allele[1]:
+				seed_homo_dict[position] = snp
+			else:
+				seed_hetero_dict[position] = snp
+		else:
+			seed_hetero_dict[position] = snp
+	return (seed_homo_dict, seed_hetero_dict)
