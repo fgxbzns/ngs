@@ -3,11 +3,19 @@
 # check rough similarity of two chr
 #######################################################################################
 
-import os, glob, subprocess, random, operator, time, sys, copy
+import os, glob, subprocess, random, operator, time, sys, copy, ctypes
 from optparse import OptionParser
+
+from ctypes import *
+
+
+import os
+import threading
+import multiprocessing
 
 import re
 from tools import *
+from hifiAccuCheck_v2 import hifiAccuCheck
 
 
 def load_chr(file_name):
@@ -45,9 +53,39 @@ def get_args():
 		sys.exit(1)
 	return options
 
+"""
+# worker function
+def worker(sign, lock):
+    lock.acquire()
+    print(sign, os.getpid())
+    lock.release()
+
+# Main
+print('Main:',os.getpid())
+
+# Multi-thread
+record = []
+lock  = threading.Lock()
+for i in range(5):
+    thread = threading.Thread(target=hifi_process)
+    thread.start()
+    record.append(thread)
+
+for thread in record:
+    thread.join()
+"""
+
+
+
+
+
+
+
+
 if __name__=='__main__':
 	#options = get_args()
 	#file_name = options.ref_name
+	"""
 	enzyme_seq = "[CG][CA]"
 	DNA_seq = "CCCGGTCCGACAAAAATGA"
 	enzyme_search(enzyme_seq, DNA_seq)
@@ -55,4 +93,33 @@ if __name__=='__main__':
 	enzyme_seq = seq_convert(enzyme_seq)
 	print enzyme_seq
 	enzyme_search(enzyme_seq, DNA_seq)
-
+	"""
+	#hifi = cdll.LoadLibrary("/home/guoxing/disk2/ngs/morehouse/other/libhifi_fu.so")
+	#so = 
+	#int argc, char** argv
+	#hifi.main.argtypes = [c_int,c_char_p]
+	
+	#hifi.main(1, "haplotype.txt")
+	hap_file_name="haplotype.txt"
+	chr_name = "chr9"
+	"""
+	hifi_process(MAFSTEP = 0.1)
+	hifiAccuCheck("imputed_"+hap_file_name, chr_name)
+	hifi_process(MAFSTEP = 0.5)
+	hifiAccuCheck("imputed_"+hap_file_name, chr_name)
+	"""
+	# Multi-process
+	record = []
+	lock = multiprocessing.Lock()
+	for i in range(5):
+	    process = multiprocessing.Process(target=hifi_process)
+	    process.start()
+	    record.append(process)
+	
+	for process in record:
+	    process.join()
+	
+	print "abdcd"
+	if os.path.exists("haplotype.txt"):
+		print "a"
+	

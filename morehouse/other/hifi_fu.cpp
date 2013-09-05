@@ -70,6 +70,7 @@ int main(int argc, char** argv)
 		return 0;
 	}
 */
+
 	char haplotype[32];
 	char genotype[32];
 	char refhap[32];

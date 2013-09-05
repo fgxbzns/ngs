@@ -17,7 +17,8 @@
 
 #define LINECAPACITY 10000
 #define RSCAPACITY 40
-#define MAFSTEP 0.01
+//#define MAFSTEP 0.01	ori minor allele frequence step
+//#define MAFSTEP 0.1
 #define IMPUTORTABLEWIDTH 1024
 #define MAXCOMPARELEN 1000
 #define WINI 16
@@ -40,6 +41,9 @@ int getHapFre(char *a, char**b,int len);
 void getHxnInf(char** a, int len);
 void getQScore(char xn, char dsr, int fre_h0, int fre_h1, int fre_total, int winsize_snp, int winsize_pos, double maf_cycno, int haps_sum,int win_homo, int win_hete,int jump_sum, int edge_dist, int win_xx);
 
+//int hifi_m(char* haplotype, char* genotype, char* refhap, float MAFSTEP);
+
+
 //===============================================================\
 //Added on 03/20/2012
 //1)
@@ -58,38 +62,104 @@ static double	q_score_haplo = 0;
 static double	q_score_geno = 0;
 
 //===============================================================
-
-//static char haplotype_ID;
-
-
-//int _tmain(int argc, _TCHAR* argv[])
-int main(int argc, char** argv)
-{
+/*
+int main(int argc, char** argv){
 	
-	if(argc!=2){
-		printf("The parameter number was wrong!\n");
-		return 0;
-	}
 	char haplotype[32];
 	char genotype[32];
 	char refhap[32];
+	double MAFSTEP = 0.1;
+		
+	if(argc == 1){
+		strcpy(haplotype,"haplotype.txt");
+		strcpy(genotype,"genotype.txt");
+		strcpy(refhap,"refHaplos.txt");
+	}
+	
+	else if(argc == 2){
+		strcpy(haplotype,argv[1]);
+		strcpy(genotype,"genotype.txt");
+		strcpy(refhap,"refHaplos.txt");
+	}
+	
+	else if(argc == 4){
+		strcpy(haplotype,argv[1]);
+		strcpy(genotype,argv[2]);
+		strcpy(refhap,argv[3]);
+	}
+	
+	else if(argc == 5){
+		strcpy(haplotype,argv[1]);
+		strcpy(genotype,argv[2]);
+		strcpy(refhap,argv[3]);
+		MAFSTEP = atof(argv[4]);	// alternative strtod
+	}
+	else {
+		printf("The parameter number was wrong!\n");
+		return 0;
+	}
+	
+	hifi_m(char* haplotype, char* genotype, char* refhap, float MAFSTEP);
+	
+	return 1;
+}
+*/
+
+//int _tmain(int argc, _TCHAR* argv[])
+//int main(int argc, char** argv)
+extern "C"
+int hifi_m(char* haplotype, char* genotype, char* refhap, float MAFSTEP)
+{
+	
+/*	if(argc!=4){
+		printf("The parameter number was wrong!\n");
+		return 0;
+	}
+*/
+/*
+	char haplotype[32];
+	char genotype[32];
+	char refhap[32];
+	double MAFSTEP = 0.1;
+		
+	if(argc == 1){
+		strcpy(haplotype,"haplotype.txt");
+		strcpy(genotype,"genotype.txt");
+		strcpy(refhap,"refHaplos.txt");
+	}
+	
+	else if(argc == 2){
+		strcpy(haplotype,argv[1]);
+		strcpy(genotype,"genotype.txt");
+		strcpy(refhap,"refHaplos.txt");
+	}
+	
+	else if(argc == 4){
+		strcpy(haplotype,argv[1]);
+		strcpy(genotype,argv[2]);
+		strcpy(refhap,argv[3]);
+	}
+	
+	else if(argc == 5){
+		strcpy(haplotype,argv[1]);
+		strcpy(genotype,argv[2]);
+		strcpy(refhap,argv[3]);
+		MAFSTEP = atof(argv[4]);	// alternative strtod
+	}
+	else {
+		printf("The parameter number was wrong!\n");
+		return 0;
+	}
+*/
 	char impute[32];
 	char qscore[32];
-	strcpy(haplotype,argv[1]);
-	//strcpy(genotype,argv[2]);
-	//strcpy(refhap,argv[3]);
+
 	strcpy(impute,"imputed_");
 	strncat(impute,haplotype,32);
+	
 	strcpy(qscore,"qscore_");
 	strncat(qscore,haplotype,32);
-	
-
-	//haplotype_ID = haplotype.substr(10,1)
-	
-	//vector<char> temp(haplotype.begin()+10. haplotype.begin()+11);
-//	haplotype_ID = temp
-	//strncpy(haplotype_ID, haplotype+10, 1);
-	
+		
 	//==========================
 	//Runtime caculation
 	clock_t start, finish;
@@ -156,7 +226,7 @@ int main(int argc, char** argv)
 	fclose(fp);
 
 //2> open genotype file
-	if((err = fopen_s(&fp,"genotype.txt","rt"))!=NULL)
+	if((err = fopen_s(&fp,genotype,"rt"))!=NULL)
 	{
 		printf("Can not open genotype file!");
 		return 0;
@@ -193,7 +263,7 @@ int main(int argc, char** argv)
 	fclose(fp);	
 	
 //3> open reference haplotypes file
-	if((err = fopen_s(&fp,"refHaplos.txt","rt"))!=NULL)
+	if((err = fopen_s(&fp,refhap,"rt"))!=NULL)
 	{
 		printf("Can not open reference haplotypes file!");
 		return 0;
@@ -1437,12 +1507,11 @@ fu */	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	}
 	fclose(fpo);
-	* 
-*/
 	//==========================================================================
 	//Added on 03/23/2012
- 	//fpo=fopen("quality_score.txt","w");	
- 	fpo=fopen(qscore,"w");
+ 	fpo=fopen("quality_score.txt","w");	
+ */
+	fpo=fopen(qscore,"w");
 	fprintf(fpo,"rsNo pos QS_geno QS_haplo\n");
 	for(int i=0;i<snpsum_hgr;i++)
 	{

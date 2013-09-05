@@ -5,6 +5,8 @@
 from __future__ import division
 import os, glob, subprocess, random, operator, time, sys, math
 from optparse import OptionParser
+from ctypes import *
+#from hifiAccuCheck_v2 import hifiAccuCheck
 
 
 """cannot import other files"""
@@ -50,6 +52,17 @@ def hifi_run(file_name, chr_name):
 	hifi_process.wait()
 	#hifiAccuCheck("imputed_" + file_name, chr_name)
 
+def hifi_process(hap_file_name="haplotype.txt", geno_file_name="genotype.txt", ref_file_name="refHaplos_test.txt", MAFSTEP = 0.1):
+	"""
+	add extern "C" in front of the function in cpp, otherwise it will be claimed as undefined.
+	gcc hifi_fu_python.cpp -fPIC -shared -o libhifi_fu.so
+	
+	"""
+	process = cdll.LoadLibrary("/home/guoxing/disk2/ngs/morehouse/other/libhifi_fu.so")
+	process.hifi_m.argtypes = [c_char_p, c_char_p, c_char_p, c_float]
+	process.hifi_m(hap_file_name, geno_file_name, ref_file_name, MAFSTEP)
+	#hifiAccuCheck("imputed_" + hap_file_name, "chr9")
+
 # remove the snps with "N" in std hap
 def removeN(hifi_std_dict):
 	temp_dict = {}
@@ -68,12 +81,8 @@ def list_to_line(list):
 	print "".join(a)
 	"""
 
-def dict_substract(seed_hetero_dict, revised_seed_dict):
-	removed_seed_dict = {}
-	for position, seed in seed_hetero_dict.iteritems():
-		if position not in revised_seed_dict:
-			removed_seed_dict[position] = seed
-	return removed_seed_dict
+def dict_substract(large_dict, small_dict):
+	return {index:value for index, value in large_dict.iteritems() if index not in small_dict}
 
 def dict_add(revised_seed_dict, recovered_seed_dict):
 	for position, seed in recovered_seed_dict.iteritems():
