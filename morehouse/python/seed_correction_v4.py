@@ -129,7 +129,7 @@ def group_seed(seed_dict, geno_dict):
 """
 def output_revised_seed(filename, revised_seed_dict):
 	seed_new_file = open(currentPath + filename, "w")
-	print >> seed_new_file, seed_title_info
+	print >> seed_new_file, data_dict.seed_title_info
 	revised_seed_sorted_list = sort_dict_by_key(revised_seed_dict) 	# need to sort the snps by position
 	for snp in revised_seed_sorted_list:
 		seed = snp[1]
@@ -139,7 +139,7 @@ def output_revised_seed(filename, revised_seed_dict):
 	
 def output_revised_seed_dict(filename, revised_seed_dict):
 	seed_new_file = open(currentPath + filename, "w")
-	print >> seed_new_file, seed_title_info
+	print >> seed_new_file, data_dict.seed_title_info
 	revised_seed_sorted_list = sort_dict_by_key(revised_seed_dict) 	# need to sort the snps by position
 	for snp in revised_seed_sorted_list:
 		seed = snp[1]
@@ -149,7 +149,7 @@ def output_revised_seed_dict(filename, revised_seed_dict):
 	
 def output_revised_seed_without_error(revised_seed_dict, same_to_B_dict):
 	seed_new_file = open(currentPath + "haplotype_without_error.txt", "w")
-	print >> seed_new_file, seed_title_info
+	print >> seed_new_file, data_dict.seed_title_info
 	for position, seed in revised_seed_dict.iteritems():
 		if position not in same_to_B_dict:
 			line = seed.rsID + "\t" + str(seed.position) + "\t" + seed.allele_new
@@ -158,7 +158,7 @@ def output_revised_seed_without_error(revised_seed_dict, same_to_B_dict):
 
 def output_revised_seed_with_error(revised_seed_dict, same_to_B_dict):
 	seed_new_file = open(currentPath + "haplotype_with_error.txt", "w")
-	print >> seed_new_file, seed_title_info
+	print >> seed_new_file, data_dict.seed_title_info
 	for position, seed in revised_seed_dict.iteritems():
 		if position in same_to_B_dict:
 			line = seed.rsID + "\t" + str(seed.position) + "\t" + seed.allele_ori
@@ -534,17 +534,17 @@ def seed_expand_qs(seed_file):
 
 def seed_expand_ref_hetero():
 
-	seed_ref_difference_dict = dict_substract(hap_ref_dict, seed_dict)
+	seed_ref_difference_dict = dict_substract(data_dict.hap_ref_dict, data_dict.seed_dict)
 	
 	#print "hap_ref_dict", len(hap_ref_dict)
 	print "seed_ref_difference", len(seed_ref_difference_dict)
 	ref_number_ceilling = int(math.ceil(float(len(seed_ref_difference_dict))/100)*100)
-	ref_removed_in_each_subfile = ref_number_ceilling/number_of_subfile
+	ref_removed_in_each_subfile = ref_number_ceilling/data_dict.number_of_subfile
 	print "ref_removed_in_each_subfile: ", ref_removed_in_each_subfile
 		
 	seed_ref_difference_list = sort_dict_by_key(seed_ref_difference_dict)
-	seed_ref_same_dict = dict_substract(hap_ref_dict, seed_ref_difference_dict)
-	global geno_dict
+	seed_ref_same_dict = dict_substract(data_dict.hap_ref_dict, seed_ref_difference_dict)
+	#global geno_dict
 	#print "geno_dict global", len(geno_dict)	
 	
 	#process_list = []
@@ -552,17 +552,17 @@ def seed_expand_ref_hetero():
 		pos_del_record = open("pos_deledted_"+str(file_number), "w")
 		ref_subfile_name = "refHaplos" + "_" + str(file_number) + ".txt"
 		ref_subfile = open(currentPath + ref_subfile_name, "w")
-		print >> ref_subfile, ref_title_info
+		print >> ref_subfile, data_dict.ref_title_info
 		seed_ref_difference_dict_bkup = seed_ref_difference_dict.copy()
-		geno_dict_bkup = geno_dict.copy()
+		geno_dict_bkup = data_dict.geno_dict.copy()
 		
 		for i in range(int(ref_removed_in_each_subfile)):
 		#for i in range(int(15000)):		
 			try:		
 				forward_index = i*number_of_subfile+file_number
 				position = seed_ref_difference_list[forward_index][0]
-				if position in geno_dict:
-					del geno_dict[position]
+				if position in data_dict.geno_dict:
+					del data_dict.geno_dict[position]
 				print >> pos_del_record, seed_ref_difference_list[forward_index][0]		
 				del seed_ref_difference_dict[position]
 					
@@ -570,8 +570,8 @@ def seed_expand_ref_hetero():
 				while random_index == (forward_index):
 					random_index = random.randrange(0,(len(seed_ref_difference_dict)-1))
 				position = seed_ref_difference_list[random_index][0]
-				if position in geno_dict:
-					del geno_dict[position]	
+				if position in data_dict.geno_dict:
+					del data_dict.geno_dict[position]	
 				del seed_ref_difference_dict[position]					
 			except:
 				pass
@@ -591,13 +591,13 @@ def seed_expand_ref_hetero():
 		# generate new genotype file
 		geno_subfile_name = "genotype" + "_" + str(file_number) + ".txt"
 		geno_subfile = open(currentPath + geno_subfile_name, "w")
-		print >> geno_subfile, geno_title_info
+		print >> geno_subfile, data_dict.geno_title_info
 		#print "geno_dict reduced", len(geno_dict)
-		geno_sorted_list = sort_dict_by_key(geno_dict)
+		geno_sorted_list = sort_dict_by_key(data_dict.geno_dict)
 		for geno in geno_sorted_list:
 			print >> geno_subfile, list_to_line(geno[1])	
 		geno_subfile.close()
-		geno_dict = geno_dict_bkup.copy()
+		data_dict.geno_dict = geno_dict_bkup.copy()
 		#print "geno_dict", len(geno_dict)
 		
 		hap_subfile_name = "haplotype" + "_" + str(file_number) + ".txt"
@@ -702,8 +702,8 @@ def seed_expand_ref_all():
 
 
 def load_qscore_result(file_name, qscore_dict):
-	temp_data_dict = load_raw_data(file_name, raw_data_format)[1]
-	for position, elements in temp_data_dict.iteritems():		
+	data_dict = load_raw_data(file_name, raw_data_format)[1]
+	for position, elements in data_dict.iteritems():		
 		try:
 			if position not in qscore_dict:
 				qscore_dict[position] = float(elements[3])
@@ -717,7 +717,7 @@ def load_qscore_result(file_name, qscore_dict):
 
 def seed_recover_extract_ref():
 	recovered_seed_dict = {}
-	seed_ref_difference_dict = dict_substract(hap_ref_dict, seed_dict)
+	seed_ref_difference_dict = dict_substract(data_dict.hap_ref_dict, data_dict.seed_dict)
 	hifi_dict, qscore_dict = load_hap_qscore(number_of_subfile)
 	hifi_sorted_list = sort_dict_by_key(hifi_dict)
 
@@ -732,7 +732,7 @@ def seed_recover_extract_ref():
 	#while position_distance <= 5000:
 	#	recovered_seed_dict = {}
 	#print "current position_distance", position_distance
-	for position, snp in seed_hetero_dict.iteritems():
+	for position, snp in data_dict.seed_hetero_dict.iteritems():
 		pos_index = hifi_sorted_pos_list.index(position)
 		start_position = (pos_index-expand_range) if pos_index-expand_range >=0 else 0
 		end_position = (pos_index+expand_range) if (pos_index+expand_range) < len(hifi_sorted_list) else len(hifi_sorted_list)-1
@@ -748,15 +748,16 @@ def seed_recover_extract_ref():
 						seed.allele_new = max_base
 						recovered_seed_dict[hifi_sorted_list[new_pos][0]] = seed
 	
+	
 	#print "seed_dict seed number", len(seed_dict)
-	revised_seed_dict = dict_add(seed_dict, recovered_seed_dict)
+	revised_seed_dict = dict_add(data_dict.seed_dict, recovered_seed_dict)
 	
 	print "recovered seed number", len(recovered_seed_dict)
 	#print "new seed total number", len(revised_seed_dict)
 	output_revised_seed("haplotype_recoved.txt", recovered_seed_dict)
 	file_name = "haplotype_expanded.txt"
 	output_revised_seed(file_name, revised_seed_dict)
-	seed_std_compare(file_name, chr_name)
+	seed_std_compare(file_name, data_dict.chr_name)
 		#position_distance += 500
 	
 	#hifi_run(file_name, chr_name)
@@ -1369,9 +1370,42 @@ def seed_correction(seed_file, chr_name, mode):
 	
 	global number_of_subfile
 	
-	load_data_dicts(seed_file, chr_name)
-
+	#load_data_dicts(seed_file, chr_name)
+	global data_dict
+	data_dict = data_dicts()
+	data_dict.seed_file = seed_file
+	data_dict.chr_name = chr_name
+	data_dict.load_data_dicts()
+	"""
+	seed_title_info = data_dict.seed_title_info
+	seed_dict = data_dict.seed_dict
+	seed_homo_dict = data_dict.seed_homo_dict
+	seed_hetero_dict = data_dict.seed_hetero_dict
 	
+	geno_title_info = data_dict.geno_title_info
+	geno_dict = data_dict.geno_dict
+	geno_homo_dict = data_dict.geno_homo_dict
+	geno_hetero_dict = data_dict.geno_hetero_dict
+	
+    
+
+    
+    self.ref_file_name = "refHaplos.txt"
+    self.ref_title_info = ""
+    self.hap_ref_dict = {}
+    
+    self.hap_std_dict = {}
+    self.ref_cluster_dict = {}
+    self.cluster_pos_dict = {}
+      
+    self.number_of_subfile = 10
+    self.ref_cycle_number = 3
+    
+    self.maf_upper_bound = 0.5
+    self.maf_lower_bound = 0.3
+    self.ref_cluster_dict = {}
+    self.cluster_pos_dict = {}
+	"""
 	if mode == "split":
 		seed_std_compare(seed_file, chr_name)
 		seed_error_remove(seed_dict)

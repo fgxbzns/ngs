@@ -6,6 +6,8 @@
 import os, glob, subprocess, random, operator, time, sys
 from optparse import OptionParser
 from tools import *
+from cluster import get_cluster
+
 
 
 class data_dicts:
@@ -44,10 +46,10 @@ class data_dicts:
 
     def update_seed_dict(self):
         #print "seed_file is :", self.seed_file
-        self.seed_file_name = self.seed_file[:seed_file.find('.')].strip()
+        self.seed_file_name = self.seed_file[:self.seed_file.find('.')].strip()
         self.seed_title_info, self.seed_dict = load_seed_data(self.seed_file)
         if len(self.geno_dict) == 0:
-            update_geno_dict(self)
+            self.update_geno_dict()
         self.seed_homo_dict, self.seed_hetero_dict = group_seed(self.seed_dict, self.geno_dict)
         print "total_seed_number: ", len(self.seed_dict)
         print "seed_homo_dict", len(self.seed_homo_dict)
@@ -57,15 +59,16 @@ class data_dicts:
         genotype_file = file_path + "genotype_NA10847_" + self.chr_name + ".txt"
         self.geno_title_info, self.geno_dict = load_raw_data(genotype_file)
         self.geno_homo_dict, self.geno_hetero_dict = group_seed(self.geno_dict, self.geno_dict)
-        print "total_seed_number: ", len(self.geno_dict)
+        print "total_geno_number: ", len(self.geno_dict)
         print "geno_homo_dict", len(self.geno_homo_dict)
         print "geno_hetero_dict", len(self.geno_hetero_dict)
         
     def update_ref_dict(self):
         self.ref_title_info, self.hap_ref_dict = load_raw_data(self.ref_file_name)
+        print "total_ref_number: ", len(self.hap_ref_dict)
 
     def update_hap_std_dict(self):  
-        hap_std_file = file_path + "ASW_"+chr_name+"_child_hap_refed.txt"    
+        hap_std_file = file_path + "ASW_"+self.chr_name+"_child_hap_refed.txt"    
         self.hap_std_dict = load_hap_std(hap_std_file)
         print "total_hap_std_dict_number: ", len(self.hap_std_dict)
     
@@ -78,12 +81,19 @@ class data_dicts:
         print "cluster_pos_dict: ", len(self.cluster_pos_dict)
     
     def load_data_dicts(self):
-        update_seed_dict(self)
-        update_geno_dict(self)
-        update_ref_dict(self)
-        update_hap_std_dict(self)
-        update_ref_cluster_dict(self)
-        
+        self.update_geno_dict()
+        self.update_seed_dict()
+        self.update_ref_dict()
+        self.update_hap_std_dict()
+        self.update_ref_cluster_dict()
+    
+    def load_seed_geno_ref(self):
+        self.update_geno_dict()
+        self.update_seed_dict()
+        self.update_ref_dict()
+
+
+       
 class seeds:
     def __init__(self):
         self.rsID = ""
@@ -95,10 +105,8 @@ class seeds:
 
 def load_seed_data(file_name):
     seed_dict = {}
-    data_tuple = load_raw_data(file_name, raw_data_format)
-    seed_title_info = data_tuple[0]
-    data_dict = data_tuple[1]
-    for position, elements in data_dict.iteritems():
+    seed_title_info, temp_data_dict = load_raw_data(file_name, raw_data_format)
+    for position, elements in temp_data_dict.iteritems():
         seed = seeds()
         seed.rsID = elements[0].strip()
         seed.position = int(elements[1].strip())
@@ -107,9 +115,9 @@ def load_seed_data(file_name):
         seed_dict[position] = seed
     return (seed_title_info, seed_dict)
 
-def load_seed_data_from_dict(data_dict):
+def load_seed_data_from_dict(temp_data_dict):
     seed_dict = {}
-    for position, elements in data_dict.iteritems():
+    for position, elements in temp_data_dict.iteritems():
         seed = seeds()
         seed.rsID = elements[0].strip()
         seed.position = int(elements[1].strip())
@@ -120,8 +128,8 @@ def load_seed_data_from_dict(data_dict):
 
 def load_hap_std(file_name):
     hap_std_dict = {}
-    data_dict = load_raw_data(file_name, raw_data_format)[1]
-    for position, elements in data_dict.iteritems():
+    temp_data_dict = load_raw_data(file_name, raw_data_format)[1]
+    for position, elements in temp_data_dict.iteritems():
         """ ??? N X """
         if elements[2].strip() != "N" and elements[3].strip() != "N": 
             try:
@@ -133,8 +141,8 @@ def load_hap_std(file_name):
     return hap_std_dict    
 
 def load_hifi_result(file_name, hifi_dict):
-    data_dict = load_raw_data(file_name, raw_data_format)[1]
-    for position, elements in data_dict.iteritems():        
+    temp_data_dict = load_raw_data(file_name, raw_data_format)[1]
+    for position, elements in temp_data_dict.iteritems():        
         try:
             if position not in hifi_dict:
                 seed = seeds()
@@ -150,7 +158,7 @@ def load_hifi_result(file_name, hifi_dict):
         except:
                 #print "error at ", file_name, position, elements
                 pass
-    print "total snp number in : ", file_name, len(data_dict) 
+    print "total snp number in : ", file_name, len(temp_data_dict) 
     return hifi_dict
 
 # group the seed into homo and hetero groups
@@ -167,10 +175,10 @@ def group_seed(seed_dict, geno_dict):
         else:
             seed_hetero_dict[position] = snp
     return (seed_homo_dict, seed_hetero_dict)
-
+"""
 def output_revised_seed(filename, revised_seed_dict):
     seed_new_file = open(currentPath + filename, "w")
-    print >> seed_new_file, seed_title_info
+    print >> seed_new_file, data_dict.seed_title_info
     revised_seed_sorted_list = sort_dict_by_key(revised_seed_dict)     # need to sort the snps by position
     for snp in revised_seed_sorted_list:
         seed = snp[1]
@@ -180,7 +188,7 @@ def output_revised_seed(filename, revised_seed_dict):
     
 def output_revised_seed_dict(filename, revised_seed_dict):
     seed_new_file = open(currentPath + filename, "w")
-    print >> seed_new_file, seed_title_info
+    print >> seed_new_file, data_dict.seed_title_info
     revised_seed_sorted_list = sort_dict_by_key(revised_seed_dict)     # need to sort the snps by position
     for snp in revised_seed_sorted_list:
         seed = snp[1]
@@ -190,7 +198,7 @@ def output_revised_seed_dict(filename, revised_seed_dict):
     
 def output_revised_seed_without_error(revised_seed_dict, same_to_B_dict):
     seed_new_file = open(currentPath + "haplotype_without_error.txt", "w")
-    print >> seed_new_file, seed_title_info
+    print >> seed_new_file, data_dict.seed_title_info
     for position, seed in revised_seed_dict.iteritems():
         if position not in same_to_B_dict:
             line = seed.rsID + "\t" + str(seed.position) + "\t" + seed.allele_new
@@ -205,10 +213,11 @@ def output_revised_seed_with_error(revised_seed_dict, same_to_B_dict):
             line = seed.rsID + "\t" + str(seed.position) + "\t" + seed.allele_ori
             print >> seed_new_file, line
     seed_new_file.close()
-
+"""
 if __name__=='__main__':
 
     data_dict = data_dicts()
     data_dict.chr_name = "chr9"
     data_dict.load_data_dicts()
+    data_dict.load_seed_geno_ref()
 

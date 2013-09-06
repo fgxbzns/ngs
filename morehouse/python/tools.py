@@ -52,7 +52,7 @@ def hifi_run(file_name, chr_name):
 	hifi_process.wait()
 	#hifiAccuCheck("imputed_" + file_name, chr_name)
 
-def hifi_process(hap_file_name="haplotype.txt", geno_file_name="genotype.txt", ref_file_name="refHaplos_test.txt", MAFSTEP = 0.1):
+def hifi_mlp(hap_file_name="haplotype.txt", geno_file_name="genotype.txt", ref_file_name="refHaplos.txt", MAFSTEP = 0.1):
 	"""
 	add extern "C" in front of the function in cpp, otherwise it will be claimed as undefined.
 	gcc hifi_fu_python.cpp -fPIC -shared -o libhifi_fu.so

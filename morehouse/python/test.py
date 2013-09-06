@@ -77,8 +77,8 @@ for thread in record:
 
 
 
-
-
+def offer(queue):
+	queue.put
 
 
 
@@ -112,7 +112,7 @@ if __name__=='__main__':
 	record = []
 	lock = multiprocessing.Lock()
 	for i in range(5):
-	    process = multiprocessing.Process(target=hifi_process)
+	    process = multiprocessing.Process(target=hifi_mlp, )
 	    process.start()
 	    record.append(process)
 	
