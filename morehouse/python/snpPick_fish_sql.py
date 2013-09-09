@@ -5,6 +5,8 @@
 import os, glob, subprocess, random, operator, time, sys
 from optparse import OptionParser
 from tools import *
+import sqlite as sql
+
 
 # A from Father, B from Mother
 class snps:
@@ -34,6 +36,14 @@ class reads:
 		self.covered_snp = ""
 		
 def variant_call_pair_end(sam_file, chr_dict):
+	"""the sequence pair has already been processed
+	now treat the read as single end """
+	
+	table_name = "zebra_fish"
+	attribute = "position INT PRIMARY KEY, read_ID TEXT, chr TEXT, geno_allele TEXT, total_depth INT, 	\
+	A_depth INT, T_depth INT, C_depth INT, G_depth INT, max_allele TEXT, max_allele_number INT, max_allele_percentage FLOAT"
+	sql.creat_table(table_name, attribute)
+	
 	
 	inputfile_sam = open(currentPath + sam_file, "r")
 	sam_line_first = inputfile_sam.readline() # the first read line in a pair
@@ -55,21 +65,9 @@ def variant_call_pair_end(sam_file, chr_dict):
 				print "error in first read:", sam_line_first
 				
 			if (insert_size_first >= insert_size_lower_bond) and (insert_size_first <= insert_size_upper_bond):
-				
-				# if the first read is within insert size limit, check the second read
-				sam_line_second = inputfile_sam.readline()
-				total_reads_num += 1
-				elements_second = sam_line_second.strip().split()
-				try:
-					read_ID_second = elements_second[0].strip()
-					chrName_second = elements_second[2].strip()
-					insert_size_second = abs(int(elements_second[8].strip()))			#  insert_size for second read is negative
-				except:
-					print "error in second read:", sam_line_second
-				if read_ID_first == read_ID_second:		# check if the two reads belong to the same pair
-					""" keep the pair as long as one read is not multiple mapping"""
-					""" check if the reads from the same pair are mapped to the same chr	"""
-					if chrName_first.startswith("chr8") and (chrName_first == chrName_second) and ((not is_multiple_maping(elements_first)) or (not is_multiple_maping(elements_second))): 
+	
+				if True:
+					if chrName_first.startswith("chr8"): 
 						
 						if chrName_first not in chr_dict:
 							chr_dict[chrName_first] = {}
@@ -81,62 +79,33 @@ def variant_call_pair_end(sam_file, chr_dict):
 						read_sequence_first = elements_first[9].strip()
 						read_length_first = len(read_sequence_first)
 						quality_score_sequence_first = elements_first[10].strip()
-						i = 0
-						while i < read_length_first:
+						
+						while i in range(read_length_first):
 							current_base_position = start_position_first+i
-							if (current_base_position) not in chr_dict[chrName_first]:
-								chr_dict[chrName_first][current_base_position] = snps()
+							#geno_allele = ""
+							#total_depth = 0
+							A_depth = 0
+							T_depth = 0
+							C_depth = 0
+							G_depth = 0
+							#max_allele = ""
+							#max_allele_number = 0
+							#max_allele_percentage = 0.0
+							
+			
 							covered_snp = read_sequence_first[i]			# ith position is the covered snp
 							quality_score_symbol = quality_score_sequence_first[i]
 							if (not covered_snp == 'N') and ((ord(quality_score_symbol)-33) > quality_score_threshold):	# check quality_score
-								covered_snp_total_number += 1
-								chr_dict[chrName_first][current_base_position].depth += 1
-								"""
-								read = reads()
-								read.qName = qName_first
-										
-								read.flag = flag_first
-								read.chrName = chrName_first
-								read.start_position = start_position_first
-								read.covered_snp = covered_snp
-								"""
-								#chr_dict[chrName_first][current_base_position].covered_reads_list.append(read)					
+								
+			
 								for base, value in chr_dict[chrName_second][current_base_position].allele_dict.iteritems():
 									if base == covered_snp:
 										chr_dict[chrName_second][current_base_position].allele_dict[base] += 1		
-							i += 1
+							
+							value = "1001, chr2, 1234"
+							write_data(table_name, value)
+							retrive_data(table_name)
 						
-						# second read
-						qName_second = elements_second[0].strip()
-						flag_second = elements_second[1].strip()
-						start_position_second = int(elements_second[3].strip())
-						read_sequence_second = elements_second[9].strip()
-						read_length_second = len(read_sequence_second)
-						quality_score_sequence_second = elements_second[10].strip()
-						i = 0
-						while i < read_length_second:
-							current_base_position = start_position_second+i
-							if (current_base_position) not in chr_dict[chrName_second]:
-								chr_dict[chrName_second][current_base_position] = snps()
-							covered_snp = read_sequence_second[i]			# ith position is the covered snp
-							quality_score_symbol = quality_score_sequence_second[i]
-							if (not covered_snp == 'N') and ((ord(quality_score_symbol)-33) > quality_score_threshold):
-								covered_snp_total_number += 1
-								chr_dict[chrName_first][current_base_position].depth += 1
-								"""
-								read = reads()
-								read.qName = qName_second
-								
-								read.flag = flag_self.covered_reads_list = []second
-								read.chrName = chrName_second
-								read.start_position = start_position_second
-								read.covered_snp = covered_snp	
-								"""
-								#chr_dict[chrName_first][current_base_position].covered_reads_list.append(read)					
-								for base, value in chr_dict[chrName_second][current_base_position].allele_dict.iteritems():
-									if base == covered_snp:
-										chr_dict[chrName_second][current_base_position].allele_dict[base] += 1	
-							i += 1
 				else:
 					print "first and second read ID do not match", read_ID_first, read_ID_second					
 		sam_line_first = inputfile_sam.readline()

@@ -110,7 +110,7 @@ if __name__=='__main__':
 	creat_table(table_name, attribute)
 	
 	value = "1001, chr2, 1234"
-	write_data(table_name, value)
+	#write_data(table_name, value)
 	retrive_data(table_name)
 
 
