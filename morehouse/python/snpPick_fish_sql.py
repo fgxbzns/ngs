@@ -39,10 +39,7 @@ def variant_call_pair_end(sam_file, chr_dict):
 	"""the sequence pair has already been processed
 	now treat the read as single end """
 	
-	table_name = "zebra_fish"
-	attribute = "position INT PRIMARY KEY, read_ID TEXT, chr TEXT, geno_allele TEXT, total_depth INT, 	\
-	A_depth INT, T_depth INT, C_depth INT, G_depth INT, max_allele TEXT, max_allele_number INT, max_allele_percentage FLOAT"
-	sql.creat_table(table_name, attribute)
+	global table_name
 	
 	
 	inputfile_sam = open(currentPath + sam_file, "r")
@@ -67,7 +64,8 @@ def variant_call_pair_end(sam_file, chr_dict):
 			if (insert_size_first >= insert_size_lower_bond) and (insert_size_first <= insert_size_upper_bond):
 	
 				if True:
-					if chrName_first.startswith("chr8"): 
+					if True:
+					#if chrName_first.startswith("chr8"): 
 						
 						if chrName_first not in chr_dict:
 							chr_dict[chrName_first] = {}
@@ -80,7 +78,7 @@ def variant_call_pair_end(sam_file, chr_dict):
 						read_length_first = len(read_sequence_first)
 						quality_score_sequence_first = elements_first[10].strip()
 						
-						while i in range(read_length_first):
+						for i in range(read_length_first):
 							current_base_position = start_position_first+i
 							#geno_allele = ""
 							#total_depth = 0
@@ -92,20 +90,30 @@ def variant_call_pair_end(sam_file, chr_dict):
 							#max_allele_number = 0
 							#max_allele_percentage = 0.0
 							
-			
+							
+							
+	
+	
 							covered_snp = read_sequence_first[i]			# ith position is the covered snp
 							quality_score_symbol = quality_score_sequence_first[i]
 							if (not covered_snp == 'N') and ((ord(quality_score_symbol)-33) > quality_score_threshold):	# check quality_score
+								if covered_snp == "A":
+									A_depth += 1
+								elif covered_snp == "T":
+									T_depth += 1
+								elif covered_snp == "C":
+									C_depth += 1
+								elif covered_snp == "G":
+									G_depth += 1
 								
-			
-								for base, value in chr_dict[chrName_second][current_base_position].allele_dict.iteritems():
-									if base == covered_snp:
-										chr_dict[chrName_second][current_base_position].allele_dict[base] += 1		
-							
-							value = "1001, chr2, 1234"
-							write_data(table_name, value)
-							retrive_data(table_name)
-						
+								
+								querry = "INSERT INTO " + table_name + " (position, read_ID, chr, A_depth,\
+								T_depth, C_depth, G_depth ) VALUES (" + str(current_base_position) + ",'" + \
+								read_ID_first + "','" + chrName_first + "'," + str(A_depth) + "," + str(T_depth) \
+								 + "," + str(C_depth) + "," + str(G_depth) + ")"
+								print querry
+								sql.execute_querry(db_name, querry)
+								
 				else:
 					print "first and second read ID do not match", read_ID_first, read_ID_second					
 		sam_line_first = inputfile_sam.readline()
@@ -163,7 +171,7 @@ def snpPick(sam_file):
 	#print chr_dict['chr12'][23241515].covered_reads_list[0].read_sequence
 	#print chr_dict['chr12'][23241515].allele_dict
 	
-	output_coverage_info(chr_dict)
+	#output_coverage_info(chr_dict)
 
 	end = time.time()
 	run_time = str(format((end - start), "0.3f"))
@@ -193,5 +201,15 @@ if __name__=='__main__':
 		ref_file_name = file_path + infile[(infile.find("hapmap3")):].strip()
 		print ref_file_name
 	"""
+	
+	global table_name
+	db_name = "/home/guoxing/disk2/ngs.db"
+	table_name = "zebra_fish"
+	attribute = "position INT PRIMARY KEY, read_ID TEXT, chr TEXT, geno_allele TEXT, total_depth INT, 	\
+	A_depth INT, T_depth INT, C_depth INT, G_depth INT, max_allele TEXT, max_allele_number INT, max_allele_percentage FLOAT"
+	sql.creat_table(db_name, table_name, attribute)
+	
+	
 	snpPick(sam_file)
+	sql.retrive_data(db_name, table_name)
 

@@ -85,7 +85,7 @@ class data_dicts:
         self.update_seed_dict()
         self.update_ref_dict()
         self.update_hap_std_dict()
-        self.update_ref_cluster_dict()
+        #self.update_ref_cluster_dict()
     
     def load_seed_geno_ref(self):
         self.update_geno_dict()
