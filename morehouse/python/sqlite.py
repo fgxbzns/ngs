@@ -59,15 +59,21 @@ def creat_table(db_name, table_name, attribute):
 	    if con:
 	        con.close() 
 
-def execute_querry(db_name, querry):
+def execute_querry(con, querry):
+	#con = lite.connect(db_name)
+	with con:    
+	    cur = con.cursor()    
+	    cur.execute(querry)
+
+def execute_querry_0(db_name, querry):
 	con = lite.connect(db_name)
 	with con:    
 	    cur = con.cursor()    
 	    cur.execute(querry)
 	    #rows = cur.fetchall()
-	    rows = [[str(item) for item in results] for results in cur.fetchall()]
-	    for row in rows:
-	        print row
+	    #rows = [[str(item) for item in results] for results in cur.fetchall()]
+	    #for row in rows:
+	    #   print row
 
 def write_data(db_name, table_name, value):
 	"""
@@ -163,20 +169,20 @@ if __name__=='__main__':
 	
 	check_version(db_name)
 	
-	table_name = "zebra_fish"
+	table_name = "test"
 	attribute = "position INT PRIMARY KEY, chr TEXT, read_ID TEXT"
 	creat_table(db_name, table_name, attribute)
 	
 	value = "1001, 'chr1', '1234'"
 	write_data(db_name, table_name, value)
-	value = "1002, 'chr2', '12345'"
+	value = "1002, 'chr2', '12355555545'"
 	write_data(db_name, table_name, value)
 	
 	retrive_data(db_name, table_name)
 	
 	select_data(db_name, table_name, "a")
 	
-	check_existing_data(db_name, table_name, 1002)
+	#check_existing_data(db_name, table_name, 1002)
 	"""
 	db_name = "/home/guoxing/disk2/ngs.db"
 	table_name = "zebra_fish1"

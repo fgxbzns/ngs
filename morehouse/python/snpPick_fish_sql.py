@@ -6,7 +6,7 @@ import os, glob, subprocess, random, operator, time, sys
 from optparse import OptionParser
 from tools import *
 import sqlite as sql
-
+import sqlite3 as lite
 
 # A from Father, B from Mother
 class snps:
@@ -40,84 +40,89 @@ def variant_call_pair_end(sam_file, chr_dict):
 	now treat the read as single end """
 	
 	global table_name
+	con = lite.connect(db_name)
+	with con:
+		cur = con.cursor()
+		
+		inputfile_sam = open(currentPath + sam_file, "r")
+		sam_line_first = inputfile_sam.readline() # the first read line in a pair
+		total_reads_num = 0
+		covered_snp_total_number = 0
+		
+		insert_size_lower_bond = 100
+		insert_size_upper_bond = 1000
 	
-	
-	inputfile_sam = open(currentPath + sam_file, "r")
-	sam_line_first = inputfile_sam.readline() # the first read line in a pair
-	total_reads_num = 0
-	covered_snp_total_number = 0
-	
-	insert_size_lower_bond = 100
-	insert_size_upper_bond = 1000
-
-	while sam_line_first!='':
-		if not sam_line_first.startswith("@"):
-			total_reads_num += 1	
-			elements_first = sam_line_first.strip().split()
-			try:
-				read_ID_first = elements_first[0].strip()
-				chrName_first = elements_first[2].strip()
-				insert_size_first = abs(int(elements_first[8].strip()))			#  insert_size for second read is negative
-			except:
-				print "error in first read:", sam_line_first
-				
-			if (insert_size_first >= insert_size_lower_bond) and (insert_size_first <= insert_size_upper_bond):
-	
-				if True:
+		while sam_line_first!='':
+			if not sam_line_first.startswith("@"):
+				total_reads_num += 1	
+				elements_first = sam_line_first.strip().split()
+				try:
+					read_ID_first = elements_first[0].strip()
+					chrName_first = elements_first[2].strip()
+					insert_size_first = abs(int(elements_first[8].strip()))			#  insert_size for second read is negative
+				except:
+					print "error in first read:", sam_line_first
+					
+				if (insert_size_first >= insert_size_lower_bond) and (insert_size_first <= insert_size_upper_bond):
+		
 					if True:
-					#if chrName_first.startswith("chr8"): 
-						
-						if chrName_first not in chr_dict:
-							chr_dict[chrName_first] = {}
-						
-						# first read
-						qName_first = elements_first[0].strip()
-						flag_first = elements_first[1].strip()
-						start_position_first = int(elements_first[3].strip())
-						read_sequence_first = elements_first[9].strip()
-						read_length_first = len(read_sequence_first)
-						quality_score_sequence_first = elements_first[10].strip()
-						
-						for i in range(read_length_first):
-							current_base_position = start_position_first+i
-							#geno_allele = ""
-							#total_depth = 0
-							A_depth = 0
-							T_depth = 0
-							C_depth = 0
-							G_depth = 0
-							#max_allele = ""
-							#max_allele_number = 0
-							#max_allele_percentage = 0.0
+						if True:
+						#if chrName_first.startswith("chr8"): 
 							
+							if chrName_first not in chr_dict:
+								chr_dict[chrName_first] = {}
 							
+							# first read
+							qName_first = elements_first[0].strip()
+							flag_first = elements_first[1].strip()
+							start_position_first = int(elements_first[3].strip())
+							read_sequence_first = elements_first[9].strip()
+							read_length_first = len(read_sequence_first)
+							quality_score_sequence_first = elements_first[10].strip()
 							
-	
-	
-							covered_snp = read_sequence_first[i]			# ith position is the covered snp
-							quality_score_symbol = quality_score_sequence_first[i]
-							if (not covered_snp == 'N') and ((ord(quality_score_symbol)-33) > quality_score_threshold):	# check quality_score
-								if covered_snp == "A":
-									A_depth += 1
-								elif covered_snp == "T":
-									T_depth += 1
-								elif covered_snp == "C":
-									C_depth += 1
-								elif covered_snp == "G":
-									G_depth += 1
-								
-								
-								querry = "INSERT INTO " + table_name + " (position, read_ID, chr, A_depth,\
-								T_depth, C_depth, G_depth ) VALUES (" + str(current_base_position) + ",'" + \
-								read_ID_first + "','" + chrName_first + "'," + str(A_depth) + "," + str(T_depth) \
-								 + "," + str(C_depth) + "," + str(G_depth) + ")"
-								print querry
-								sql.execute_querry(db_name, querry)
-								
-				else:
-					print "first and second read ID do not match", read_ID_first, read_ID_second					
-		sam_line_first = inputfile_sam.readline()
-	inputfile_sam.close()
+							for i in range(read_length_first):
+								current_base_position = start_position_first+i
+								#geno_allele = ""
+								#total_depth = 0
+								A_depth = 0
+								T_depth = 0
+								C_depth = 0
+								G_depth = 0
+								#max_allele = ""
+								#max_allele_number = 0
+								#max_allele_percentage = 0.0
+		
+		
+								covered_snp = read_sequence_first[i]			# ith position is the covered snp
+								quality_score_symbol = quality_score_sequence_first[i]
+								if (not covered_snp == 'N') and ((ord(quality_score_symbol)-33) > quality_score_threshold):	# check quality_score
+									if covered_snp == "A":
+										A_depth += 1
+									elif covered_snp == "T":
+										T_depth += 1
+									elif covered_snp == "C":
+										C_depth += 1
+									elif covered_snp == "G":
+										G_depth += 1
+									
+									
+									querry = "INSERT INTO " + table_name + " (position, read_ID, chr, A_depth, T_depth, C_depth, G_depth ) VALUES (" + \
+									str(current_base_position) + ",'" + \
+									read_ID_first + "','" + chrName_first + "'," + str(A_depth) + "," + str(T_depth) \
+									 + "," + str(C_depth) + "," + str(G_depth) + ")"
+									#print querry
+									
+									
+									cur.execute("SELECT *  from " + table_name + " where position=" + str(current_base_position))
+									if len(cur.fetchall()) == 0:
+										cur.execute(querry)
+									#if not sql.check_existing_data(db_name, table_name, current_base_position):
+										#sql.execute_querry(con, querry)
+									
+					else:
+						print "first and second read ID do not match", read_ID_first, read_ID_second					
+			sam_line_first = inputfile_sam.readline()
+		inputfile_sam.close()
 	return total_reads_num
 
 def update_max_allele_number(max_allele_number, dict):
@@ -204,12 +209,12 @@ if __name__=='__main__':
 	
 	global table_name
 	db_name = "/home/guoxing/disk2/ngs.db"
-	table_name = "zebra_fish"
+	table_name = "zebra"
 	attribute = "position INT PRIMARY KEY, read_ID TEXT, chr TEXT, geno_allele TEXT, total_depth INT, 	\
 	A_depth INT, T_depth INT, C_depth INT, G_depth INT, max_allele TEXT, max_allele_number INT, max_allele_percentage FLOAT"
 	sql.creat_table(db_name, table_name, attribute)
 	
 	
 	snpPick(sam_file)
-	sql.retrive_data(db_name, table_name)
+	#sql.retrive_data(db_name, table_name)
 
