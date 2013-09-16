@@ -20,11 +20,12 @@ parser.add_option("-i", "--aFile", type="string", dest="aFile",help = "Input fil
 (options, args) = parser.parse_args()
 chr_file = options.aFile
 
-chr_file = "hg18chr.fa"
+#chr_file = "hg18chr.fa"
 chr_file_name = chr_file[:chr_file.find('.')].strip()
 
 print chr_file
-chr_input_file = open(ref_path + chr_file, "r")
+#chr_input_file = open(ref_path + chr_file, "r")
+chr_input_file = open(currentPath + chr_file, "r")
 
 output_in_process = False
 

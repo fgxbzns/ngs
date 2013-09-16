@@ -153,7 +153,8 @@ def make_hifi_files(remPercent):
 			if position in seed_dict:
 				hifi_seed_dict[position] = " ".join(seed_dict[position])
 				#seed_output_file.write(seed_dict[position] + "\n")
-				
+			elif position in geno_dict and geno_dict[position][2][0] == geno_dict[position][2][1]:
+				hifi_seed_dict[position] = geno_dict[position][0] + " " + geno_dict[position][1] + " " + geno_dict[position][2][0]	
 			if position in geno_dict:
 				hifi_geno_dict[position] = " ".join(geno_dict[position])
 				#genotype_output_file.write(geno_dict[position] + "\n")		

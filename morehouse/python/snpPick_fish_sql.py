@@ -34,10 +34,26 @@ class reads:
 		self.quality_score_sequence = ""
 		self.read_length = 0
 		self.covered_snp = ""
+
+def get_ref_geno(chr_name):
+	chr_seq = ""
+	ref_path = "/home/guoxing/disk2/zebra_fish/ref_genome/"
+	ref_file = ref_path + "danRer7_" + chr_name + ".fa"
+	#print ref_file
+	input_file = open(ref_file, "r")
+	for lines in input_file:
+		if not lines.startswith(">"):
+			chr_seq += lines.strip()
+	print "total base number: ", len(chr_seq)
+	return chr_seq
+
 		
-def variant_call_pair_end(sam_file, chr_dict):
+def variant_call_pair_end(sam_file):
 	"""the sequence pair has already been processed
 	now treat the read as single end """
+	
+	chr_seq = get_ref_geno(chr_name)
+	print chr_seq[19986799]
 	
 	global table_name
 	con = lite.connect(db_name)
@@ -66,12 +82,8 @@ def variant_call_pair_end(sam_file, chr_dict):
 				if (insert_size_first >= insert_size_lower_bond) and (insert_size_first <= insert_size_upper_bond):
 		
 					if True:
-						if True:
-						#if chrName_first.startswith("chr8"): 
-							
-							if chrName_first not in chr_dict:
-								chr_dict[chrName_first] = {}
-							
+						#if True:
+						if chrName_first.startswith(chr_name): 
 							# first read
 							qName_first = elements_first[0].strip()
 							flag_first = elements_first[1].strip()
@@ -91,8 +103,7 @@ def variant_call_pair_end(sam_file, chr_dict):
 								#max_allele = ""
 								#max_allele_number = 0
 								#max_allele_percentage = 0.0
-		
-		
+								
 								covered_snp = read_sequence_first[i]			# ith position is the covered snp
 								quality_score_symbol = quality_score_sequence_first[i]
 								if (not covered_snp == 'N') and ((ord(quality_score_symbol)-33) > quality_score_threshold):	# check quality_score
@@ -104,94 +115,81 @@ def variant_call_pair_end(sam_file, chr_dict):
 										C_depth += 1
 									elif covered_snp == "G":
 										G_depth += 1
-									
-									
-									querry = "INSERT INTO " + table_name + " (position, read_ID, chr, A_depth, T_depth, C_depth, G_depth ) VALUES (" + \
-									str(current_base_position) + ",'" + \
-									read_ID_first + "','" + chrName_first + "'," + str(A_depth) + "," + str(T_depth) \
-									 + "," + str(C_depth) + "," + str(G_depth) + ")"
-									#print querry
-									
-									
+					
 									cur.execute("SELECT *  from " + table_name + " where position=" + str(current_base_position))
-									if len(cur.fetchall()) == 0:
-										cur.execute(querry)
-									#if not sql.check_existing_data(db_name, table_name, current_base_position):
-										#sql.execute_querry(con, querry)
-									
+									row = cur.fetchone()
+									if row == None:
+										inset_querry = "INSERT INTO " + table_name + \
+										" (position, chr, ref_allele, A_depth, T_depth, C_depth, G_depth ) VALUES (" + \
+										str(current_base_position) + \
+										",'" + chrName_first + "','" + chr_seq[current_base_position] + "'," + str(A_depth) + "," + str(T_depth) \
+										 + "," + str(C_depth) + "," + str(G_depth) + ")"
+										#print inset_querry
+										cur.execute(inset_querry)
+									else:
+										A_depth += int(row[3])
+										T_depth += int(row[4])
+										C_depth += int(row[5])
+										G_depth += int(row[6])
+										update_querry = "UPDATE " + table_name + " set A_depth=" + str(A_depth) + \
+										", T_depth=" + str(A_depth) + ", C_depth=" + str(C_depth) + ", G_depth=" + \
+										str(G_depth) + " where position=" + str(current_base_position)
+										#print update_querry
+										cur.execute(update_querry)									
 					else:
 						print "first and second read ID do not match", read_ID_first, read_ID_second					
 			sam_line_first = inputfile_sam.readline()
 		inputfile_sam.close()
 	return total_reads_num
 
-def update_max_allele_number(max_allele_number, dict):
-	dict[max_allele_number] = 1 if max_allele_number not in dict else (dict[max_allele_number] + 1)
-
-def output_coverage_info(chr_dict):
-	output_file = open(currentPath + sam_file_name + "_genotype.txt", "w")
-	print >> output_file, "chr", "pos", "coverage","max_allele", "max_allele_number", "A", "T", "C", "G"
-	for chr, chr_sub_dict in chr_dict.iteritems():
-		chr_sub_sorted_list = sort_dict_by_key(chr_sub_dict)
-		for data in chr_sub_sorted_list:
-			position = data[0]
-			snp = data[1]
-			#coverage = len(snp.covered_reads_list)
-			allele_dict = snp.allele_dict
-			depth = snp.depth
-			max_allele = keywithmaxval(allele_dict)
-			max_allele_number = allele_dict[max_allele]
-			print >> output_file, chr, position, depth, max_allele, max_allele_number, allele_dict["A"], allele_dict["T"], allele_dict["C"], allele_dict["G"]
-			#for reads in snp.covered_reads_list:
-			#	print >> output_file, reads.qName, reads.flag, reads.start_position, reads.covered_snp, reads.read_sequence, reads.quality_score_sequence
-	output_file.close()
-
 def snpPick(sam_file):
-	# start time
 	start = time.time()		
 		
 	global quality_score_threshold
-	global max_allele_percentage_threshold
 	global sam_file_name
-	global chr_dict
 
-	chr_dict = {}
-	quality_score_threshold = 13
-		
+	quality_score_threshold = 13	
 	sam_file_name = sam_file[:(len(sam_file)-4)]
 	
 	print "sam file: ", sam_file_name
-	"""
-	data_record_file_name = sam_file_name + "_data_record.txt"
-	data_record_file = open(currentPath + data_record_file_name, "w")
-"""
 
-	total_reads_num = variant_call_pair_end(sam_file, chr_dict)
+	total_reads_num = variant_call_pair_end(sam_file)
 	print "total_reads_num", total_reads_num
-	print "chr_dict", len(chr_dict)
 	
-	for chr, chr_sub_dict in chr_dict.iteritems():
-		print chr, len(chr_sub_dict)
-	
-	#print chr_dict['chr12'][23241515].covered_reads_list[0].read_sequence
-	#print chr_dict['chr12'][23241515].allele_dict
-	
-	#output_coverage_info(chr_dict)
-
 	end = time.time()
 	run_time = str(format((end - start), "0.3f"))
 	print "run time is: " + run_time + "s"
 
-	#data_record_file.write("run time is: " + run_time + "s \n")
-	#data_record_file.close()
+def get_data(db_name, table_name, start_line, end_line):
+	con = lite.connect(db_name)
+	with con:    
+	    cur = con.cursor()
+	    querry = "SELECT * FROM " + table_name + " where position>" + start_line + " and position<"  + end_line
+	    #print querry
+	    cur.execute(querry)
+	    rows = [[str(item) for item in results] for results in cur.fetchall()]
+	    #print len(rows)
+	    return rows
+
+def output_data(file_name, start_line, end_line):
+	output_file = open(currentPath + file_name, "w")
+	print >> output_file, "pos", "chr", "ref_allele", "A", "T", "C", "G"
+	rows = get_data(db_name, table_name, start_line, end_line)
+	for item in rows:
+		print >> output_file, item[0], item[1], item[2], item[3], item[4], item[5], item[6]
+	output_file.close()
 
 def get_args():
 	desc="variation call"
-	usage = "snpPick_fish -s sam_file" 
+	usage = "snpPick_fish -s sam_file -c chr -m update \n snpPick_fish -c chr -m output -b startLine -e endLine" 
 	parser = OptionParser(usage = usage)
 	parser.add_option("-s", "--sam", type="string", dest="samFile",help = "Input File Name", default="null")
+	parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="null")
+	parser.add_option("-m", "--mode", type="string", dest="mode",help = "mode", default="null")
+	parser.add_option("-b", "--startLine", type="string", dest="startLine",help = "start line", default="null")
+	parser.add_option("-e", "--endLine", type="string", dest="endLine",help = "end line", default="null")
 	(options, args) = parser.parse_args()
-	if options.samFile == "null":
+	if options.mode == "null" or options.chrName == "null":
 		print "parameters missing..."
 		print usage
 		sys.exit(1)
@@ -199,22 +197,31 @@ def get_args():
 	
 if __name__=='__main__':
 	options = get_args()
-	sam_file = options.samFile
 	
-	"""
-	for infile in glob.glob(os.path.join(file_path,"*"+chr_name+"_???.phased")):	# add * for chrX
-		ref_file_name = file_path + infile[(infile.find("hapmap3")):].strip()
-		print ref_file_name
-	"""
+	chr_name = options.chrName
+	mode = options.mode	
+	
+	global db_name
+	db_name = "/home/guoxing/disk2/ngs_" + chr_name + ".db"
 	
 	global table_name
-	db_name = "/home/guoxing/disk2/ngs.db"
 	table_name = "zebra"
-	attribute = "position INT PRIMARY KEY, read_ID TEXT, chr TEXT, geno_allele TEXT, total_depth INT, 	\
-	A_depth INT, T_depth INT, C_depth INT, G_depth INT, max_allele TEXT, max_allele_number INT, max_allele_percentage FLOAT"
-	sql.creat_table(db_name, table_name, attribute)
 	
+	if (mode == "update"):
+		sam_file = options.samFile
+		attribute = "position INT PRIMARY KEY, chr TEXT, ref_allele TEXT, 	\
+		A_depth INT, T_depth INT, C_depth INT, G_depth INT"
+		#attribute = "position INT PRIMARY KEY, chr TEXT, geno_allele TEXT, total_depth INT, 	\
+		#A_depth INT, T_depth INT, C_depth INT, G_depth INT, max_allele TEXT, max_allele_number INT, max_allele_percentage FLOAT"
+		sql.creat_table(db_name, table_name, attribute)
+		
+		#output_data("chr1.output")
+		snpPick(sam_file)
+	elif (mode == "output"):
+		start_line = options.startLine
+		end_line = options.endLine
+		file_name = "zebra_" + chr_name + "_" + start_line + "_" + end_line + ".txt"
+		#print file_name
+		output_data(file_name, start_line, end_line)
 	
-	snpPick(sam_file)
-	#sql.retrive_data(db_name, table_name)
 

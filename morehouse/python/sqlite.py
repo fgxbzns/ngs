@@ -48,7 +48,7 @@ def creat_table(db_name, table_name, attribute):
 	    con = lite.connect(db_name)
 	    cur = con.cursor()    
 	    cur.execute("DROP TABLE IF EXISTS " + table_name)
-	    cur.execute("CREATE TABLE "+table_name+" ("+attribute+")")
+	    cur.execute("CREATE TABLE IF NOT EXISTS "+table_name+" ("+attribute+")")
 	    #con.commit()    
 	except lite.Error, e:
 	    if con:
@@ -106,8 +106,9 @@ def retrive_data(db_name, table_name):
 	    cur.execute("SELECT * FROM " + table_name)
 	    #rows = cur.fetchall()
 	    rows = [[str(item) for item in results] for results in cur.fetchall()]
-	    for row in rows:
-	        print row
+	    return rows
+	    #for row in rows:
+	    #    print row
 
 def select_data(db_name, table_name, querry):
 	con = lite.connect(db_name)
