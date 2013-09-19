@@ -37,7 +37,7 @@ class data_dicts:
         self.cluster_pos_dict = {}
           
         self.number_of_subfile = 10
-        self.ref_cycle_number = 30
+        self.ref_cycle_number = 3
         
         self.maf_upper_bound = 0.5
         self.maf_lower_bound = 0.3
@@ -47,6 +47,9 @@ class data_dicts:
         self.ref_position_distance = 10000
         self.ref_expand_range = 5
         self.remPercent = 0.6
+        
+        self.allele_new_percentage = 0.90
+        self.qscore_threshold = 0.80
 
     def update_seed_dict(self):
         #print "seed_file is :", self.seed_file

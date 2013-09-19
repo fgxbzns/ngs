@@ -53,7 +53,7 @@ def variant_call_pair_end(sam_file):
 	now treat the read as single end """
 	
 	chr_seq = get_ref_geno(chr_name)
-	print chr_seq[19986799]
+	#print chr_seq[19986799]
 	
 	global table_name
 	con = lite.connect(db_name)
