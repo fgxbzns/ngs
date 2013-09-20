@@ -991,7 +991,7 @@ def get_seed_group_index():
 	seed_sorted_pos_list.sort()
 	ref_sorted_pos_list = [pos for pos, seed in ref_hetero_dict.iteritems()]
 	ref_sorted_pos_list.sort()
-	print ref_sorted_pos_list[0]
+	
 	
 	ref_number_ceilling = int(math.ceil(float(ref_hetero_total_number)/partition_number)*partition_number)
 	ref_hetero_in_each_partition = ref_number_ceilling/partition_number
@@ -1010,28 +1010,61 @@ def get_seed_group_index():
 		seed_group_list.append(temp_group_list)
 		temp_group_list = []
 	
+	geno_subfile_name = "genotype_group.txt"
+	geno_subfile = open(currentPath + geno_subfile_name, "w")
+	print >> geno_subfile, data_dict.geno_title_info
 	
-	output_file = open(currentPath + "seed_group_index.txt", "w")	
+	ref_subfile_name = "ref_group.txt"
+	ref_subfile = open(currentPath + ref_subfile_name, "w")
+	print >> ref_subfile, data_dict.ref_title_info
+	
+	
+	output_file = open(currentPath + "seed_group_index_percentage.txt", "w")	
 	print >> output_file, "pos", "number", "percentge"
 	#print len(seed_group_list)
-	#ref_pos_percentage_dict = {}
+	ref_pos_percentage_dict = {}
 	for i, seed_group in enumerate(seed_group_list):
 		group_size = len(seed_group)
 		seed_percentage_in_ref = 0
 		if i == len(seed_group_list)-1:
 			seed_percentage_in_ref = float(group_size)/float(ref_hetero_in_last_subfile)
-			print group_size, seed_percentage_in_ref
+			#print group_size, seed_percentage_in_ref
 		else:
 			seed_percentage_in_ref = float(group_size)/float(ref_hetero_in_each_partition)
-			print group_size, seed_percentage_in_ref
+			#print group_size, seed_percentage_in_ref
 		for j in range(int(ref_hetero_in_each_partition)):
 			index = i * ref_hetero_in_each_partition + j
 			if index < ref_hetero_total_number:
 				pos = ref_sorted_pos_list[index]
 				#ref_pos_percentage_dict[pos] = seed_percentage_in_ref
+				#if seed_percentage_in_ref >= 0.90:
 				print >> output_file, pos, group_size, seed_percentage_in_ref
+				if seed_percentage_in_ref >= 0.90:
+					if pos in data_dict.seed_dict:
+						ref_pos_percentage_dict[pos] = data_dict.seed_dict[pos]
+					if pos in data_dict.geno_dict:
+						print >> geno_subfile, list_to_line(data_dict.geno_dict[pos])
+					if pos in data_dict.hap_ref_dict:
+						print >> ref_subfile, list_to_line(data_dict.hap_ref_dict[pos])
+						
 	output_file.close()
 	
+	
+	#start_pos = ref_pos_percentage_dict[0]
+	#end_pos = ref_pos_percentage_dict[-1]
+	
+	hap_subfile = "haplotype_group.txt"
+	output_revised_seed(hap_subfile, ref_pos_percentage_dict)
+	seed_std_compare(hap_subfile, data_dict.chr_name)
+	
+	geno_subfile.close()
+	ref_subfile.close()
+	
+	
+	hifi = program_path + "hifi_fu_ref " + hap_subfile + " " + geno_subfile_name + " " + ref_subfile_name
+	hifi_process = subprocess.Popen(hifi, shell=True)
+	hifi_process.wait()
+	hifiAccuCheck("imputed_"+hap_subfile, chr_name)
 	
 	"""
 	group_list = []
@@ -1045,10 +1078,11 @@ def get_seed_group_index():
 	
 	group_seed_dict = {index:value for index, value in data_dict.seed_dict.iteritems() if index in group_list}
 	print len(group_seed_dict)
-	
-	output_revised_seed("group_seed.txt", group_seed_dict)
-	seed_std_compare("group_seed.txt", data_dict.chr_name)
 	"""
+	#print len(ref_pos_percentage_dict)
+	
+	
+	
 	
 def combine_hifi_seed(input_prefix, ori_seed_file):
 	"""
