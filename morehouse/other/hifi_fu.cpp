@@ -1287,8 +1287,8 @@ int main(int argc, char** argv)
 fu */	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//==================================================================
 		//================================================================
-//fu		fpo=fopen("imputed_radom.txt","w");
-//fu		fprintf(fpo,"rsNo pos\n");
+		fpo=fopen("imputed_radom.txt","w");
+		fprintf(fpo,"rsNo pos\n");
 
 
 
@@ -1335,7 +1335,7 @@ fu */	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 					if(hogo_xn[i][1]=='N')
 					hogo_xn[i][1] = main_allele[i][0];	
 
-			//		fprintf(fpo,"%s %d 3\n", hgr_rs[i],hgr_pos[i]);
+					fprintf(fpo,"%s %d 3\n", hgr_rs[i],hgr_pos[i]);
 				}
 				else if((hogo_xn[i][0]=='X')&&(hogo_xn[i][1]=='X'))
 				{
@@ -1373,7 +1373,7 @@ fu */	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 						//added on 03/16/2012
 						imp_random_maf_notcnt++;
 						//====================================
-	//fu					fprintf(fpo,"%s %d\n", hgr_rs[i],hgr_pos[i]);
+						fprintf(fpo,"%s %d\n", hgr_rs[i],hgr_pos[i]);
 					}
 					else
 					{
@@ -1381,14 +1381,14 @@ fu */	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 						//added on 03/16/2012
 						imp_random_maf_cnt++;
 						//====================================
-		//fu				fprintf(fpo,"%s %d\n", hgr_rs[i],hgr_pos[i]);
+						fprintf(fpo,"%s %d\n", hgr_rs[i],hgr_pos[i]);
 					}
 
 				}
 			}
 	}
 
-// fu	fclose(fpo);
+	fclose(fpo);
 	//Free g_hgralleles
 	for(int i=0;i<snpsum_hgr;i++)
 		free(g_hgralleles[i]);
@@ -1480,16 +1480,17 @@ fu */	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//==========================================================================
 	//Added on 03/16/2012
 	int imp_total = imp_double_side_match+imp_single_side_match+imp_random_maf_cnt+imp_random_maf_notcnt;
-/* fu
+
 	fpo=fopen("match_stype.txt","w");
-	fprintf(fpo,"No solution: %d\n",imp_random_maf_cnt+imp_random_maf_notcnt);
+	fprintf(fpo,"No solution imp_random_maf_cnt: %d\n",imp_random_maf_cnt);
+	fprintf(fpo,"No solution imp_random_maf_notcnt: %d\n",imp_random_maf_notcnt);
 	fprintf(fpo,"No single solution: %d\n",imp_single_side_match+(imp_random_maf_cnt+imp_random_maf_notcnt));
 	fprintf(fpo,"No big gap: %d\n",imp_total-imp_double_side_match-imp_single_side_match-(imp_random_maf_cnt+imp_random_maf_notcnt));
 	fprintf(fpo,"Total imputed: %d\n",imp_total);
 	fprintf(fpo,"Ref_homo_imputeXX: %d\n",imp_random_maf_notcnt);
 	fprintf(fpo,"Ref_nothomo_imputeXX_or_imputeNN: %d\n",imp_random_maf_cnt);
 	fclose(fpo);
-*/
+
 	//Free r_hgralleles
 	for(int i=0;i<snpsum_hgr;i++)
 		free(r_hgralleles[i]);

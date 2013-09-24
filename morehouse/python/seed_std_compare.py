@@ -80,9 +80,9 @@ def seed_std_compare(seed_input_file, chr_name):
 	print >> compare_output_file, "homo seed", seed_same_to_AB
 	print >> compare_output_file, "seed_not_AB", seed_not_AB	
 	compare_output_file.close()
-	"""
-	print same_to_B_dict
-	"""
+	
+	#print same_to_B_dict
+	
 	file_name = "refHaplos.txt"
 	for pos, snp in same_to_B_dict.iteritems():
 		pass
