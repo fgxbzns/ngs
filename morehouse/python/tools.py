@@ -31,7 +31,7 @@ def load_raw_data(file_name, raw_data_format = "list"):
 	fp = open(file_name, "r")
 	for line in fp:
 		if line.startswith("rsID"):
-			title_info = line.strip()
+			title_info = list_to_line(line.strip().split())
 		else:
 			elements = line.strip().split()
 			try:
@@ -74,8 +74,8 @@ def removeN(hifi_std_dict):
 def list_to_line(list):
 	line = ""
 	for a in list:
-		line += a + "\t"
-	return line
+		line += a.strip() + "\t"
+	return line.strip()
 	"""
 	a = ['a', 'b', 'c']
 	print "".join(a)

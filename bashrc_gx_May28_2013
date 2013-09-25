@@ -188,6 +188,7 @@ alias cluster='$morehousePath/cluster.py'
 alias nickenzyme='$morehousePath/nickenzyme.py'
 alias test='$morehousePath/test.py'
 alias data_dicts='$morehousePath/data_dicts.py'
+alias hifi2='$morehousePath/hifi_v2.py'
 
 
 # other programs

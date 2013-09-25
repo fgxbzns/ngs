@@ -148,16 +148,16 @@ def make_hifi_files(remPercent):
 	for snp in hap_ref_sorted_list:
 		position = snp[0]
 		if position <= int(last_seed_position):  
-			hifi_ref_dict[position] = " ".join(hap_ref_dict[position])
-			#outputFile.write(snp[1] + "\n")
+			#hifi_ref_dict[position] = " ".join(hap_ref_dict[position])
+			hifi_ref_dict[position] = list_to_line(hap_ref_dict[position])
 			if position in seed_dict:
-				hifi_seed_dict[position] = " ".join(seed_dict[position])
-				#seed_output_file.write(seed_dict[position] + "\n")
+				#hifi_seed_dict[position] = " ".join(seed_dict[position])
+				hifi_seed_dict[position] = list_to_line(seed_dict[position])
 			elif position in geno_dict and geno_dict[position][2][0] == geno_dict[position][2][1]:
 				hifi_seed_dict[position] = geno_dict[position][0] + " " + geno_dict[position][1] + " " + geno_dict[position][2][0]	
 			if position in geno_dict:
-				hifi_geno_dict[position] = " ".join(geno_dict[position])
-				#genotype_output_file.write(geno_dict[position] + "\n")		
+				#hifi_geno_dict[position] = " ".join(geno_dict[position])
+				hifi_geno_dict[position] = list_to_line(geno_dict[position])
 	
 	output_files("haplotype.txt", seed_title_info, hifi_seed_dict)
 	output_files("genotype.txt", geno_title_info, hifi_geno_dict)
@@ -218,8 +218,8 @@ if __name__=='__main__':
 	remPercent = options.remPercent
 	refMerger(haplotype_file, chr_name, remPercent)
 	
-	file_name = "haplotype.txt"
-	seed_std_compare(file_name, chr_name)
-	hifi_run(file_name, chr_name)
-	hifiAccuCheck("imputed_"+file_name, chr_name)
+	#file_name = "haplotype.txt"
+	#seed_std_compare(file_name, chr_name)
+	#hifi_run(file_name, chr_name)
+	#hifiAccuCheck("imputed_"+file_name, chr_name)
 	
