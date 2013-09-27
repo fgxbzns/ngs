@@ -44,12 +44,16 @@ class data_dicts:
         self.ref_cluster_dict = {}
         self.cluster_pos_dict = {}
         
-        self.ref_position_distance = 50000
+        # parameters for ref extract
+        self.ref_position_distance = 500000
         self.ref_expand_range = 5
         self.remPercent = 0.6
+        self.allele_new_percentage = 0.80
+        self.qscore_threshold = 0.80
         
-        self.allele_new_percentage = 0.60
-        self.qscore_threshold = 0.60
+        # parameters for seed group
+        self.seed_group_window_size= 20
+        self.existing_seed_percentage = 0.95
 
     def update_seed_dict(self):
         #print "seed_file is :", self.seed_file

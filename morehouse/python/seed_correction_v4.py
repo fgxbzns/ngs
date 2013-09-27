@@ -449,7 +449,7 @@ def seed_recover_extract_ref():
 			end_index = (pos_index+expand_range) if (pos_index+expand_range) < len(hifi_sorted_list) else len(hifi_sorted_list)-1
 			#print start_index, end_index
 			for new_index in range (start_index, end_index):
-				if hifi_sorted_list[new_index][0] in seed_ref_difference_dict: #and new_index in hifi_sorted_list:
+				if hifi_sorted_list[new_index][0] in seed_ref_difference_dict and math.fabs(hifi_sorted_list[new_index][0] - position) < position_distance: 
 				#if math.fabs(hifi_sorted_list[new_index][0] - position) < position_distance:
 				#if True:
 					seed = hifi_sorted_list[new_index][1]
@@ -477,25 +477,26 @@ def seed_recover_extract_ref():
 	ref_hifi_data_name = "ref_hifi_data.txt"
 	ref_hifi_data_file = open(currentPath + ref_hifi_data_name, "w")
 	print >> ref_hifi_data_file, "rsID pos max A T C G hap_std_A hap_std_B q_score"
-	
+	a = 0
 	for item in hifi_sorted_list:
 		pos = item[0]
 		snp = item[1]
 		if pos not in data_dict.hap_ref_dict: 
-			print snp.rsID, snp.position, snp.allele_dict
+			#print snp.rsID, snp.position, snp.allele_dict
+			a += 1
 		if pos in data_dict.hap_std_dict and pos not in data_dict.geno_homo_dict:
 			max_base = keywithmaxval(snp.allele_dict)
 			max_value = snp.allele_dict[max_base]
 			q_score = qscore_dict[pos]/float(number_of_subfile)
 			percentage = float(max_value)/float(number_of_subfile)
-			if not max_base == data_dict.hap_std_dict[pos][2] and data_dict.hap_std_dict[pos][2] != 'X' and percentage >= 0.6 and q_score >= 0.6:
+			if not max_base == data_dict.hap_std_dict[pos][2] and data_dict.hap_std_dict[pos][2] != 'X' and percentage >= data_dict.allele_new_percentage and q_score >= data_dict.qscore_threshold:
 				print >> ref_hifi_data_file, snp.rsID, snp.position, max_base, snp.allele_dict['A'], snp.allele_dict['T'], \
 								snp.allele_dict['C'], snp.allele_dict['G'], \
 								data_dict.hap_std_dict[pos][2], data_dict.hap_std_dict[pos][3], q_score, \
 								max_value, number_of_subfile, percentage
 	
 	ref_hifi_data_file.close()
-	
+	print "imputed seed not in ref:", a
 	revised_seed_dict = dict_add(data_dict.seed_dict, recovered_seed_dict)
 	"""
 	print "****** error seed distance"
@@ -1027,7 +1028,7 @@ def get_seed_group_index():
 	ref_sorted_pos_list = [pos for pos, seed in ref_hetero_dict.iteritems()]
 	ref_sorted_pos_list.sort()
 	
-	ref_hetero_in_each_partition = 10
+	ref_hetero_in_each_partition = data_dict.seed_group_window_size
 	partition_number = int(math.ceil(float(ref_hetero_total_number)/ref_hetero_in_each_partition)*ref_hetero_in_each_partition)
 	print "partition_number: ", partition_number
 	ref_hetero_in_last_subfile = int(math.fmod(ref_hetero_total_number, ref_hetero_in_each_partition))
@@ -1087,18 +1088,18 @@ def get_seed_group_index():
 				#ref_pos_percentage_dict[pos] = seed_percentage_in_ref
 				#if seed_percentage_in_ref >= 0.90:
 				print >> output_file, pos, group_size, seed_percentage_in_ref
-				""" #hetero seed only 
-				if seed_percentage_in_ref >= 0.90:
+				""" #hetero seed only """
+				if seed_percentage_in_ref >= data_dict.existing_seed_percentage:
 					if pos in data_dict.seed_dict:
 						ref_pos_percentage_dict[pos] = data_dict.seed_dict[pos]
 					if pos in data_dict.geno_dict:
 						print >> geno_subfile, list_to_line(data_dict.geno_dict[pos])
 					if pos in data_dict.hap_ref_dict:
 						print >> ref_subfile, list_to_line(data_dict.hap_ref_dict[pos])
-				"""
-		
+				
+		"""
 		# add homo seed
-		if seed_percentage_in_ref >= 0.85:
+		if seed_percentage_in_ref >= data_dict.existing_seed_percentage:
 			possible_seed += 1	
 			start_pos = seed_group[0]
 			end_pos = seed_group[-1]
@@ -1115,7 +1116,7 @@ def get_seed_group_index():
 			for snp in ref_list:
 				pos = snp[0]
 				print >> ref_subfile, list_to_line(data_dict.hap_ref_dict[pos])
-		
+		"""
 	last_pos = max(data_dict.seed_dict.keys())
 	if last_pos not in ref_pos_percentage_dict:
 		ref_pos_percentage_dict[last_pos] = data_dict.seed_dict[last_pos]
