@@ -9,11 +9,13 @@ from optparse import OptionParser
 from tools import *
 from calculate_maf import calculate_maf
 from cluster import get_cluster
+from hifiAccuCheck_v2 import hifiAccuCheck
 
 
 class hifi:
 	
 	def __init__(self):
+		self.chr_name = "chr9"
 	
 		self.seed_file_name = "haplotype.txt"
 		self.seed_file_prefix = ""
@@ -43,7 +45,7 @@ class hifi:
 		self.pos_to_impute = []
 		
 		self.window_initial_size = 16
-		self.window_size_upper_bound = 500
+		self.window_size_upper_bound = 100
 		self.window_size_lower_bound = 10
 		  
 	def update_seed_dict(self):
@@ -151,6 +153,8 @@ class hifi:
 		#print len(hap_geno_discrepancy_dict)				
 		self.h_xn_dict = h_xn_dict
 		self.output_dict("h_xn.txt", self.h_xn_dict)
+		hifiAccuCheck("h_xn.txt", self.chr_name)
+		
 	
 	def output_dict(self, filename, data_dict):
 		seed_new_file = open(currentPath + filename, "w")
@@ -159,7 +163,7 @@ class hifi:
 		for snp in revised_seed_sorted_list:
 			pos = snp[0]
 			seed = snp[1]
-			print >> seed_new_file, pos, seed[0], seed[1]
+			print >> seed_new_file, self.ref_dict[pos][0], pos, seed[0], seed[1]
 		seed_new_file.close()			
 	
 	def get_maf(self):
@@ -242,52 +246,115 @@ class hifi:
 				prepare the impute window, if the size is smaller than lower bound,
 				add more pos from either top or bottom
 				"""
-				print "impute_window_pos_list size: ", len(impute_window_pos_list)
+				#print "impute_window_pos_list size: ", len(impute_window_pos_list)
 				expand_direction = "up"
 				while len(impute_window_pos_list) < self.window_size_lower_bound:
 					if expand_direction == "up":
 						if window_start -1 != 0:
-							impute_window_pos_list.append(self.pos_to_impute[window_start-1])
+							window_start = window_start - 1
+							impute_window_pos_list.append(self.pos_to_impute[window_start])
 							#print "up", self.pos_to_impute[window_start-1]
 						expand_direction = "down"
 					elif expand_direction == "down":
 						if window_end +1 != pos_total:
-							impute_window_pos_list.append(self.pos_to_impute[window_end+1])
+							window_end += 1
+							impute_window_pos_list.append(self.pos_to_impute[window_end])
 						expand_direction = "up"
 						#print "down", self.pos_to_impute[window_end+1]
 				total_impute_win_num += 1
 				
 				match_to_A = 0
 				match_to_B = 0
+				solution_size = 0
+				solution_list = []
 				shrink_point = "top"
+				expand_direction = "up"
+				
+				previous_round_solution_size = 0
+				
 				impute_window_pos_list_size = len(impute_window_pos_list)	
-				while len(impute_window_pos_list) >= self.window_size_lower_bound and len(impute_window_pos_list) <= self.window_size_upper_bound \
-				 and match_to_A != 1 and match_to_B != 1:
+				while impute_window_pos_list_size >= self.window_size_lower_bound and impute_window_pos_list_size <= self.window_size_upper_bound \
+				 and solution_size != 1:
 					#while match_to_A != 1 and match_to_B != 1:
-						match_to_A, match_to_B = self.impute_X(impute_window_pos_list, window_center)
+						solution_list = self.impute_X(impute_window_pos_list, window_center)
+						 
+						solution_size = len(solution_list)
 						
-						if shrink_point == "top":
-							del impute_window_pos_list[0]
-							shrink_point = "bottom"
-						elif shrink_point == "bottom":
-							del impute_window_pos_list[-1]
-							shrink_point = "top"
+						# compare previous solution current solution
+						if previous_round_solution_size == 2 and solution_size == 0:
+							# remove the snp added in last round, skip it then add another one to check for solution
+							# impute_window_pos_list is sorted, so need to check which one is added last time
+							index_to_remove = 0 if expand_direction == "up" else -1
+							#print "remove 2 to 0", index_to_remove, impute_window_pos_list[index_to_remove]
+							del impute_window_pos_list[index_to_remove]
+							solution_size = 2
+								
+						elif previous_round_solution_size == 0 and solution_size == 2:
+							if expand_direction == "up":
+								if window_start -1 != 0:
+									window_start = window_start - 1
+								else:
+									expand_direction == "down"
+									window_end += 1
+							elif expand_direction == "down":
+								if window_end +1 != pos_total:
+									window_end += 1
+								else:
+									expand_direction == "up"
+									window_start = window_start - 1
+	
+						
+						#print "solution_size", solution_size
+						if solution_size == 1:
+							#print window_center, solution_list
+							self.h_xn_dict[window_center] = (solution_list[0][0], solution_list[0][1])
+							#print "impute_window_pos_list size: ", impute_window_pos_list_size
+						elif solution_size == 0:
+							if shrink_point == "top":
+								window_start = window_start + 1
+								del impute_window_pos_list[0]
+								shrink_point = "bottom"
+							elif shrink_point == "bottom":
+								window_end = window_end - 1
+								del impute_window_pos_list[-1]
+								shrink_point = "top"
+						elif solution_size == 2:
+							if expand_direction == "up":
+								if window_start -1 != 0:
+									window_start = window_start - 1
+									impute_window_pos_list.append(self.pos_to_impute[window_start])
+									#print "up", self.pos_to_impute[window_start-1]
+								expand_direction = "down"
+							elif expand_direction == "down":
+								if window_end +1 != pos_total:
+									window_end += 1
+									impute_window_pos_list.append(self.pos_to_impute[window_end])
+								expand_direction = "up"
+						else:
+							print "more than 2 solutions at", window_center
+						
+						
+						
+						previous_round_solution_size = solution_size
+						impute_window_pos_list_size = len(impute_window_pos_list)
 				
 				
 				#sys.exit(1)
 				
 		print "total_impute_win_num", total_impute_win_num
+		self.output_dict("h_xn_new.txt", self.h_xn_dict)
+		hifiAccuCheck("h_xn_new.txt", self.chr_name)
 		 
 			
 	def impute_X(self, impute_window_pos_list, window_center):
 		impute_window_pos_list.sort()
 		total_haplotype_number = len(self.ref_title_info.split()) - 2
-		print "total_haplotype_number", total_haplotype_number
+		#print "total_haplotype_number", total_haplotype_number
 		ref_list = []
 		ref_x_list = []
 		
 		window_center_index = impute_window_pos_list.index(window_center)
-		print "window_center_index", window_center_index
+		#print "window_center_index", window_center_index
 		
 		for i in range(2, total_haplotype_number):
 			temp_line = ""
@@ -315,13 +382,13 @@ class hifi:
 		for pos in impute_window_pos_list:
 			hap_xn_A += self.h_xn_dict[pos][0]
 			hap_xn_B += self.h_xn_dict[pos][1]
-		print hap_xn_A
-		print hap_xn_B
+		#print hap_xn_A
+		#print hap_xn_B
 		
 		
 		match_to_A = 0
 		match_to_B = 0
-		print hap_xn_A[window_center_index], hap_xn_B[window_center_index]
+		#print hap_xn_A[window_center_index], hap_xn_B[window_center_index]
 		"""
 		if hap_xn_A[window_center_index] != 'X' and hap_xn_B[window_center_index] == 'X':
 			match_to_A = ref_list.count(hap_xn_A)
@@ -332,7 +399,18 @@ class hifi:
 		"""
 		match_to_A = ref_x_list.count(hap_xn_A)
 		match_to_B = ref_x_list.count(hap_xn_B)
+		solution_list = []
 		
+		if match_to_A > 0 and match_to_B > 0:
+			match_to_A_index_list = [index for index, ref in enumerate(ref_x_list) if ref == hap_xn_A]
+			match_to_B_index_list = [index for index, ref in enumerate(ref_x_list) if ref == hap_xn_B]
+			for index_A in match_to_A_index_list:
+				center_A = ref_list[index_A][window_center_index]
+				for index_B in match_to_B_index_list:
+					center_B = ref_list[index_B][window_center_index]
+					if center_A != center_B:
+						solution_list.append((center_A, center_B))
+		#print "solution_list", solution_list
 		"""
 		for ref in ref_list:
 			print ref,
@@ -341,15 +419,15 @@ class hifi:
 				#break
 		"""
 			
-		print match_to_A, match_to_B	
-		return match_to_A, match_to_B
+		#print match_to_A, match_to_B	
+		return solution_list
 	
 	def run(self):
 		self.load_seed_geno_ref()	
 		self.merge_pos()
 		self.hg_merge()
 		self.get_maf()
-		self.combine_msg(186)
+		self.combine_msg(180)
 		self.to_impute_window('X')
 
 def get_args():

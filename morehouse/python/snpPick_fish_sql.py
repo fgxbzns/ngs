@@ -38,7 +38,8 @@ class reads:
 def get_ref_geno(chr_name):
 	chr_seq = ""
 	ref_path = "/home/guoxing/disk2/zebra_fish/ref_genome/"
-	ref_file = ref_path + "danRer7_" + chr_name + ".fa"
+	#ref_file = ref_path + "danRer7_" + chr_name + ".fa"
+	ref_file = ref_path + "lm_" + chr_name + ".fa"
 	#print ref_file
 	input_file = open(ref_file, "r")
 	for lines in input_file:
@@ -84,6 +85,7 @@ def variant_call_pair_end(sam_file):
 					if True:
 						#if True:
 						if chrName_first.startswith(chr_name): 
+						#if chrName_first == chr_name: 
 							# first read
 							qName_first = elements_first[0].strip()
 							flag_first = elements_first[1].strip()
