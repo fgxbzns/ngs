@@ -11,6 +11,9 @@ from calculate_maf import calculate_maf
 from cluster import get_cluster
 from hifiAccuCheck_v2 import hifiAccuCheck
 
+from seed_std_compare import seed_std_compare
+
+
 
 class hifi:
 	
@@ -40,6 +43,7 @@ class hifi:
 		
 		self.hgr_pos = []
 		self.h_xn_dict = {}
+		self.h_xn_imputed_dict = {}
 		self.maf_dict = {}
 		
 		self.pos_to_impute = []
@@ -70,6 +74,7 @@ class hifi:
 	def update_ref_dict(self):
 		self.ref_title_info, self.ref_dict = load_raw_data(self.ref_file_name)
 		print "total_ref_number: ", len(self.ref_dict)
+		print "ref_title_info: ", len(self.ref_title_info.split())
 	
 	def update_hap_std_dict(self):  
 		hap_std_file = file_path + "ASW_" + self.chr_name + "_child_hap_refed.txt"	
@@ -152,8 +157,8 @@ class hifi:
 		
 		#print len(hap_geno_discrepancy_dict)				
 		self.h_xn_dict = h_xn_dict
-		self.output_dict("h_xn.txt", self.h_xn_dict)
-		hifiAccuCheck("h_xn.txt", self.chr_name)
+		#self.output_dict("h_xn.txt", self.h_xn_dict)
+		#seed_std_compare("h_xn.txt", self.chr_name)
 		
 	
 	def output_dict(self, filename, data_dict):
@@ -213,21 +218,24 @@ class hifi:
 		print len(pos_to_impute)
 		"""
 		pos_to_impute.extend(self.seed_dict.keys())
-		pos_to_impute.extend(self.geno_homo_dict.keys())
+		#pos_to_impute.extend(self.geno_homo_dict.keys())
 		pos_to_impute = list(set(pos_to_impute))
 		pos_to_impute.sort()
 		print len(pos_to_impute)
 		self.pos_to_impute = pos_to_impute
 	
 	def to_impute_window(self, impute_type):
+
 		window_half = self.window_initial_size/2
 		pos_total = len(self.pos_to_impute)
 		window_center = 0
 		window_start = 0
 		window_end = 0
 		total_impute_win_num = 0
+		xx_number = 0
 		for i, pos in enumerate(self.pos_to_impute):
 			if self.h_xn_dict[pos][0] == impute_type or self.h_xn_dict[pos][1] == impute_type:
+				xx_number += 1
 				window_center = self.pos_to_impute[i]
 				window_start = i - window_half if i - window_half >= 0 else 0
 				window_end = i + window_half if i + window_half < pos_total else (pos_total - 1)
@@ -284,23 +292,23 @@ class hifi:
 						if previous_round_solution_size == 2 and solution_size == 0:
 							# remove the snp added in last round, skip it then add another one to check for solution
 							# impute_window_pos_list is sorted, so need to check which one is added last time
-							index_to_remove = 0 if expand_direction == "up" else -1
+							index_to_remove = 0 if expand_direction == "down" else -1
 							#print "remove 2 to 0", index_to_remove, impute_window_pos_list[index_to_remove]
 							del impute_window_pos_list[index_to_remove]
 							solution_size = 2
 								
 						elif previous_round_solution_size == 0 and solution_size == 2:
-							if expand_direction == "up":
+							if expand_direction == "down":
 								if window_start -1 != 0:
 									window_start = window_start - 1
 								else:
-									expand_direction == "down"
+									expand_direction == "up"
 									window_end += 1
-							elif expand_direction == "down":
+							elif expand_direction == "up":
 								if window_end +1 != pos_total:
 									window_end += 1
 								else:
-									expand_direction == "up"
+									expand_direction == "down"
 									window_start = window_start - 1
 	
 						
@@ -308,6 +316,7 @@ class hifi:
 						if solution_size == 1:
 							#print window_center, solution_list
 							self.h_xn_dict[window_center] = (solution_list[0][0], solution_list[0][1])
+							self.h_xn_imputed_dict[window_center] = (solution_list[0][0], solution_list[0][1])
 							#print "impute_window_pos_list size: ", impute_window_pos_list_size
 						elif solution_size == 0:
 							if shrink_point == "top":
@@ -337,16 +346,140 @@ class hifi:
 						
 						previous_round_solution_size = solution_size
 						impute_window_pos_list_size = len(impute_window_pos_list)
+						
 				
 				
 				#sys.exit(1)
 				
 		print "total_impute_win_num", total_impute_win_num
-		self.output_dict("h_xn_new.txt", self.h_xn_dict)
-		hifiAccuCheck("h_xn_new.txt", self.chr_name)
-		 
-			
+		print "xx_number", xx_number
+
+	def get_matched_window(self, impute_window_pos_list, window_center, hap_type):
+		# find the window that matches A or B
+		hap_index = 0 if hap_type == 'A' else 1
+		total_haplotype_number = len(self.ref_title_info.split()) - 2
+		
+		match_to_A_index_list_new = range(2, total_haplotype_number)
+		for pos in impute_window_pos_list:
+			if pos != window_center:
+				match_to_A_index_list_new = [index for index in match_to_A_index_list_new if self.ref_dict[pos][index] == self.h_xn_dict[pos][hap_index]]		
+		
+		match_to_A_list = []
+		ref_x_list = []
+		
+		for index in match_to_A_index_list_new:
+		
+			temp_ref = ""
+			for pos in impute_window_pos_list:
+				temp_ref += self.ref_dict[pos][index]
+			if temp_ref not in match_to_A_list:
+				match_to_A_list.append(temp_ref)
+					
+		#print "match_to_A_index_list_new", match_to_A_index_list_new
+		#print "match_to_A_index_list_new", match_to_A_list
+		return match_to_A_list
+		
 	def impute_X(self, impute_window_pos_list, window_center):
+		
+		#start = time.time()	
+		#print window_center
+		#print impute_window_pos_list
+		impute_window_pos_list.sort()
+		window_center_index = impute_window_pos_list.index(window_center)
+		total_haplotype_number = len(self.ref_title_info.split()) - 2
+		
+		match_to_A_list = self.get_matched_window(impute_window_pos_list, window_center, 'A')
+		match_to_A = len(match_to_A_list)
+		solution_list = []
+		
+		if match_to_A > 0:
+			match_to_B_list = self.get_matched_window(impute_window_pos_list, window_center, 'B')
+			match_to_B = len(match_to_B_list)
+
+			for ref_A in match_to_A_list:
+				center_A = ref_A[window_center_index]
+				for ref_B in match_to_B_list:
+					center_B = ref_B[window_center_index]
+					if center_A != center_B:
+						solution_list.append((center_A, center_B))
+		
+		#print "solution_list new method", solution_list	
+		
+		
+		#print "total_haplotype_number", total_haplotype_number
+		ref_list = []
+		ref_x_list = []
+		
+		window_center_index = impute_window_pos_list.index(window_center)
+		#print "window_center_index", window_center_index
+		
+
+		
+		for i in range(2, total_haplotype_number):
+			temp_line = ""
+			#temp_line_x = ""
+			for pos in impute_window_pos_list:
+				temp_line += self.ref_dict[pos][i]
+			if temp_line not in ref_list:
+				ref_list.append(temp_line)
+				#ref_x_list.append(temp_line_x)
+		
+		for ref in ref_list:
+			ref_x_list.append(ref[:window_center_index] + 'X' + ref[window_center_index+1:])
+		
+		#print ref_list
+		#print ref_x_list
+		
+		hap_xn_A = ""
+		hap_xn_B = ""		
+		for pos in impute_window_pos_list:
+			hap_xn_A += self.h_xn_dict[pos][0]
+			hap_xn_B += self.h_xn_dict[pos][1]
+		#print hap_xn_A
+		#print hap_xn_B
+		
+		
+		match_to_A = 0
+		match_to_B = 0
+		#print hap_xn_A[window_center_index], hap_xn_B[window_center_index]
+		"""
+		if hap_xn_A[window_center_index] != 'X' and hap_xn_B[window_center_index] == 'X':
+			match_to_A = ref_list.count(hap_xn_A)
+			match_to_B = ref_x_list.count(hap_xn_B)
+		elif hap_xn_A[window_center_index] == 'X' and hap_xn_B[window_center_index] == 'X':
+			match_to_A = ref_x_list.count(hap_xn_A)
+			match_to_B = ref_x_list.count(hap_xn_B)
+		"""
+		match_to_A = ref_x_list.count(hap_xn_A)
+		match_to_B = ref_x_list.count(hap_xn_B)
+		solution_list = []
+		
+		if match_to_A > 0 and match_to_B > 0:
+			match_to_A_index_list = [index for index, ref in enumerate(ref_x_list) if ref == hap_xn_A]
+			match_to_B_index_list = [index for index, ref in enumerate(ref_x_list) if ref == hap_xn_B]
+			for index_A in match_to_A_index_list:
+				center_A = ref_list[index_A][window_center_index]
+				for index_B in match_to_B_index_list:
+					center_B = ref_list[index_B][window_center_index]
+					if center_A != center_B:
+						solution_list.append((center_A, center_B))
+		#print "solution_list old method", solution_list
+		#for index in match_to_A_index_list:
+		#	print ref_list[index]
+		"""
+		for ref in ref_list:
+			print ref,
+			if ref == hap_xn_A:
+				print ref, "match"
+				#break
+		"""
+		#print "match_to_A_index_list_old", match_to_A_index_list
+		#print "run time is: " + str(format((time.time() - start), "0.3f")) + "s"
+			
+		#print match_to_A, match_to_B	
+		return solution_list	 
+		
+	def impute_X_0(self, impute_window_pos_list, window_center):
 		impute_window_pos_list.sort()
 		total_haplotype_number = len(self.ref_title_info.split()) - 2
 		#print "total_haplotype_number", total_haplotype_number
@@ -356,17 +489,15 @@ class hifi:
 		window_center_index = impute_window_pos_list.index(window_center)
 		#print "window_center_index", window_center_index
 		
+		"""
+		check A first, if > 0, then check B
+		"""
+		
 		for i in range(2, total_haplotype_number):
 			temp_line = ""
 			#temp_line_x = ""
 			for pos in impute_window_pos_list:
 				temp_line += self.ref_dict[pos][i]
-				"""
-				if pos == window_center:
-					temp_line_x += 'X'
-				else:
-					temp_line_x += self.ref_dict[pos][i]
-				"""
 			if temp_line not in ref_list:
 				ref_list.append(temp_line)
 				#ref_x_list.append(temp_line_x)
@@ -423,12 +554,41 @@ class hifi:
 		return solution_list
 	
 	def run(self):
+			
 		self.load_seed_geno_ref()	
+		#elapse_time = time.time() - start_time
+		#print "load_seed_geno_ref time is: " + str(format(elapse_time, "0.3f")) + "s"
+
 		self.merge_pos()
+		#elapse_time = time.time() - elapse_time
+		#print "merge_pos time is: " + str(format(elapse_time, "0.3f")) + "s"
 		self.hg_merge()
+		#elapse_time = time.time() - elapse_time
+		#print "hg_merge time is: " + str(format(elapse_time, "0.3f")) + "s"
 		self.get_maf()
-		self.combine_msg(180)
+		#elapse_time = time.time() - elapse_time
+		#print "get_maf time is: " + str(format(elapse_time, "0.3f")) + "s"
+		"""
+		maf_num_list = self.maf_dict.keys()
+		#print maf_num_list
+		maf_num_list.sort()
+		maf_num_list.reverse()
+		for maf_num in maf_num_list:
+			print "current maf_num:", maf_num
+			# improve add new pos to the current list
+			self.combine_msg(maf_num)
+			self.to_impute_window('X')
+		"""
+		self.combine_msg(186)
+		#elapse_time = time.time() - elapse_time
+		#print "combine_msg time is: " + str(format(elapse_time, "0.3f")) + "s"
+		start_time = time.time()
 		self.to_impute_window('X')
+		elapse_time = time.time() - start_time
+		print "***********************to_impute_window time is: " + str(format(elapse_time, "0.3f")) + "s"
+		self.output_dict("h_xn_new.txt", self.h_xn_imputed_dict)
+		seed_std_compare("h_xn_new.txt", self.chr_name)
+		
 
 def get_args():
 	desc = "Compare seed and std hap, to check purity of seed"
