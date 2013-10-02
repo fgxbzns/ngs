@@ -168,6 +168,7 @@ class hifi:
 		for snp in revised_seed_sorted_list:
 			pos = snp[0]
 			seed = snp[1]
+			#if seed[0] != 'X' and seed[1] != 'X' and seed[0] != 'N' and seed[0] != 'N': 
 			print >> seed_new_file, self.ref_dict[pos][0], pos, seed[0], seed[1]
 		seed_new_file.close()			
 	
@@ -228,6 +229,12 @@ class hifi:
 
 		window_half = self.window_initial_size/2
 		pos_total = len(self.pos_to_impute)
+		#hap_xn_dict_backup = self.h_xn_dict.copy()
+		print "self.h_xn_dict", len(self.h_xn_dict)
+		
+		hap_xn_dict_backup = {position:value for position, value in self.h_xn_dict.iteritems() if position in self.pos_to_impute}
+		print "self.hap_xn_dict_backup", len(hap_xn_dict_backup)
+		
 		window_center = 0
 		window_start = 0
 		window_end = 0
@@ -279,12 +286,15 @@ class hifi:
 				expand_direction = "up"
 				
 				previous_round_solution_size = 0
+				impute_cycle = 0
+				impute_cycle_limit = 200
 				
 				impute_window_pos_list_size = len(impute_window_pos_list)	
 				while impute_window_pos_list_size >= self.window_size_lower_bound and impute_window_pos_list_size <= self.window_size_upper_bound \
-				 and solution_size != 1:
+				 and solution_size != 1 and impute_cycle < impute_cycle_limit:
+						impute_cycle += 1
 					#while match_to_A != 1 and match_to_B != 1:
-						solution_list = self.impute_X(impute_window_pos_list, window_center)
+						solution_list = self.impute_X(impute_window_pos_list, window_center, impute_type)
 						 
 						solution_size = len(solution_list)
 						
@@ -317,6 +327,8 @@ class hifi:
 							#print window_center, solution_list
 							self.h_xn_dict[window_center] = (solution_list[0][0], solution_list[0][1])
 							self.h_xn_imputed_dict[window_center] = (solution_list[0][0], solution_list[0][1])
+							#if impute_type == 'N':
+							#	print window_center, solution_list
 							#print "impute_window_pos_list size: ", impute_window_pos_list_size
 						elif solution_size == 0:
 							if shrink_point == "top":
@@ -327,7 +339,9 @@ class hifi:
 								window_end = window_end - 1
 								del impute_window_pos_list[-1]
 								shrink_point = "top"
-						elif solution_size == 2:
+						#elif solution_size > 2:
+						#	solution_size == 2
+						elif solution_size >= 2:
 							if expand_direction == "up":
 								if window_start -1 != 0:
 									window_start = window_start - 1
@@ -345,6 +359,8 @@ class hifi:
 						
 						
 						previous_round_solution_size = solution_size
+						if window_center not in impute_window_pos_list:
+							impute_window_pos_list.append(window_center)
 						impute_window_pos_list_size = len(impute_window_pos_list)
 						
 				
@@ -368,7 +384,6 @@ class hifi:
 		ref_x_list = []
 		
 		for index in match_to_A_index_list_new:
-		
 			temp_ref = ""
 			for pos in impute_window_pos_list:
 				temp_ref += self.ref_dict[pos][index]
@@ -376,17 +391,13 @@ class hifi:
 				match_to_A_list.append(temp_ref)
 					
 		#print "match_to_A_index_list_new", match_to_A_index_list_new
-		#print "match_to_A_index_list_new", match_to_A_list
+		#print "match_to_A_index_list_new", len(match_to_A_list)
 		return match_to_A_list
 		
-	def impute_X(self, impute_window_pos_list, window_center):
+	def impute_X(self, impute_window_pos_list, window_center, impute_type):
 		
-		#start = time.time()	
-		#print window_center
-		#print impute_window_pos_list
 		impute_window_pos_list.sort()
 		window_center_index = impute_window_pos_list.index(window_center)
-		total_haplotype_number = len(self.ref_title_info.split()) - 2
 		
 		match_to_A_list = self.get_matched_window(impute_window_pos_list, window_center, 'A')
 		match_to_A = len(match_to_A_list)
@@ -395,88 +406,17 @@ class hifi:
 		if match_to_A > 0:
 			match_to_B_list = self.get_matched_window(impute_window_pos_list, window_center, 'B')
 			match_to_B = len(match_to_B_list)
-
 			for ref_A in match_to_A_list:
 				center_A = ref_A[window_center_index]
 				for ref_B in match_to_B_list:
 					center_B = ref_B[window_center_index]
-					if center_A != center_B:
+					if impute_type == 'N':
+						solution_list.append((center_A, center_B))
+					elif impute_type == 'X' and center_A != center_B:
 						solution_list.append((center_A, center_B))
 		
 		#print "solution_list new method", solution_list	
 		
-		
-		#print "total_haplotype_number", total_haplotype_number
-		ref_list = []
-		ref_x_list = []
-		
-		window_center_index = impute_window_pos_list.index(window_center)
-		#print "window_center_index", window_center_index
-		
-
-		
-		for i in range(2, total_haplotype_number):
-			temp_line = ""
-			#temp_line_x = ""
-			for pos in impute_window_pos_list:
-				temp_line += self.ref_dict[pos][i]
-			if temp_line not in ref_list:
-				ref_list.append(temp_line)
-				#ref_x_list.append(temp_line_x)
-		
-		for ref in ref_list:
-			ref_x_list.append(ref[:window_center_index] + 'X' + ref[window_center_index+1:])
-		
-		#print ref_list
-		#print ref_x_list
-		
-		hap_xn_A = ""
-		hap_xn_B = ""		
-		for pos in impute_window_pos_list:
-			hap_xn_A += self.h_xn_dict[pos][0]
-			hap_xn_B += self.h_xn_dict[pos][1]
-		#print hap_xn_A
-		#print hap_xn_B
-		
-		
-		match_to_A = 0
-		match_to_B = 0
-		#print hap_xn_A[window_center_index], hap_xn_B[window_center_index]
-		"""
-		if hap_xn_A[window_center_index] != 'X' and hap_xn_B[window_center_index] == 'X':
-			match_to_A = ref_list.count(hap_xn_A)
-			match_to_B = ref_x_list.count(hap_xn_B)
-		elif hap_xn_A[window_center_index] == 'X' and hap_xn_B[window_center_index] == 'X':
-			match_to_A = ref_x_list.count(hap_xn_A)
-			match_to_B = ref_x_list.count(hap_xn_B)
-		"""
-		match_to_A = ref_x_list.count(hap_xn_A)
-		match_to_B = ref_x_list.count(hap_xn_B)
-		solution_list = []
-		
-		if match_to_A > 0 and match_to_B > 0:
-			match_to_A_index_list = [index for index, ref in enumerate(ref_x_list) if ref == hap_xn_A]
-			match_to_B_index_list = [index for index, ref in enumerate(ref_x_list) if ref == hap_xn_B]
-			for index_A in match_to_A_index_list:
-				center_A = ref_list[index_A][window_center_index]
-				for index_B in match_to_B_index_list:
-					center_B = ref_list[index_B][window_center_index]
-					if center_A != center_B:
-						solution_list.append((center_A, center_B))
-		#print "solution_list old method", solution_list
-		#for index in match_to_A_index_list:
-		#	print ref_list[index]
-		"""
-		for ref in ref_list:
-			print ref,
-			if ref == hap_xn_A:
-				print ref, "match"
-				#break
-		"""
-		#print "match_to_A_index_list_old", match_to_A_index_list
-		#print "run time is: " + str(format((time.time() - start), "0.3f")) + "s"
-			
-		#print match_to_A, match_to_B	
 		return solution_list	 
 		
 	def impute_X_0(self, impute_window_pos_list, window_center):
@@ -571,23 +511,40 @@ class hifi:
 		"""
 		maf_num_list = self.maf_dict.keys()
 		#print maf_num_list
+		
 		maf_num_list.sort()
 		maf_num_list.reverse()
+		print maf_num_list
+		self.combine_msg(186)
 		for maf_num in maf_num_list:
-			print "current maf_num:", maf_num
+			
 			# improve add new pos to the current list
-			self.combine_msg(maf_num)
-			self.to_impute_window('X')
+			#self.combine_msg(maf_num)
+			if maf_num >= 170 and maf_num != 186:
+				print "current maf_num:", maf_num
+				self.pos_to_impute.extend(self.maf_dict[maf_num])
+				#print len(self.pos_to_impute)
+				pre_imputed_size = len(self.h_xn_imputed_dict)
+				print "pre_imputed_size", pre_imputed_size
+				self.to_impute_window('X')
+				self.to_impute_window('N')
+				print "newly_imputed_size", len(self.h_xn_imputed_dict) - pre_imputed_size
 		"""
 		self.combine_msg(186)
 		#elapse_time = time.time() - elapse_time
 		#print "combine_msg time is: " + str(format(elapse_time, "0.3f")) + "s"
 		start_time = time.time()
 		self.to_impute_window('X')
+		#self.to_impute_window('N')
 		elapse_time = time.time() - start_time
 		print "***********************to_impute_window time is: " + str(format(elapse_time, "0.3f")) + "s"
+		
 		self.output_dict("h_xn_new.txt", self.h_xn_imputed_dict)
 		seed_std_compare("h_xn_new.txt", self.chr_name)
+		
+		self.output_dict("h_xn_1.txt", self.h_xn_dict)
+		seed_std_compare("h_xn_1.txt", self.chr_name)
+		hifiAccuCheck("h_xn_1.txt", self.chr_name)
 		
 
 def get_args():
