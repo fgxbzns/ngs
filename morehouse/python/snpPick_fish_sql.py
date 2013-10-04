@@ -66,7 +66,7 @@ def variant_call_pair_end(sam_file):
 		total_reads_num = 0
 		covered_snp_total_number = 0
 		
-		insert_size_lower_bond = 100
+		insert_size_lower_bond = 0
 		insert_size_upper_bond = 1000
 	
 		while sam_line_first!='':
@@ -79,9 +79,9 @@ def variant_call_pair_end(sam_file):
 					insert_size_first = abs(int(elements_first[8].strip()))			#  insert_size for second read is negative
 				except:
 					print "error in first read:", sam_line_first
-					
-				if (insert_size_first >= insert_size_lower_bond) and (insert_size_first <= insert_size_upper_bond):
-		
+				print "this is a new read"	
+				if (insert_size_first > insert_size_lower_bond) and (insert_size_first <= insert_size_upper_bond):
+				#if True:
 					if True:
 						#if True:
 						if chrName_first.startswith(chr_name): 
@@ -96,6 +96,7 @@ def variant_call_pair_end(sam_file):
 							
 							for i in range(read_length_first):
 								current_base_position = start_position_first+i
+								print "current_base_position", current_base_position
 								#geno_allele = ""
 								#total_depth = 0
 								A_depth = 0
@@ -124,9 +125,9 @@ def variant_call_pair_end(sam_file):
 										inset_querry = "INSERT INTO " + table_name + \
 										" (position, chr, ref_allele, A_depth, T_depth, C_depth, G_depth ) VALUES (" + \
 										str(current_base_position) + \
-										",'" + chrName_first + "','" + chr_seq[current_base_position] + "'," + str(A_depth) + "," + str(T_depth) \
+										",'" + chrName_first + "','" + chr_seq[current_base_position-1] + "'," + str(A_depth) + "," + str(T_depth) \
 										 + "," + str(C_depth) + "," + str(G_depth) + ")"
-										#print inset_querry
+										print inset_querry
 										cur.execute(inset_querry)
 									else:
 										A_depth += int(row[3])
@@ -134,9 +135,9 @@ def variant_call_pair_end(sam_file):
 										C_depth += int(row[5])
 										G_depth += int(row[6])
 										update_querry = "UPDATE " + table_name + " set A_depth=" + str(A_depth) + \
-										", T_depth=" + str(A_depth) + ", C_depth=" + str(C_depth) + ", G_depth=" + \
+										", T_depth=" + str(T_depth) + ", C_depth=" + str(C_depth) + ", G_depth=" + \
 										str(G_depth) + " where position=" + str(current_base_position)
-										#print update_querry
+										print update_querry
 										cur.execute(update_querry)									
 					else:
 						print "first and second read ID do not match", read_ID_first, read_ID_second					
@@ -150,7 +151,7 @@ def snpPick(sam_file):
 	global quality_score_threshold
 	global sam_file_name
 
-	quality_score_threshold = 13	
+	quality_score_threshold = 14	
 	sam_file_name = sam_file[:(len(sam_file)-4)]
 	
 	print "sam file: ", sam_file_name

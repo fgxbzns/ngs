@@ -168,8 +168,8 @@ class hifi:
 		for snp in revised_seed_sorted_list:
 			pos = snp[0]
 			seed = snp[1]
-			#if seed[0] != 'X' and seed[1] != 'X' and seed[0] != 'N' and seed[0] != 'N': 
-			print >> seed_new_file, self.ref_dict[pos][0], pos, seed[0], seed[1]
+			if seed[0] != 'X' and seed[1] != 'X' and seed[0] != 'N' and seed[0] != 'N': 
+				print >> seed_new_file, self.ref_dict[pos][0], pos, seed[0], seed[1]
 		seed_new_file.close()			
 	
 	def get_maf(self):
@@ -229,146 +229,144 @@ class hifi:
 
 		window_half = self.window_initial_size/2
 		pos_total = len(self.pos_to_impute)
-		#hap_xn_dict_backup = self.h_xn_dict.copy()
-		print "self.h_xn_dict", len(self.h_xn_dict)
+
+		imputed_snp_this_round = 1
+		#if True:
+		while imputed_snp_this_round != 0:
+			imputed_snp_this_round = 0
 		
-		hap_xn_dict_backup = {position:value for position, value in self.h_xn_dict.iteritems() if position in self.pos_to_impute}
-		print "self.hap_xn_dict_backup", len(hap_xn_dict_backup)
+			window_center = 0
+			window_start = 0
+			window_end = 0
+			total_impute_win_num = 0
+			xx_number = 0
+			
+			
+			for i, pos in enumerate(self.pos_to_impute):
+				if self.h_xn_dict[pos][0] == impute_type or self.h_xn_dict[pos][1] == impute_type:
+					xx_number += 1
+					window_center = self.pos_to_impute[i]
+					window_start = i - window_half if i - window_half >= 0 else 0
+					window_end = i + window_half if i + window_half < pos_total else (pos_total - 1)
+					if window_start == window_end:
+						print "window size is zero"
+						sys.exit(1)
+					
+					impute_window_pos_list = []
+					for i in range (window_start, window_end+1):
+						position = self.pos_to_impute[i]
+						h_xn = self.h_xn_dict[position]
+						if h_xn[0] != 'N' and h_xn[1] != 'N' and h_xn[0] != 'X' and h_xn[1] != 'X':
+							impute_window_pos_list.append(position)
+					impute_window_pos_list.append(window_center)
+					"""
+					prepare the impute window, if the size is smaller than lower bound,
+					add more pos from either top or bottom
+					"""
+					#print "impute_window_pos_list size: ", len(impute_window_pos_list)
+					expand_direction = "up"
+					while len(impute_window_pos_list) < self.window_size_lower_bound:
+						if expand_direction == "up":
+							if window_start -1 != 0:
+								window_start = window_start - 1
+								impute_window_pos_list.append(self.pos_to_impute[window_start])
+								#print "up", self.pos_to_impute[window_start-1]
+							expand_direction = "down"
+						elif expand_direction == "down":
+							if window_end +1 != pos_total:
+								window_end += 1
+								impute_window_pos_list.append(self.pos_to_impute[window_end])
+							expand_direction = "up"
+							#print "down", self.pos_to_impute[window_end+1]
+					total_impute_win_num += 1
+					
+					match_to_A = 0
+					match_to_B = 0
+					solution_size = 0
+					solution_list = []
+					shrink_point = "top"
+					expand_direction = "up"
+					
+					previous_round_solution_size = 0
+					impute_cycle = 0
+					impute_cycle_limit = 100
+					
+					impute_window_pos_list_size = len(impute_window_pos_list)	
+					while impute_window_pos_list_size >= self.window_size_lower_bound and impute_window_pos_list_size <= self.window_size_upper_bound \
+					 and solution_size != 1 and impute_cycle < impute_cycle_limit:
+							impute_cycle += 1
+						#while match_to_A != 1 and match_to_B != 1:
+							solution_list = self.impute_X(impute_window_pos_list, window_center, impute_type)
+							 
+							solution_size = len(solution_list)
+							
+							# compare previous solution current solution
+							if previous_round_solution_size == 2 and solution_size == 0:
+								# remove the snp added in last round, skip it then add another one to check for solution
+								# impute_window_pos_list is sorted, so need to check which one is added last time
+								index_to_remove = 0 if expand_direction == "down" else -1
+								#print "remove 2 to 0", index_to_remove, impute_window_pos_list[index_to_remove]
+								del impute_window_pos_list[index_to_remove]
+								solution_size = 2
+									
+							elif previous_round_solution_size == 0 and solution_size == 2:
+								if expand_direction == "down":
+									if window_start -1 != 0:
+										window_start = window_start - 1
+									else:
+										expand_direction == "up"
+										window_end += 1
+								elif expand_direction == "up":
+									if window_end +1 != pos_total:
+										window_end += 1
+									else:
+										expand_direction == "down"
+										window_start = window_start - 1
 		
-		window_center = 0
-		window_start = 0
-		window_end = 0
-		total_impute_win_num = 0
-		xx_number = 0
-		for i, pos in enumerate(self.pos_to_impute):
-			if self.h_xn_dict[pos][0] == impute_type or self.h_xn_dict[pos][1] == impute_type:
-				xx_number += 1
-				window_center = self.pos_to_impute[i]
-				window_start = i - window_half if i - window_half >= 0 else 0
-				window_end = i + window_half if i + window_half < pos_total else (pos_total - 1)
-				if window_start == window_end:
-					print "window size is zero"
-					sys.exit(1)
-				
-				impute_window_pos_list = []
-				for i in range (window_start, window_end+1):
-					position = self.pos_to_impute[i]
-					h_xn = self.h_xn_dict[position]
-					if h_xn[0] != 'N' and h_xn[1] != 'N' and h_xn[0] != 'X' and h_xn[1] != 'X':
-						impute_window_pos_list.append(position)
-				impute_window_pos_list.append(window_center)
-				"""
-				prepare the impute window, if the size is smaller than lower bound,
-				add more pos from either top or bottom
-				"""
-				#print "impute_window_pos_list size: ", len(impute_window_pos_list)
-				expand_direction = "up"
-				while len(impute_window_pos_list) < self.window_size_lower_bound:
-					if expand_direction == "up":
-						if window_start -1 != 0:
-							window_start = window_start - 1
-							impute_window_pos_list.append(self.pos_to_impute[window_start])
-							#print "up", self.pos_to_impute[window_start-1]
-						expand_direction = "down"
-					elif expand_direction == "down":
-						if window_end +1 != pos_total:
-							window_end += 1
-							impute_window_pos_list.append(self.pos_to_impute[window_end])
-						expand_direction = "up"
-						#print "down", self.pos_to_impute[window_end+1]
-				total_impute_win_num += 1
-				
-				match_to_A = 0
-				match_to_B = 0
-				solution_size = 0
-				solution_list = []
-				shrink_point = "top"
-				expand_direction = "up"
-				
-				previous_round_solution_size = 0
-				impute_cycle = 0
-				impute_cycle_limit = 200
-				
-				impute_window_pos_list_size = len(impute_window_pos_list)	
-				while impute_window_pos_list_size >= self.window_size_lower_bound and impute_window_pos_list_size <= self.window_size_upper_bound \
-				 and solution_size != 1 and impute_cycle < impute_cycle_limit:
-						impute_cycle += 1
-					#while match_to_A != 1 and match_to_B != 1:
-						solution_list = self.impute_X(impute_window_pos_list, window_center, impute_type)
-						 
-						solution_size = len(solution_list)
-						
-						# compare previous solution current solution
-						if previous_round_solution_size == 2 and solution_size == 0:
-							# remove the snp added in last round, skip it then add another one to check for solution
-							# impute_window_pos_list is sorted, so need to check which one is added last time
-							index_to_remove = 0 if expand_direction == "down" else -1
-							#print "remove 2 to 0", index_to_remove, impute_window_pos_list[index_to_remove]
-							del impute_window_pos_list[index_to_remove]
-							solution_size = 2
+							#print "solution_size", solution_size
+							if solution_size == 1:
+								#print window_center, solution_list
+								self.h_xn_dict[window_center] = (solution_list[0][0], solution_list[0][1])
+								self.h_xn_imputed_dict[window_center] = (solution_list[0][0], solution_list[0][1], impute_window_pos_list)
+								imputed_snp_this_round += 1
+								#if impute_type == 'N':
+								#	print window_center, solution_list
+								#print "impute_window_pos_list size: ", impute_window_pos_list_size
+							elif solution_size == 0:
+								if shrink_point == "top":
+									window_start = window_start + 1
+									del impute_window_pos_list[0]
+									shrink_point = "bottom"
+								elif shrink_point == "bottom":
+									window_end = window_end - 1
+									del impute_window_pos_list[-1]
+									shrink_point = "top"
+							#elif solution_size > 2:
+							#	solution_size == 2
+							elif solution_size >= 2:
+								if expand_direction == "up":
+									if window_start -1 != 0:
+										window_start = window_start - 1
+										impute_window_pos_list.append(self.pos_to_impute[window_start])
+										#print "up", self.pos_to_impute[window_start-1]
+									expand_direction = "down"
+								elif expand_direction == "down":
+									if window_end +1 != pos_total:
+										window_end += 1
+										impute_window_pos_list.append(self.pos_to_impute[window_end])
+									expand_direction = "up"
+							else:
+								print "more than 2 solutions at", window_center
+		
+							previous_round_solution_size = solution_size
+							if window_center not in impute_window_pos_list:
+								impute_window_pos_list.append(window_center)
+							impute_window_pos_list_size = len(impute_window_pos_list)
 								
-						elif previous_round_solution_size == 0 and solution_size == 2:
-							if expand_direction == "down":
-								if window_start -1 != 0:
-									window_start = window_start - 1
-								else:
-									expand_direction == "up"
-									window_end += 1
-							elif expand_direction == "up":
-								if window_end +1 != pos_total:
-									window_end += 1
-								else:
-									expand_direction == "down"
-									window_start = window_start - 1
-	
-						
-						#print "solution_size", solution_size
-						if solution_size == 1:
-							#print window_center, solution_list
-							self.h_xn_dict[window_center] = (solution_list[0][0], solution_list[0][1])
-							self.h_xn_imputed_dict[window_center] = (solution_list[0][0], solution_list[0][1])
-							#if impute_type == 'N':
-							#	print window_center, solution_list
-							#print "impute_window_pos_list size: ", impute_window_pos_list_size
-						elif solution_size == 0:
-							if shrink_point == "top":
-								window_start = window_start + 1
-								del impute_window_pos_list[0]
-								shrink_point = "bottom"
-							elif shrink_point == "bottom":
-								window_end = window_end - 1
-								del impute_window_pos_list[-1]
-								shrink_point = "top"
-						#elif solution_size > 2:
-						#	solution_size == 2
-						elif solution_size >= 2:
-							if expand_direction == "up":
-								if window_start -1 != 0:
-									window_start = window_start - 1
-									impute_window_pos_list.append(self.pos_to_impute[window_start])
-									#print "up", self.pos_to_impute[window_start-1]
-								expand_direction = "down"
-							elif expand_direction == "down":
-								if window_end +1 != pos_total:
-									window_end += 1
-									impute_window_pos_list.append(self.pos_to_impute[window_end])
-								expand_direction = "up"
-						else:
-							print "more than 2 solutions at", window_center
-						
-						
-						
-						previous_round_solution_size = solution_size
-						if window_center not in impute_window_pos_list:
-							impute_window_pos_list.append(window_center)
-						impute_window_pos_list_size = len(impute_window_pos_list)
-						
-				
-				
 				#sys.exit(1)
-				
-		print "total_impute_win_num", total_impute_win_num
-		print "xx_number", xx_number
+			print "imputed_snp_this_round", imputed_snp_this_round		
+		#print "total_impute_win_num", total_impute_win_num
+		#print "xx_number", xx_number
 
 	def get_matched_window(self, impute_window_pos_list, window_center, hap_type):
 		# find the window that matches A or B
@@ -508,7 +506,7 @@ class hifi:
 		self.get_maf()
 		#elapse_time = time.time() - elapse_time
 		#print "get_maf time is: " + str(format(elapse_time, "0.3f")) + "s"
-		"""
+		
 		maf_num_list = self.maf_dict.keys()
 		#print maf_num_list
 		
@@ -520,25 +518,25 @@ class hifi:
 			
 			# improve add new pos to the current list
 			#self.combine_msg(maf_num)
-			if maf_num >= 170 and maf_num != 186:
+			if maf_num >= 0 and maf_num != 186:
 				print "current maf_num:", maf_num
 				self.pos_to_impute.extend(self.maf_dict[maf_num])
 				#print len(self.pos_to_impute)
 				pre_imputed_size = len(self.h_xn_imputed_dict)
-				print "pre_imputed_size", pre_imputed_size
+				#print "pre_imputed_size", pre_imputed_size
 				self.to_impute_window('X')
 				self.to_impute_window('N')
 				print "newly_imputed_size", len(self.h_xn_imputed_dict) - pre_imputed_size
 		"""
-		self.combine_msg(186)
+		self.combine_msg(180)
 		#elapse_time = time.time() - elapse_time
 		#print "combine_msg time is: " + str(format(elapse_time, "0.3f")) + "s"
 		start_time = time.time()
 		self.to_impute_window('X')
-		#self.to_impute_window('N')
+		self.to_impute_window('N')
 		elapse_time = time.time() - start_time
 		print "***********************to_impute_window time is: " + str(format(elapse_time, "0.3f")) + "s"
-		
+		"""
 		self.output_dict("h_xn_new.txt", self.h_xn_imputed_dict)
 		seed_std_compare("h_xn_new.txt", self.chr_name)
 		

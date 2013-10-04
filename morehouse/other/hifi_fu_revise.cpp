@@ -1,5 +1,5 @@
 // HIFI.cpp : Defines the entry point for the console application.
-//
+
 //#include "stdafx.h"
 
 #include "stdlib.h"
@@ -20,7 +20,7 @@
 //#define MAFSTEP 0.01	ori minor allele frequence step
 //#define MAFSTEP 0.1
 #define IMPUTORTABLEWIDTH 1024
-#define MAXCOMPARELEN 1000
+#define MAXCOMPARELEN 300
 #define WINI 16
 //WINI should be > WINO for the ini
 #define WINO 10
@@ -659,17 +659,13 @@ int main(int argc, char** argv)
 		//Free snpindex_impmaf
 		free(snpindex_impmaf);
 
-
-
 		//======================================================================
-		//
-		//
-		//
-		//
+		// impute X for all seed, then N ?
+		// or impute x then n in one maf layer
+		// which way is better?
 		//
 		//
 		//======================================================================
-	
 
 		//Impute XX first
 		//The NX Presence Monitor				
@@ -796,18 +792,22 @@ int main(int argc, char** argv)
 												imputed_edge_dist[snpimp[indexofsnp_act[i]]] = (u-1-i)>i?i:u-1-i;
 
 
-
-
-
 												//====================================
-
-
-						/*fu						printf("Imputing   %s %d   %c%c <-- %c%c\n",
-													        hgr_rs[snpimp[indexofsnp_act[i]]],hgr_pos[snpimp[indexofsnp_act[i]]],hogo_xn[snpimp[indexofsnp_act[i]]][0],hogo_xn[snpimp[indexofsnp_act[i]]][1],
-															imputor_refinetable[matindex_0][i],  imputor_refinetable[matindex_1][i]);
-							*/					
+												
+												// Fu, Oct 4 2013
+												printf("Imputing   %s %d   %c%c <-- %c%c Window_size: %d \t", 
+													hgr_rs[snpimp[indexofsnp_act[i]]],hgr_pos[snpimp[indexofsnp_act[i]]],hogo_xn[snpimp[indexofsnp_act[i]]][0],hogo_xn[snpimp[indexofsnp_act[i]]][1],
+															imputor_refinetable[matindex_0][i],  imputor_refinetable[matindex_1][i], u);
+												for(int j=0;j<u;j++)
+												{
+													printf("%d \t", hgr_pos[snpimp[indexofsnp_act[j]]]);
+												}
+												printf("\n");	
+			
 												hogo_xn[snpimp[indexofsnp_act[i]]][0] = imputor_refinetable[matindex_0][i];
-												hogo_xn[snpimp[indexofsnp_act[i]]][1] = imputor_refinetable[matindex_1][i];											
+												hogo_xn[snpimp[indexofsnp_act[i]]][1] = imputor_refinetable[matindex_1][i];	
+												
+																			
 											}
 										}
 									}
@@ -837,7 +837,7 @@ int main(int argc, char** argv)
 		}while(!cmphogoxn_issame);
 
 		//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-/* fu		fpo=fopen("imputedhaplotype_1.txt","w");	
+		fpo=fopen("imputedhaplotype_1.txt","w");	
 		fprintf(fpo,"%s", headofhaplo);
 		for(int i=0;i<snpsum_hgr;i++)
 		{
@@ -847,7 +847,7 @@ int main(int argc, char** argv)
 				fprintf(fpo,"%s %d %c %c\n", hgr_rs[i],hgr_pos[i],hogo_xn[i][0],hogo_xn[i][1]);
 		}
 		fclose(fpo);
-*/		//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 		//======================================================================
 		//
@@ -958,7 +958,7 @@ int main(int argc, char** argv)
 												//====================================
 												//added on 03/16/2012
 												imp_double_side_match++;
-											//		fprintf(fpo_l,"%d\n",u);
+												//fprintf(fpo_l,"%d\n",u);
 												//====================================
 
 												if((hogoxn_table[0][i]=='N')||(hogoxn_table[1][i]=='N'))
@@ -988,17 +988,23 @@ int main(int argc, char** argv)
 												imputed_edge_dist[snpimp[indexofsnp_act[i]]] = (u-1-i)>i?i:u-1-i;
 
 
-
+												// Fu, Oct 4 2013
+												printf("Imputing   %s %d   %c%c <-- %c%c Window_size: %d \t", 
+													hgr_rs[snpimp[indexofsnp_act[i]]],hgr_pos[snpimp[indexofsnp_act[i]]],hogo_xn[snpimp[indexofsnp_act[i]]][0],hogo_xn[snpimp[indexofsnp_act[i]]][1],
+															imputor_refinetable[matindex_0][i],  imputor_refinetable[matindex_1][i], u);
+												for(int j=0;j<u;j++)
+												{
+													printf("%d \t", hgr_pos[snpimp[indexofsnp_act[j]]]);
+												}
+												printf("\n");	
 
 												//====================================
-												
-											/*fu		printf("Imputing   %s %d   %c%c <-- %c%c\n",
-													        hgr_rs[snpimp[indexofsnp_act[i]]],hgr_pos[snpimp[indexofsnp_act[i]]],hogo_xn[snpimp[indexofsnp_act[i]]][0],hogo_xn[snpimp[indexofsnp_act[i]]][1],
-															imputor_refinetable[matindex_0][i],  imputor_refinetable[matindex_1][i]);
-											*/	
-												
+
 												hogo_xn[snpimp[indexofsnp_act[i]]][0] = imputor_refinetable[matindex_0][i];
-												hogo_xn[snpimp[indexofsnp_act[i]]][1] = imputor_refinetable[matindex_1][i];											
+												hogo_xn[snpimp[indexofsnp_act[i]]][1] = imputor_refinetable[matindex_1][i];	
+												
+	
+																						
 											}
 										}
 									}
@@ -1046,6 +1052,8 @@ int main(int argc, char** argv)
 	*/	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//==================================================================
 	//Added for rare allele impute on 01/11/2011
+
+
 	int n_snpimp0=0;
 	n_snpimp0=snpsum_hgr;
 	int *snpimp0=(int*)malloc(snpsum_hgr*sizeof(int));
@@ -1583,7 +1591,7 @@ fu */	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	finish = clock();
 	duration = (double)(finish-start)/CLOCKS_PER_SEC;
 	printf("Runing time: %.2f seconds\n", duration);
-	printf("*******************************\n");match_hr0
+	printf("*******************************\n");
 	//Output running file
 /*fu	FILE *fpr;
 	fpr=fopen("runingtime.txt","w");	
