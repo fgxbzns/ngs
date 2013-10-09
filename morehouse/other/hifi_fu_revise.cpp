@@ -107,12 +107,17 @@ int main(int argc, char** argv)
 
 	char impute[32];
 	char qscore[32];
+	char window_info[32];
 
 	strcpy(impute,"imputed_");
 	strncat(impute,haplotype,32);
 	
 	strcpy(qscore,"qscore_");
 	strncat(qscore,haplotype,32);
+	
+	strcpy(window_info,"window_");
+	strncat(window_info,haplotype,32);
+	
 		
 	//==========================
 	//Runtime caculation
@@ -628,6 +633,12 @@ int main(int argc, char** argv)
 		imputed_win_nn[t]=0;
 
 	//==========================================================================
+	// Oct 7, 2013 Fu
+	
+	FILE *impute_window_info_file;
+	impute_window_info_file=fopen(window_info,"w");	
+
+	
 	//ini imputeisxn
 	for(int t=0;t<snpsum_hgr;t++)
 		imputeisxn[t]='-';
@@ -795,14 +806,25 @@ int main(int argc, char** argv)
 												//====================================
 												
 												// Fu, Oct 4 2013
-												printf("Imputing   %s %d   %c%c <-- %c%c Window_size: %d \t", 
+										/*		printf("Imputing   %s %d   %c%c <-- %c%c Window_size: %d impute_maf: %f", 
 													hgr_rs[snpimp[indexofsnp_act[i]]],hgr_pos[snpimp[indexofsnp_act[i]]],hogo_xn[snpimp[indexofsnp_act[i]]][0],hogo_xn[snpimp[indexofsnp_act[i]]][1],
-															imputor_refinetable[matindex_0][i],  imputor_refinetable[matindex_1][i], u);
+															imputor_refinetable[matindex_0][i],  imputor_refinetable[matindex_1][i], u, impute_maf);
 												for(int j=0;j<u;j++)
 												{
 													printf("%d \t", hgr_pos[snpimp[indexofsnp_act[j]]]);
 												}
-												printf("\n");	
+												printf("\n");
+										*/		
+												fprintf(impute_window_info_file, "%s %d %c%c <-- %c%c Window_size: %d impute_maf: %f", 
+													hgr_rs[snpimp[indexofsnp_act[i]]],hgr_pos[snpimp[indexofsnp_act[i]]],hogo_xn[snpimp[indexofsnp_act[i]]][0],hogo_xn[snpimp[indexofsnp_act[i]]][1],
+															imputor_refinetable[matindex_0][i],  imputor_refinetable[matindex_1][i], u, impute_maf);
+												for(int j=0;j<u;j++)
+												{
+													fprintf(impute_window_info_file, "%d", hgr_pos[snpimp[indexofsnp_act[j]]]);
+												}
+												fprintf(impute_window_info_file, "\n");
+												
+													
 			
 												hogo_xn[snpimp[indexofsnp_act[i]]][0] = imputor_refinetable[matindex_0][i];
 												hogo_xn[snpimp[indexofsnp_act[i]]][1] = imputor_refinetable[matindex_1][i];	
@@ -989,15 +1011,23 @@ int main(int argc, char** argv)
 
 
 												// Fu, Oct 4 2013
-												printf("Imputing   %s %d   %c%c <-- %c%c Window_size: %d \t", 
+										/*		printf("Imputing   %s %d   %c%c <-- %c%c Window_size: %d  impute_maf: %f", 
 													hgr_rs[snpimp[indexofsnp_act[i]]],hgr_pos[snpimp[indexofsnp_act[i]]],hogo_xn[snpimp[indexofsnp_act[i]]][0],hogo_xn[snpimp[indexofsnp_act[i]]][1],
-															imputor_refinetable[matindex_0][i],  imputor_refinetable[matindex_1][i], u);
+															imputor_refinetable[matindex_0][i],  imputor_refinetable[matindex_1][i], u, impute_maf);
 												for(int j=0;j<u;j++)
 												{
 													printf("%d \t", hgr_pos[snpimp[indexofsnp_act[j]]]);
 												}
 												printf("\n");	
-
+										*/		
+												fprintf(impute_window_info_file,"%s %d %c%c <-- %c%c Window_size: %d impute_maf: %f", 
+													hgr_rs[snpimp[indexofsnp_act[i]]],hgr_pos[snpimp[indexofsnp_act[i]]],hogo_xn[snpimp[indexofsnp_act[i]]][0],hogo_xn[snpimp[indexofsnp_act[i]]][1],
+															imputor_refinetable[matindex_0][i],  imputor_refinetable[matindex_1][i], u, impute_maf);
+												for(int j=0;j<u;j++)
+												{
+													fprintf(impute_window_info_file, "%d", hgr_pos[snpimp[indexofsnp_act[j]]]);
+												}
+												fprintf(impute_window_info_file, "\n");
 												//====================================
 
 												hogo_xn[snpimp[indexofsnp_act[i]]][0] = imputor_refinetable[matindex_0][i];
@@ -1035,6 +1065,9 @@ int main(int argc, char** argv)
 
 		free(snpimp);
 	}
+	
+	fclose(impute_window_info_file);
+
 	//==================================================================
 //	fclose(fpo_l);
 	//Added on 08/15/2011

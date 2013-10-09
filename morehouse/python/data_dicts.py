@@ -37,7 +37,7 @@ class data_dicts:
         self.cluster_pos_dict = {}
           
         self.number_of_subfile = 10
-        self.ref_cycle_number = 3
+        self.ref_cycle_number = 1
         
         self.maf_upper_bound = 0.5
         self.maf_lower_bound = 0.3
@@ -49,7 +49,7 @@ class data_dicts:
         self.ref_expand_range = 5
         self.remPercent = 0.6
         self.allele_new_percentage = 0.80
-        self.qscore_threshold = 0.80
+        self.qscore_threshold = 0.60
         
         # parameters for seed group
         self.seed_group_window_size= 20

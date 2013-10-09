@@ -1,10 +1,18 @@
 #!/usr/bin/python
 
 # this is for pre-processing the sam file before snpPick
+# It can process single-end file, pair-end file
 
 import os, glob, subprocess, random, operator, time, sys, math
 from optparse import OptionParser
 from tools import *
+
+class parameters:
+	def __init__(self):
+		self.chr_name = ""
+		self.sam_file_name = ""
+		self.insert_size_lower_bond = 0
+		self.insert_size_upper_bond = 1000
 
 def is_multiple_maping(elements):
 	multiple_maping = False
@@ -15,18 +23,14 @@ def is_multiple_maping(elements):
 		pass
 	return multiple_maping
 
-def pair_end_filter(sam_file):
+def pair_end_filter(sam_file, chr_name):
 	"""filter the reads by pair_end info"""
-	sam_file_name = sam_file[:(len(sam_file)-4)]
-	print "pair_end_filter: ", sam_file_name
-	output_file = open(sam_file_name + "_pairend.sam", "w")
+	print "pair_end_filter: ", parameter.sam_file_name
+	output_file = open(parameter.sam_file_name + "_pairend.sam", "w")
 	inputfile_sam = open(currentPath + sam_file, "r")
 	sam_line_first = inputfile_sam.readline() # the first read line in a pair
 	total_reads_num = 0
 	covered_snp_total_number = 0
-	
-	insert_size_lower_bond = 100
-	insert_size_upper_bond = 1000
 
 	while sam_line_first!='':
 		keep_this_pair = False	
@@ -38,8 +42,10 @@ def pair_end_filter(sam_file):
 				insert_size_first = abs(int(elements_first[8].strip()))			#  insert_size for second read is negative
 			except:
 				print "error in first read:", sam_line_first
+			# process all chr or one particular chr
+			check_chr_name = chrName_first.startswith("chr") if (chr_name == "chr") else (chr_name == chrName_first)
 			
-			if chrName_first.startswith("chr") and (insert_size_first >= insert_size_lower_bond) and (insert_size_first <= insert_size_upper_bond):			
+			if check_chr_name and (insert_size_first > parameter.insert_size_lower_bond) and (insert_size_first <= parameter.insert_size_upper_bond):			
 				# only keep the reads mapped to chr 
 				# if the first read is within insert size limit, check the second read
 				# the insert_size for a pair is the same. If the first read is passed, the second will be passed, too.
@@ -67,18 +73,14 @@ def pair_end_filter(sam_file):
 	print "total_reads_num: ", total_reads_num
 	#return total_reads_num
 
-def pair_end_indel(sam_file):
+def pair_end_indel(sam_file, chr_name):
 	""" process the reads by both pair_end and indel"""
-	sam_file_name = sam_file[:(len(sam_file)-4)]
-	print "pair_end_indel: ", sam_file_name
-	output_file = open(sam_file_name + "_pairend_indel.sam", "w")
+	print "pair_end_indel: ", parameter.sam_file_name
+	output_file = open(parameter.sam_file_name + "_pairend_indel.sam", "w")
 	inputfile_sam = open(currentPath + sam_file, "r")
 	sam_line_first = inputfile_sam.readline() # the first read line in a pair
 	total_reads_num = 0
 	reads_after_process_total_number = 0
-	
-	insert_size_lower_bond = 100
-	insert_size_upper_bond = 1000
 
 	while sam_line_first!='':
 		keep_this_pair = False	
@@ -95,8 +97,9 @@ def pair_end_indel(sam_file):
 			except:
 				print "error in first read:", sam_line_first
 			
-			if chrName_first.startswith("chr") and (insert_size_first >= insert_size_lower_bond) and (insert_size_first <= insert_size_upper_bond):			
-				# only keep the reads mapped to chr 
+			# process all chr or one particular chr
+			check_chr_name = chrName_first.startswith("chr") if (chr_name == "chr") else (chr_name == chrName_first)
+			if check_chr_name and (insert_size_first > parameter.insert_size_lower_bond) and (insert_size_first <= parameter.insert_size_upper_bond):					# only keep the reads mapped to chr 
 				# if the first read is within insert size limit, check the second read
 				# the insert_size for a pair is the same. If the first read is passed, the second will be passed, too.
 				sam_line_second = inputfile_sam.readline()
@@ -136,12 +139,50 @@ def pair_end_indel(sam_file):
 	print "reads_after_process_total_number: ", reads_after_process_total_number
 	#return total_reads_num
 
+def single_end_indel(sam_file, chr_name):
+	""" process the reads by both single_end and indel"""
+	print "single_end_indel: ", parameter.sam_file_name
+	output_file = open(parameter.sam_file_name + "_sginleend_indel.sam", "w")
+	inputfile_sam = open(currentPath + sam_file, "r")
+	sam_line_first = inputfile_sam.readline() # the first read line in a pair
+	total_reads_num = 0
+	reads_after_process_total_number = 0
+
+	while sam_line_first!='':
+		keep_this_pair = False	
+		if not sam_line_first.startswith("@"):
+			total_reads_num += 1
+			elements_first = sam_line_first.strip().split()
+			try:
+				read_ID_first = elements_first[0].strip()
+				chrName_first = elements_first[2].strip()
+				insert_size_first = abs(int(elements_first[8].strip()))			#  insert_size for second read is negative
+				indel_info_first = elements_first[5].strip()
+				read_seq_first = elements_first[9].strip()
+				qual_line_first = elements_first[10].strip()
+			except:
+				print "error in first read:", sam_line_first
+			
+			# process all chr or one particular chr
+			check_chr_name = chrName_first.startswith("chr") if (chr_name == "chr") else (chr_name == chrName_first)
+			if check_chr_name and (insert_size_first > parameter.insert_size_lower_bond) and (insert_size_first <= parameter.insert_size_upper_bond):					# only keep the reads mapped to chr 
+				reads_after_process_total_number += 1
+				read_qual_first = indel_correction(read_seq_first, qual_line_first, indel_info_first)
+				sam_line_first = sam_line_first.replace(read_seq_first, read_qual_first[0])
+				sam_line_first = sam_line_first.replace(qual_line_first, read_qual_first[1])
+				print >> output_file, sam_line_first.strip()
+									
+		sam_line_first = inputfile_sam.readline()
+	inputfile_sam.close()
+	output_file.close()
+	print "total_reads_num: ", total_reads_num
+	print "reads_after_process_total_number: ", reads_after_process_total_number
+	#return total_reads_num
+
 def is_indel(cigar):
-        n_indel = cigar.count("I") + cigar.count("D") + cigar.count("N") + cigar.count("S")
-	if n_indel > 0 :
-		return True
-	else :
-		return False	
+	n_indel = cigar.count("I") + cigar.count("D") + cigar.count("N") + cigar.count("S")
+	is_indel = True if n_indel > 0 else False
+	return is_indel
 
 def indel_correction(read_seq, qual_line, indel_info):
 	indel_length = ""
@@ -240,6 +281,7 @@ def get_args():
 	usage = "snpPick_fish -s sam_file" 
 	parser = OptionParser(usage = usage)
 	parser.add_option("-s", "--sam", type="string", dest="samFile",help = "Input File Name", default="null")
+	parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="chr")
 	parser.add_option("-m", "--mode", type="string", dest="mode",help = "", default="null")
 	(options, args) = parser.parse_args()
 	if options.samFile == "null":
@@ -248,41 +290,39 @@ def get_args():
 		sys.exit(1)
 	return options
 
-def sam_process():
-	options = get_args()
-	sam_file = options.samFile
-	mode = options.mode
-	sam_file_name = sam_file[:(len(sam_file)-4)]
-	
-	if mode == "sp":
-		pair_end_indel(sam_file)
-	elif mode == "mp":
+def sam_process(sam_file, chr_name, mode):
+	if mode == "single":
+		single_end_indel(sam_file, chr_name)
+	elif mode == "pair_single":
+		pair_end_indel(sam_file, chr_name)
+	elif mode == "pair_mutiple":
 		pair_end_indel_multiple()
-	elif mode == "sep":
-		seperate_by_chr(sam_file)
-	
+	elif mode == "sep_chr":
+		seperate_by_chr(sam_file, chr_name)
 	
 if __name__=='__main__':
 	
-	#start = time.time()
-	sam_process()
-		
+	global parameter
+	parameter = parameters()
 	
-	#combine_files()
-	#seperate_by_chr(sam_file)
-	#pair_end_indel(sam_file)
+	options = get_args()
+	parameter.sam_file = options.samFile
+	parameter.chr_name = options.chrName
+	parameter.sam_file_name = parameter.sam_file[:(len(parameter.sam_file)-4)]
+	parameter.mode = options.mode
 	
-	
-	
-	"""
-	pair_end_filter(sam_file)
-	sam_file = sam_file_name + "_pairend.sam"
-	indel_process(sam_file)
-	
-	
-
+	start = time.time()
+	sam_process(parameter.sam_file, parameter.chr_name, parameter.mode)
 	end = time.time()
 	run_time = str(format((end - start), "0.3f"))
 	print "run time is: " + run_time + "s"
+	
+	"""
+	#combine_files()
+	#seperate_by_chr(sam_file)
+	#pair_end_indel(sam_file)
+	pair_end_filter(sam_file)
+	sam_file = sam_file_name + "_pairend.sam"
+	indel_process(sam_file)
 	"""
 

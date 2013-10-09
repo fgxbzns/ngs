@@ -33,19 +33,66 @@ def get_window_info():
 	return data
 
 
+def load_hap_std(file_name):
+    hap_std_dict = {}
+    temp_data_dict = load_raw_data(file_name, raw_data_format)[1]
+    for position, elements in temp_data_dict.iteritems():
+        """ ??? N X """
+        if elements[2].strip() != "N" and elements[3].strip() != "N": 
+            try:
+                position = elements[1].strip()
+                position = int(position)
+                hap_std_dict[position] = elements
+            except ValueError:
+                print "error in ", file_name, position
+    return hap_std_dict  
+
 def analyze_data():
+	
+	hap_std_file = file_path + "ASW_"+chr_name+"_child_hap_refed.txt" 
+	hap_std_dict = load_hap_std(hap_std_file)
+	
 	window_info_dict = get_window_info()
 	window_info_sorted_list = sort_dict_by_key(window_info_dict)
 	print window_info_sorted_list[0][0], window_info_sorted_list[0][1]
 	window_size_total = 0
+	
+	correct_snp = 0
+	error_snp = 0
+	window_size_total_correct = 0
+	window_size_total_error = 0
+	
+	maf_total_c = 0.
+	maf_total = 0.
 	for data in window_info_sorted_list:
 		pos = data[0]
 		info = data[1]
 		window_size_total += int(info[7])
+		if pos in hap_std_dict and hap_std_dict[pos][2] != 'X':
+			if info[5][0] == hap_std_dict[pos][2] and info[5][1] == hap_std_dict[pos][3]:
+				correct_snp += 1
+				window_size_total_correct += int(info[7])
+				maf_total_c += float(info[9])
+			#elif float(info[9]) < 0.2:
+			else:
+				error_snp += 1
+				window_size_total_error += int(info[7])
+				print info[5], hap_std_dict[pos][2], hap_std_dict[pos][3], info[7], info[9]
+				maf_total += float(info[9])
+			
 	
 	print "window_size_total", window_size_total
 	print "window_size_average", window_size_total/len(window_info_dict)
-		
+	print "correct_snp", correct_snp
+	print "correct_snp", window_size_total_correct/correct_snp
+	print "error_snp", error_snp
+	print "error_snp", window_size_total_error/error_snp
+	
+	print "maf_total_c", maf_total_c
+	print "maf_total_c", maf_total_c/correct_snp	
+	
+	print "maf_total", maf_total
+	print "maf_total", maf_total/error_snp	
 	
 
 
@@ -64,16 +111,17 @@ def get_args():
 	return options
 
 if __name__ == '__main__':
+	global chr_name
 	
 	options = get_args()
 	chr_name = options.chrName
 	seed_input_file = options.hifiSeed	
 	
 	start_time = time.time()
-	#hifi_test(seed_input_file)
-	#hifiAccuCheck("imputed_" + seed_input_file, chr_name)
+	hifi_test(seed_input_file)
+	hifiAccuCheck("imputed_" + seed_input_file, chr_name)
 	
-	analyze_data()
+	#analyze_data()
 	
 	
 	

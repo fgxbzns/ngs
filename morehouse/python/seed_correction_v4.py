@@ -88,13 +88,14 @@ def output_revised_seed_with_error(revised_seed_dict, same_to_B_dict):
 
 def hifi_process(file_number, number_of_subfile, hap_subfile_name, geno_subfile_name="genotype.txt", ref_subfile_name="refHaplos.txt"):
 	"""method for hifi using shell"""
-	#maf_step = float(random.randrange(10, 40))/(100.0)
-	maf_step = 0.5
+	maf_step = float(random.randrange(10, 40))/(100.0)
+	#maf_step = 0.5
 	print "maf_step is: ", maf_step
 	if file_number < (number_of_subfile-3):
-		hifi = program_path + "hifi_fu_ref " + hap_subfile_name + " " + geno_subfile_name + " " + ref_subfile_name + " " + str(maf_step) + " &"
+		#hifi = program_path + "hifi_fu_ref " + hap_subfile_name + " " + geno_subfile_name + " " + ref_subfile_name + " " + str(maf_step) + " &"
+		hifi = program_path + "hifi_fu_revise " + hap_subfile_name + " " + geno_subfile_name + " " + ref_subfile_name + " " + str(maf_step) + " &"
 	else:
-		hifi = program_path + "hifi_fu_ref " + hap_subfile_name + " " + geno_subfile_name + " " + ref_subfile_name + " " + str(maf_step) + ""	# make sure the other hifi processes are finished
+		hifi = program_path + "hifi_fu_revise " + hap_subfile_name + " " + geno_subfile_name + " " + ref_subfile_name + " " + str(maf_step) + ""	# make sure the other hifi processes are finished
 	hifi_process = subprocess.Popen(hifi, shell=True)
 	hifi_process.wait()
 
@@ -107,6 +108,25 @@ def load_hap_qscore(number_of_subfile):
 		qscore_subfile_name = "qscore_haplotype_" + str(file_number) + ".txt"
 		qscore_dict = load_qscore_result(qscore_subfile_name, qscore_dict)
 	return (hifi_dict, qscore_dict)
+
+def load_window_info(number_of_subfile):
+	window_info_dict = {}
+	for file_number in range(number_of_subfile):
+		window_subfile_name = "window_haplotype_" + str(file_number) + ".txt"
+		temp_data_dict = load_raw_data(window_subfile_name)[1]
+		for position, elements in temp_data_dict.iteritems():        
+			try:
+			    if position not in window_info_dict:
+			    	window_info_dict[position] = {}
+			    if file_number not in window_info_dict[position]:
+			    	window_info_dict[position][file_number] = elements
+			    else:
+			    	print "file_number duplicates", file_number
+			except:
+			        #print "error at ", file_name, position, elements
+			        pass
+	print "total snp number in: ", len(window_info_dict) 
+	return window_info_dict
 
 def seed_error_remove(seed_dict):
 	# reduce error seed from ori seed
@@ -528,14 +548,37 @@ def seed_recover_extract_ref_1():
 	hifi_dict = dict_substract(hifi_dict, data_dict.seed_dict)
 	print "after", len(hifi_dict)
 	hifi_sorted_list = sort_dict_by_key(hifi_dict)
+
+	window_info_file = open(currentPath + "window_info_output.txt", "w")
+	window_info_dict = load_window_info(number_of_subfile)
+	for position, snp in hifi_dict.iteritems():
+		if position in window_info_dict and position in data_dict.hap_std_dict and data_dict.hap_std_dict[position][2] != 'X':
+			window_info = window_info_dict[position]
+			print >> window_info_file, position, data_dict.hap_std_dict[position][2], data_dict.hap_std_dict[position][3]
+			
+			temp_hap_list = []
+			for file_number in range(number_of_subfile):
+				if file_number in window_info:
+					info = window_info[file_number]
+					temp_hap_list.append(info[4])
+					print >> window_info_file, file_number, info[2], info[4],  info[6],  info[8]
+				else:
+					print >> window_info_file, "\t", "\t",  "\t",  "\t"
+			temp_hap_set = set(temp_hap_list)
+			if qscore_dict[position]/float(len(temp_hap_list)) >= data_dict.qscore_threshold:
+				seed = snp
+				temp_set_list = list(temp_hap_set)
+				if len(temp_hap_set) == 1:
+					seed.allele_new = temp_set_list[0][0]
+				elif len(temp_hap_set) == 2:
+					seed.allele_new = temp_set_list[0][0] if temp_hap_list.count(temp_set_list[0]) >= temp_hap_list.count(temp_set_list[1]) else temp_set_list[1][0]
+				recovered_seed_dict[position] = seed
+
+			
+	window_info_file.close()		
 	"""
-	# save a copy of the postions
-	hifi_sorted_pos_list = []
-	for i in range(len(hifi_sorted_list)):
-		hifi_sorted_pos_list.append(hifi_sorted_list[i][0])
-	#print "hifi_sorted_pos_list", len(hifi_sorted_pos_list)
-	"""
-	hifi_sorted_pos_list = [pos for pos, seed in hifi_dict.iteritems()]
+	hifi_sorted_pos_list = hifi_dict.keys()
+	#hifi_sorted_pos_list = [pos for pos, seed in hifi_dict.iteritems()]
 	
 	print "ref_position_distance", data_dict.ref_position_distance
 	print "ref_expand_range", data_dict.ref_expand_range	
@@ -549,7 +592,7 @@ def seed_recover_extract_ref_1():
 				if position in qscore_dict and qscore_dict[position]/float(number_of_subfile) >= data_dict.qscore_threshold:
 					seed.allele_new = max_base
 					recovered_seed_dict[position] = seed
-	
+	"""
 	print "revised_seed_dict seed number", len(recovered_seed_dict)
 	verify_expanded_seed_by_cluster(recovered_seed_dict)
 	print "revised_seed_dict seed number cluster", len(recovered_seed_dict)
@@ -569,8 +612,25 @@ def seed_recover_extract_ref_1():
 	output_revised_seed("haplotype_recoved.txt", recovered_seed_dict)
 	file_name = "haplotype_expanded.txt"
 	output_revised_seed(file_name, revised_seed_dict)
-	#seed_std_compare(file_name, data_dict.chr_name)
-		#position_distance += 500
+	
+	same_to_B_dict = seed_std_compare(file_name, data_dict.chr_name)[1]
+	
+	window_info_file = open(currentPath + "window_info_output_B.txt", "w")
+	for position, snp in same_to_B_dict.iteritems():
+		if position in window_info_dict and position in data_dict.hap_std_dict and data_dict.hap_std_dict[position][2] != 'X':
+			window_info = window_info_dict[position]
+			print >> window_info_file, position, data_dict.hap_std_dict[position][2], data_dict.hap_std_dict[position][3]
+			
+			temp_hap_list = []
+			for file_number in range(number_of_subfile):
+				if file_number in window_info:
+					info = window_info[file_number]
+					temp_hap_list.append(info[4])
+					print >> window_info_file, file_number, info[2], info[4],  info[6],  info[8]
+				else:
+					print >> window_info_file, "\t", "\t",  "\t",  "\t"
+	
+	window_info_file.close()	
 	
 	#hifi_run(file_name, chr_name)
 	#hifiAccuCheck("imputed_"+file_name, chr_name)
@@ -1213,7 +1273,7 @@ def multple_ref_expand(seed_file, chr_name, mode):
 			haplotype_file = "haplotype.txt"
 			refMerger(haplotype_file, chr_name, remPercent)
 			
-			for k in range(3):
+			for k in range(2):
 				mode = "ref"
 				print "########### ref expand cycle #########", k
 				seed_correction(seed_file, chr_name, mode)
@@ -1232,14 +1292,14 @@ def multple_ref_expand(seed_file, chr_name, mode):
 			os.system("cp haplotype_expanded.txt haplotype.txt")
 			same_to_A_dict, same_to_B_dict = seed_std_compare("haplotype.txt", data_dict.chr_name)
 			"""
-			
+			"""
 			mode = "cluster"
 			load_data_dicts(seed_file, chr_name)
 			seed_correction(seed_file, chr_name, mode)
 			exp_file_name = "haplotype_expanded.txt"
 			os.system("cp haplotype_expanded.txt haplotype.txt")
 			same_to_A_dict, same_to_B_dict = seed_std_compare("haplotype.txt", data_dict.chr_name)
-			
+			"""
 	"""		
 			os.system("cp haplotype.txt " + "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict)))
 		os.system("cp haplotype.txt " + "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict)) + "_run_"+str(j))
@@ -1670,15 +1730,15 @@ def seed_correction(seed_file, chr_name, mode):
 		file_name = "haplotype_expanded.txt"
 		seed_expand_ref_hetero()
 		#seed_expand_ref_all()
-		seed_recover_extract_ref()
+		seed_recover_extract_ref_1()
 		#seed_std_compare(file_name, chr_name)
 		#hifi_run(file_name, chr_name)
 		#hifiAccuCheck("imputed_"+file_name, chr_name)
 	elif mode == "refe":
 		#seed_expand_ref()
 		file_name = "haplotype_expanded.txt"
-		seed_recover_extract_ref()
-		seed_tuple = seed_std_compare(file_name, chr_name)
+		seed_recover_extract_ref_1()
+		#seed_tuple = seed_std_compare(file_name, chr_name)
 		#same_to_A_dict = seed_tuple[0]
 		#same_to_A_dict = load_seed_data_from_dict(same_to_A_dict)
 		#same_to_A_dict = dict_add(same_to_A_dict, seed_homo_dict)

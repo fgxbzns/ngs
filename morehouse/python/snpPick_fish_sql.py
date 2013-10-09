@@ -37,9 +37,13 @@ class reads:
 
 def get_ref_geno(chr_name):
 	chr_seq = ""
-	ref_path = "/home/guoxing/disk2/zebra_fish/ref_genome/"
+	#ref_path = "/home/guoxing/disk2/zebra_fish/ref_genome/"
 	#ref_file = ref_path + "danRer7_" + chr_name + ".fa"
-	ref_file = ref_path + "lm_" + chr_name + ".fa"
+	#ref_file = ref_path + "lm_" + chr_name + ".fa"
+	
+	ref_path = "/home/lima/Public/"
+	ref_file = ref_path + "chrX.fa"
+	
 	#print ref_file
 	input_file = open(ref_file, "r")
 	for lines in input_file:
@@ -52,6 +56,9 @@ def get_ref_geno(chr_name):
 def variant_call_pair_end(sam_file):
 	"""the sequence pair has already been processed
 	now treat the read as single end """
+	
+	total_reads_number = wccount(sam_file)
+	percentage_of_total_file = 0
 	
 	chr_seq = get_ref_geno(chr_name)
 	#print chr_seq[19986799]
@@ -71,6 +78,11 @@ def variant_call_pair_end(sam_file):
 	
 		while sam_line_first!='':
 			if not sam_line_first.startswith("@"):
+				current_percent = int(float(total_reads_number * percentage_of_total_file)/100)
+				if total_reads_num == current_percent:
+					print "current progress: ", percentage_of_total_file
+					percentage_of_total_file += 10
+					
 				total_reads_num += 1	
 				elements_first = sam_line_first.strip().split()
 				try:
@@ -79,7 +91,7 @@ def variant_call_pair_end(sam_file):
 					insert_size_first = abs(int(elements_first[8].strip()))			#  insert_size for second read is negative
 				except:
 					print "error in first read:", sam_line_first
-				print "this is a new read"	
+				#print "this is a new read"	
 				if (insert_size_first > insert_size_lower_bond) and (insert_size_first <= insert_size_upper_bond):
 				#if True:
 					if True:
@@ -96,7 +108,7 @@ def variant_call_pair_end(sam_file):
 							
 							for i in range(read_length_first):
 								current_base_position = start_position_first+i
-								print "current_base_position", current_base_position
+								#print "current_base_position", current_base_position
 								#geno_allele = ""
 								#total_depth = 0
 								A_depth = 0
@@ -127,7 +139,7 @@ def variant_call_pair_end(sam_file):
 										str(current_base_position) + \
 										",'" + chrName_first + "','" + chr_seq[current_base_position-1] + "'," + str(A_depth) + "," + str(T_depth) \
 										 + "," + str(C_depth) + "," + str(G_depth) + ")"
-										print inset_querry
+										#print inset_querry
 										cur.execute(inset_querry)
 									else:
 										A_depth += int(row[3])
@@ -137,7 +149,7 @@ def variant_call_pair_end(sam_file):
 										update_querry = "UPDATE " + table_name + " set A_depth=" + str(A_depth) + \
 										", T_depth=" + str(T_depth) + ", C_depth=" + str(C_depth) + ", G_depth=" + \
 										str(G_depth) + " where position=" + str(current_base_position)
-										print update_querry
+										#print update_querry
 										cur.execute(update_querry)									
 					else:
 						print "first and second read ID do not match", read_ID_first, read_ID_second					
@@ -147,11 +159,9 @@ def variant_call_pair_end(sam_file):
 
 def snpPick(sam_file):
 	start = time.time()		
-		
-	global quality_score_threshold
+	
 	global sam_file_name
-
-	quality_score_threshold = 14	
+	
 	sam_file_name = sam_file[:(len(sam_file)-4)]
 	
 	print "sam file: ", sam_file_name
@@ -182,6 +192,17 @@ def output_data(file_name, start_line, end_line):
 		print >> output_file, item[0], item[1], item[2], item[3], item[4], item[5], item[6]
 	output_file.close()
 
+def output_data_filter(file_name, start_line, end_line):
+	output_file = open(currentPath + file_name, "w")
+	print >> output_file, "pos", "chr", "ref_allele", "A", "T", "C", "G"
+	rows = get_data(db_name, table_name, start_line, end_line)
+	for item in rows:
+		temp_list = [int(x) for x in item[3:7]]
+		if temp_list.count(0) < 3:
+			temp_list.sort()
+			print >> output_file, item[0], item[1], item[2], item[3], item[4], item[5], item[6], temp_list[3], temp_list[2], temp_list[1], temp_list[0] 
+	output_file.close()
+
 def get_args():
 	desc="variation call"
 	usage = "snpPick_fish -s sam_file -c chr -m update \n snpPick_fish -c chr -m output -b startLine -e endLine" 
@@ -191,6 +212,8 @@ def get_args():
 	parser.add_option("-m", "--mode", type="string", dest="mode",help = "mode", default="null")
 	parser.add_option("-b", "--startLine", type="string", dest="startLine",help = "start line", default="null")
 	parser.add_option("-e", "--endLine", type="string", dest="endLine",help = "end line", default="null")
+	parser.add_option("-d", "--dbname", type="string", dest="dbname",help = "db name", default="null")
+	parser.add_option("-q", "--qscore", type="int", dest="qscore",help = "qscore", default="40")
 	(options, args) = parser.parse_args()
 	if options.mode == "null" or options.chrName == "null":
 		print "parameters missing..."
@@ -205,8 +228,15 @@ if __name__=='__main__':
 	mode = options.mode	
 	
 	global db_name
-	db_name = "/home/guoxing/disk2/ngs_" + chr_name + ".db"
+	# gx
+	#db_name = "/home/guoxing/disk2/ngs_" + chr_name + ".db"
+	# lm
+	db_name = options.dbname
+	db_name = "/home/lima/disk2_node3/" + db_name + ".db"
 	
+	global quality_score_threshold
+	quality_score_threshold = options.qscore	
+
 	global table_name
 	table_name = "zebra"
 	
@@ -226,5 +256,11 @@ if __name__=='__main__':
 		file_name = "zebra_" + chr_name + "_" + start_line + "_" + end_line + ".txt"
 		#print file_name
 		output_data(file_name, start_line, end_line)
+	elif (mode == "filter"):
+		start_line = options.startLine
+		end_line = options.endLine
+		file_name = "zebra_" + chr_name + "_" + start_line + "_" + end_line + "_filtered.txt"
+		#print file_name
+		output_data_filter(file_name, start_line, end_line)
 	
 
