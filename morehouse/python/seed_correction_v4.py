@@ -201,7 +201,7 @@ def seed_error_remove_extract(seed_dict):
 	revised_seed_dict = {}
 	hifi_dict = seed_dict.copy()
 	print "hifi_dict initial", len(hifi_dict)
-		
+			
 	for file_number in range(number_of_subfile):
 		input_subfile_name = "imputed_haplotype_" + str(file_number) + ".txt"
 		hifi_dict = load_hifi_result(input_subfile_name, hifi_dict)
@@ -361,7 +361,7 @@ def seed_expand_ref_hetero():
 	
 	#process_list = []
 	for file_number in range(number_of_subfile):
-		pos_del_record = open("pos_deledted_"+str(file_number), "w")
+		#pos_del_record = open("pos_deledted_"+str(file_number), "w")
 		ref_subfile_name = "refHaplos" + "_" + str(file_number) + ".txt"
 		ref_subfile = open(currentPath + ref_subfile_name, "w")
 		print >> ref_subfile, data_dict.ref_title_info
@@ -375,7 +375,7 @@ def seed_expand_ref_hetero():
 				position = seed_ref_difference_list[forward_index][0]
 				if position in data_dict.geno_dict:
 					del data_dict.geno_dict[position]
-				print >> pos_del_record, seed_ref_difference_list[forward_index][0]		
+				#print >> pos_del_record, seed_ref_difference_list[forward_index][0]		
 				del seed_ref_difference_dict[position]
 					
 				random_index = random.randrange(0,(len(seed_ref_difference_dict)-1))
@@ -389,7 +389,7 @@ def seed_expand_ref_hetero():
 				pass
 
 		print "seed_ref_difference_dict new", len(seed_ref_difference_dict)
-		pos_del_record.close()
+		#pos_del_record.close()
 		
 		sub_ref_dict = dict_add(seed_ref_difference_dict, seed_ref_same_dict)	
 		sub_ref_list = sort_dict_by_key(sub_ref_dict)	
@@ -551,30 +551,56 @@ def seed_recover_extract_ref_1():
 
 	window_info_file = open(currentPath + "window_info_output.txt", "w")
 	window_info_dict = load_window_info(number_of_subfile)
+
+	a = 0
+	s_to_A = 0
+	s_to_B = 0
 	for position, snp in hifi_dict.iteritems():
-		if position in window_info_dict and position in data_dict.hap_std_dict and data_dict.hap_std_dict[position][2] != 'X':
+		if position in window_info_dict and len(window_info_dict[position]) >= int(number_of_subfile/2) and position in data_dict.hap_std_dict and data_dict.hap_std_dict[position][2] != 'X':
 			window_info = window_info_dict[position]
 			print >> window_info_file, position, data_dict.hap_std_dict[position][2], data_dict.hap_std_dict[position][3]
 			
-			temp_hap_list = []
+			
 			for file_number in range(number_of_subfile):
 				if file_number in window_info:
 					info = window_info[file_number]
-					temp_hap_list.append(info[4])
-					print >> window_info_file, file_number, info[2], info[4],  info[6],  info[8]
+					window_pos = info[9:]
+					distance_distribution_score = 0
+					for w_pos in window_pos:
+						distance_distribution_score += (int(w_pos) - position)**2
+					distance_distribution_score = math.sqrt(distance_distribution_score)/len(window_pos)
+
+					#temp_hap_list.append(info[4])
+					print >> window_info_file, file_number, info[2], info[4],  info[6], format(float(info[8]), "0.4f"), distance_distribution_score
 				else:
 					print >> window_info_file, "\t", "\t",  "\t",  "\t"
+			
+			# remove min and max window size
+			temp_size_dict = {file_number:int(info[6]) for file_number, info in window_info.iteritems()}
+			#del window_info[keywithminval(window_info)]
+			#del window_info[keywithmaxval(window_info)]
+			
+			temp_hap_list = [info[4] for info in window_info.values()]
 			temp_hap_set = set(temp_hap_list)
-			if qscore_dict[position]/float(len(temp_hap_list)) >= data_dict.qscore_threshold:
+			#if qscore_dict[position]/float(len(temp_hap_list)) >= data_dict.qscore_threshold:
+			if len(temp_hap_list) >= int(number_of_subfile/2):
+			#if True:
 				seed = snp
 				temp_set_list = list(temp_hap_set)
 				if len(temp_hap_set) == 1:
+					a += 1
 					seed.allele_new = temp_set_list[0][0]
+					if seed.allele_new == data_dict.hap_std_dict[position][2]:
+						s_to_A += 1
+					elif seed.allele_new == data_dict.hap_std_dict[position][3]:
+						s_to_B += 1
 				elif len(temp_hap_set) == 2:
 					seed.allele_new = temp_set_list[0][0] if temp_hap_list.count(temp_set_list[0]) >= temp_hap_list.count(temp_set_list[1]) else temp_set_list[1][0]
 				recovered_seed_dict[position] = seed
 
-			
+	print "same snp in all hifi", a	
+	print "s_to_A", s_to_A
+	print "s_to_B", s_to_B
 	window_info_file.close()		
 	"""
 	hifi_sorted_pos_list = hifi_dict.keys()
@@ -625,8 +651,14 @@ def seed_recover_extract_ref_1():
 			for file_number in range(number_of_subfile):
 				if file_number in window_info:
 					info = window_info[file_number]
+					window_pos = info[9:]
+					distance_distribution_score = 0
+					for w_pos in window_pos:
+						distance_distribution_score += (int(w_pos) - position)**2
+					distance_distribution_score = math.sqrt(distance_distribution_score)
+					
 					temp_hap_list.append(info[4])
-					print >> window_info_file, file_number, info[2], info[4],  info[6],  info[8]
+					print >> window_info_file, file_number, info[2], info[4],  info[6], format(float(info[8]), "0.4f"), distance_distribution_score
 				else:
 					print >> window_info_file, "\t", "\t",  "\t",  "\t"
 	
@@ -1227,7 +1259,7 @@ def combine_hifi_seed(input_prefix, ori_seed_file):
 	hifi_dict = {}
 	ref_cycle_number = data_dict.ref_cycle_number
 	ori_seed_dict = load_seed_data(ori_seed_file)[1]
-	#ref_cycle_number = 7	
+	#ref_cycle_number = 2	
 	for i in range (ref_cycle_number):
 		input_subfile_name = input_prefix + str(i)
 		hifi_dict = load_hifi_result(input_subfile_name, hifi_dict)	
@@ -1258,8 +1290,7 @@ def multple_ref_expand(seed_file, chr_name, mode):
 	os.system("cp haplotype.txt haplotype_ori.txt")
 	ref_cycle_number = data_dict.ref_cycle_number
 	
-	for j in range(1):
-		
+	for j in range(2):
 		
 		for i in range (ref_cycle_number):
 			
@@ -1268,12 +1299,14 @@ def multple_ref_expand(seed_file, chr_name, mode):
 			print "ref_position_distance", data_dict.ref_position_distance
 			print "ref_expand_range", data_dict.ref_expand_range
 			#remPercent = float(0)/(100.0)
-			remPercent = float(random.randrange(5, 15))/(100.0)
+			
+			remPercent = 0 if i == 0 else float(random.randrange(5, 15))/(100.0)
+			#remPercent = float(random.randrange(5, 15))/(100.0)
 			print "remPercent", remPercent
 			haplotype_file = "haplotype.txt"
 			refMerger(haplotype_file, chr_name, remPercent)
 			
-			for k in range(2):
+			for k in range(1):
 				mode = "ref"
 				print "########### ref expand cycle #########", k
 				seed_correction(seed_file, chr_name, mode)
@@ -1300,8 +1333,8 @@ def multple_ref_expand(seed_file, chr_name, mode):
 			os.system("cp haplotype_expanded.txt haplotype.txt")
 			same_to_A_dict, same_to_B_dict = seed_std_compare("haplotype.txt", data_dict.chr_name)
 			"""
-	"""		
-			os.system("cp haplotype.txt " + "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict)))
+		
+		os.system("cp haplotype.txt " + "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict)))
 		os.system("cp haplotype.txt " + "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict)) + "_run_"+str(j))
 		os.system("cp haplotype_ori.txt haplotype.txt")
 		file_name = "haplotype_expanded.txt"
@@ -1310,12 +1343,12 @@ def multple_ref_expand(seed_file, chr_name, mode):
 	
 	input_prefix = "haplotype_expanded.txt_"
 	combine_hifi_seed(input_prefix, "haplotype_ori.txt")
-	"""
+	
 	file_name = "haplotype.txt"
 	refMerger(haplotype_file, chr_name, 0)
 	hifi_run(file_name, chr_name)
 	hifiAccuCheck("imputed_"+file_name, chr_name)
-	clean_up()
+	#clean_up()
 
 def multple_ref_expand_1(seed_file, chr_name, mode):
 	sub_cycle = 3
@@ -1785,7 +1818,7 @@ def seed_correction(seed_file, chr_name, mode):
 		
 	
 	elif mode == "combine":
-		combine_hifi_seed("haplotype_expanded.txt_","haplotype.txt")
+		combine_hifi_seed("haplotype_expanded.txt_", "haplotype.txt")
 	
 	elif mode == "seed_v":
 		seed_verify_reverse()
@@ -1913,9 +1946,15 @@ if __name__=='__main__':
 	data_dict.chr_name = chr_name
 	data_dict.load_data_dicts()
 	
+	start_time = time.time()
 	seed_correction(seed_file, chr_name, mode)
+	elapse_time = time.time() - start_time
+	print "***********************to_impute_window time is: " + str(format(elapse_time, "0.3f")) + "s"
 	
 	
-
-
-
+	
+	
+	
+	
+		
+	

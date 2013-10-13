@@ -71,13 +71,12 @@ def compare_std_result(hifi_result_dict, hifi_std_dict):
 		if position in hifi_std_dict:
 			hifi_A = elements_hifi[2].strip()
 			hifi_B = elements_hifi[3].strip()
-			elements_std = hifi_std_dict[position]
-			std_A = elements_std[2].strip()
-			std_B = elements_std[3].strip()
-			#if (std_A == "A" and std_B == "T") or (std_A == "C" and std_B == "G") or (std_A == "T" and std_B == "A") or (std_A == "G" and std_B == "C"):
-			#	AT_GC_dict[position] = elements_hifi
-			if True:
-			#else:	
+			if hifi_A != 'X' and hifi_B != 'X' and hifi_A != 'N' and hifi_B != 'N':
+			#if True:
+				elements_std = hifi_std_dict[position]
+				std_A = elements_std[2].strip()
+				std_B = elements_std[3].strip()
+	
 				if similarity == "similar_to_B":		# for solid data 4 and 6, the hifi seed is from mother (B)
 					hifi_A, hifi_B = hifi_B, hifi_A
 					# the hifi seed is from father, A				

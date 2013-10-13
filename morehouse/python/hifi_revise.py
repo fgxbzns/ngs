@@ -120,6 +120,7 @@ if __name__ == '__main__':
 	start_time = time.time()
 	hifi_test(seed_input_file)
 	hifiAccuCheck("imputed_" + seed_input_file, chr_name)
+	#hifiAccuCheck("imputedhaplotype_1.txt", chr_name)
 	
 	#analyze_data()
 	

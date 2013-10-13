@@ -142,7 +142,7 @@ def pair_end_indel(sam_file, chr_name):
 def single_end_indel(sam_file, chr_name):
 	""" process the reads by both single_end and indel"""
 	print "single_end_indel: ", parameter.sam_file_name
-	output_file = open(parameter.sam_file_name + "_sginleend_indel.sam", "w")
+	output_file = open(parameter.sam_file_name + "_sginle_indel.sam", "w")
 	inputfile_sam = open(currentPath + sam_file, "r")
 	sam_line_first = inputfile_sam.readline() # the first read line in a pair
 	total_reads_num = 0

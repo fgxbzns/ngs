@@ -815,12 +815,12 @@ int main(int argc, char** argv)
 												}
 												printf("\n");
 										*/		
-												fprintf(impute_window_info_file, "%s %d %c%c <-- %c%c Window_size: %d impute_maf: %f", 
+												fprintf(impute_window_info_file, "%s %d %c%c <-- %c%c Window_size: %d impute_maf: %f \t", 
 													hgr_rs[snpimp[indexofsnp_act[i]]],hgr_pos[snpimp[indexofsnp_act[i]]],hogo_xn[snpimp[indexofsnp_act[i]]][0],hogo_xn[snpimp[indexofsnp_act[i]]][1],
 															imputor_refinetable[matindex_0][i],  imputor_refinetable[matindex_1][i], u, impute_maf);
 												for(int j=0;j<u;j++)
 												{
-													fprintf(impute_window_info_file, "%d", hgr_pos[snpimp[indexofsnp_act[j]]]);
+													fprintf(impute_window_info_file, "%d \t", hgr_pos[snpimp[indexofsnp_act[j]]]);
 												}
 												fprintf(impute_window_info_file, "\n");
 												
@@ -859,6 +859,7 @@ int main(int argc, char** argv)
 		}while(!cmphogoxn_issame);
 
 		//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		// include imputed xx
 		fpo=fopen("imputedhaplotype_1.txt","w");	
 		fprintf(fpo,"%s", headofhaplo);
 		for(int i=0;i<snpsum_hgr;i++)
@@ -1020,12 +1021,12 @@ int main(int argc, char** argv)
 												}
 												printf("\n");	
 										*/		
-												fprintf(impute_window_info_file,"%s %d %c%c <-- %c%c Window_size: %d impute_maf: %f", 
+												fprintf(impute_window_info_file,"%s %d %c%c <-- %c%c Window_size: %d impute_maf: %f \t", 
 													hgr_rs[snpimp[indexofsnp_act[i]]],hgr_pos[snpimp[indexofsnp_act[i]]],hogo_xn[snpimp[indexofsnp_act[i]]][0],hogo_xn[snpimp[indexofsnp_act[i]]][1],
 															imputor_refinetable[matindex_0][i],  imputor_refinetable[matindex_1][i], u, impute_maf);
 												for(int j=0;j<u;j++)
 												{
-													fprintf(impute_window_info_file, "%d", hgr_pos[snpimp[indexofsnp_act[j]]]);
+													fprintf(impute_window_info_file, "%d \t", hgr_pos[snpimp[indexofsnp_act[j]]]);
 												}
 												fprintf(impute_window_info_file, "\n");
 												//====================================
@@ -1072,7 +1073,11 @@ int main(int argc, char** argv)
 //	fclose(fpo_l);
 	//Added on 08/15/2011
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-/*fu		fpo=fopen("imputedhaplotype_2.txt","w");	
+	// include imputed xx, nn
+		//fpo=fopen("imputedhaplotype_2.txt","w");	
+		
+		// Oct 11, Fu, Save the imputed X, N only. Add the rare in the last step.
+		fpo=fopen(impute,"w");	
 		fprintf(fpo,"%s", headofhaplo);
 		for(int i=0;i<snpsum_hgr;i++)
 		{
@@ -1082,7 +1087,7 @@ int main(int argc, char** argv)
 				fprintf(fpo,"%s %d %c %c\n", hgr_rs[i],hgr_pos[i],hogo_xn[i][0],hogo_xn[i][1]);
 		}
 		fclose(fpo);
-	*/	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//==================================================================
 	//Added for rare allele impute on 01/11/2011
 
@@ -1303,7 +1308,7 @@ int main(int argc, char** argv)
 								printf("Error type 3");
 
 							solution_pre1 = solution_pre2;
-							solution_pre2=solution;
+							solution_pre2 = solution;
 
 					}while((imputecycle==true)&&(lessimputemaxlen==true));
 				}
@@ -1315,7 +1320,9 @@ int main(int argc, char** argv)
 	free(snpimp0);
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-/*fu		fpo=fopen("imputedhaplotype_3.txt","w");	
+		
+/*		// include imputed xx, nn and rare allele with random imputation 
+		fpo=fopen("imputedhaplotype_3.txt","w");	
 		fprintf(fpo,"%s", headofhaplo);
 		for(int i=0;i<snpsum_hgr;i++)
 		{
@@ -1325,15 +1332,14 @@ int main(int argc, char** argv)
 				fprintf(fpo,"%s %d %c %c\n", hgr_rs[i],hgr_pos[i],hogo_xn[i][0],hogo_xn[i][1]);
 		}
 		fclose(fpo);
-fu */	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
+	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//==================================================================
 		//================================================================
 		fpo=fopen("imputed_radom.txt","w");
 		fprintf(fpo,"rsNo pos\n");
 
-
-
-		
 		//================================================================
 	//1> set win = 0
 	for(int i=0;i<snpsum_hgr;i++)
@@ -1430,6 +1436,7 @@ fu */	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	}
 
 	fclose(fpo);
+	
 	//Free g_hgralleles
 	for(int i=0;i<snpsum_hgr;i++)
 		free(g_hgralleles[i]);
@@ -1469,7 +1476,7 @@ fu */	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	headofhaplo[d+e]='\0';
 
 //	fpo=fopen("imputedhaplotype.txt","w");	
-	fpo=fopen(impute,"w");	
+/*	fpo=fopen(impute,"w");	
 	fprintf(fpo,"%s", headofhaplo);
 	for(int i=0;i<snpsum_hgr;i++)
 	{
@@ -1479,7 +1486,7 @@ fu */	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 			fprintf(fpo,"%s %d %c %c\n", hgr_rs[i],hgr_pos[i],hogo_xn[i][0],hogo_xn[i][1]);
 	}
 	fclose(fpo);
-
+*/
 /*fu	fpo=fopen("preimputehaplotype.txt","w");	
 	fprintf(fpo,"%s", headofhaplo);
 	for(int i=0;i<snpsum_hgr;i++)

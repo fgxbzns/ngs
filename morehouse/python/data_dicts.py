@@ -37,7 +37,7 @@ class data_dicts:
         self.cluster_pos_dict = {}
           
         self.number_of_subfile = 10
-        self.ref_cycle_number = 1
+        self.ref_cycle_number = 3
         
         self.maf_upper_bound = 0.5
         self.maf_lower_bound = 0.3
@@ -193,7 +193,6 @@ if __name__=='__main__':
     data_dict.chr_name = "chr9"
     data_dict.load_data_dicts()
     data_dict.load_seed_geno_ref()
-
 
 
 

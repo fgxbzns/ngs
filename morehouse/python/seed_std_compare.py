@@ -9,12 +9,21 @@ from optparse import OptionParser
 from tools import *
 from calculate_maf import calculate_maf
 
+def output_seed(file_name, seed_title_info, snp_hap_seed_dict, output_seed_dict):
+	seed_new_file = open(currentPath + file_name, "w")
+	print >> seed_new_file, seed_title_info
+	output_pos = output_seed_dict.keys()
+	output_pos.sort()
+	for pos in output_pos:
+		print >> seed_new_file, list_to_line(snp_hap_seed_dict[pos])
+	seed_new_file.close()
+
 def seed_std_compare(seed_input_file, chr_name):
 	std_file_name = "ASW_"+chr_name+"_child_hap_refed.txt"
 	std_input_file = file_path + std_file_name
 	snp_hap_std_dict = load_raw_data(std_input_file, raw_data_format)[1]
 	
-	snp_hap_seed_dict = load_raw_data(seed_input_file, raw_data_format)[1]
+	seed_title_info, snp_hap_seed_dict = load_raw_data(seed_input_file, raw_data_format)
 	seed_file_name = seed_input_file[:seed_input_file.find('.')].strip()
 	print "snp_hap_std_total_number", len(snp_hap_std_dict)
 	print "snp_hap_seed_total_number", len(snp_hap_seed_dict)
@@ -88,6 +97,7 @@ def seed_std_compare(seed_input_file, chr_name):
 		pass
 		#print snp_hap_std_dict[pos]
 		#calculate_maf(file_name, pos)
+	#output_seed("haplotype_A.txt", seed_title_info, snp_hap_seed_dict, same_to_A_dict)
 	return (same_to_A_dict, same_to_B_dict)
 	
 """

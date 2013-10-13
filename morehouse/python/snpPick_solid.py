@@ -46,7 +46,7 @@ def get_args():
 	parser.add_option("-i", "--haplotype", type="string", dest="haplotypeFile",help = "Input File Name", default="null")
 	parser.add_option("-s", "--sam", type="string", dest="samFile",help = "Input File Name", default="null")
 	parser.add_option("-d", "--threshold", type="string", dest="threshold",help = "Input the depth threshold", default="3")
-	parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="chr11")
+	parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="null")
 	(options, args) = parser.parse_args()
 	if options.chrName == "null" or options.samFile == "null":
 		print "parameters missing..."

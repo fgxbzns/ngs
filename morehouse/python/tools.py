@@ -47,7 +47,7 @@ def load_raw_data(file_name, raw_data_format = "list"):
 	return (title_info, data)
 
 def hifi_run(file_name, chr_name):
-	hifi = program_path + "hifi_fu_ref " + file_name + " genotype.txt refHaplos.txt 0.10"
+	hifi = program_path + "hifi_fu_revise " + file_name + " genotype.txt refHaplos.txt 0.10"
 	hifi_process = subprocess.Popen(hifi, shell=True)
 	hifi_process.wait()
 	#hifiAccuCheck("imputed_" + file_name, chr_name)
@@ -119,9 +119,16 @@ def getTotalBaseNum(fileName):
 def keywithmaxval(dict):
      """ a) create a list of the dict's keys and values; 
          b) return the key with the max value """  
-     v=list(dict.values())
-     k=list(dict.keys())
+     v = dict.values()
+     k = dict.keys()
      return k[v.index(max(v))]
+
+def keywithminval(dict):
+     """ a) create a list of the dict's keys and values; 
+         b) return the key with the min value """  
+     v = dict.values()
+     k = dict.keys()
+     return k[v.index(min(v))]
 
 # group the seed into homo and hetero groups
 def group_seed(seed_dict, geno_dict):
