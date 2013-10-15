@@ -94,8 +94,6 @@ def analyze_data():
 	print "maf_total", maf_total
 	print "maf_total", maf_total/error_snp	
 	
-
-
 def get_args():
 	desc = "Compare seed and std hap, to check purity of seed"
 
@@ -118,11 +116,11 @@ if __name__ == '__main__':
 	seed_input_file = options.hifiSeed	
 	
 	start_time = time.time()
-	hifi_test(seed_input_file)
-	hifiAccuCheck("imputed_" + seed_input_file, chr_name)
+	#hifi_test(seed_input_file)
+	#hifiAccuCheck("imputed_" + seed_input_file, chr_name)
 	#hifiAccuCheck("imputedhaplotype_1.txt", chr_name)
 	
-	#analyze_data()
+	analyze_data()
 	
 	
 	

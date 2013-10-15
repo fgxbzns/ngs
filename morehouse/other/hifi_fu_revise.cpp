@@ -18,9 +18,9 @@
 #define LINECAPACITY 10000
 #define RSCAPACITY 40
 //#define MAFSTEP 0.01	ori minor allele frequence step
-//#define MAFSTEP 0.1
 #define IMPUTORTABLEWIDTH 1024
 #define MAXCOMPARELEN 300
+//#define MAXCOMPARELEN 50
 #define WINI 16
 //WINI should be > WINO for the ini
 #define WINO 10
@@ -1378,9 +1378,9 @@ int main(int argc, char** argv)
 			//fu		printf("Imputing   %s %d   %c%c <-- %c%c\n", hgr_rs[i],hgr_pos[i],hogo_xn[i][0],hogo_xn[i][1], main_allele[i][0], main_allele[i][0]);
 
 					if(hogo_xn[i][0]=='N')
-					hogo_xn[i][0] = main_allele[i][0];
+						hogo_xn[i][0] = main_allele[i][0];
 					if(hogo_xn[i][1]=='N')
-					hogo_xn[i][1] = main_allele[i][0];	
+						hogo_xn[i][1] = main_allele[i][0];	
 
 					fprintf(fpo,"%s %d 3\n", hgr_rs[i],hgr_pos[i]);
 				}
