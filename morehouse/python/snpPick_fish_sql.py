@@ -108,16 +108,10 @@ def variant_call_pair_end(sam_file):
 							
 							for i in range(read_length_first):
 								current_base_position = start_position_first+i
-								#print "current_base_position", current_base_position
-								#geno_allele = ""
-								#total_depth = 0
 								A_depth = 0
 								T_depth = 0
 								C_depth = 0
 								G_depth = 0
-								#max_allele = ""
-								#max_allele_number = 0
-								#max_allele_percentage = 0.0
 								
 								covered_snp = read_sequence_first[i]			# ith position is the covered snp
 								quality_score_symbol = quality_score_sequence_first[i]
@@ -185,23 +179,51 @@ def get_data(db_name, table_name, start_line, end_line):
 	    return rows
 
 def output_data(file_name, start_line, end_line):
-	output_file = open(currentPath + file_name, "w")
-	print >> output_file, "pos", "chr", "ref_allele", "A", "T", "C", "G"
-	rows = get_data(db_name, table_name, start_line, end_line)
-	for item in rows:
-		print >> output_file, item[0], item[1], item[2], item[3], item[4], item[5], item[6]
-	output_file.close()
+	total_row_number = int(end_line) - int(start_line)
+	#print total_row_number
+	if total_row_number <= 0:
+		print "error in start point and end point"
+		sys.exit(0)
+	percentage_of_total = 0
+	current_row = 0	
+	#output_file = open(currentPath + file_name, "w")
+	with open(currentPath + file_name, "w") as output_file:
+		#output_file.write('pos\tchr\tref_allele\t A \t T \t C \t G \n')
+		print >> output_file, "pos", "chr", "ref_allele", "A", "T", "C", "G"
+		rows = get_data(db_name, table_name, start_line, end_line)
+		for item in rows:
+			
+			current_percent = int(float(total_row_number * percentage_of_total)/100)
+			#print current_percent
+			if current_row == current_percent:
+				print "current progress: ", percentage_of_total, "% current row:", current_row + int(start_line)
+				percentage_of_total += 10			
+			current_row += 1	
+			#output_file.write('%s\t%s\t%s\t%s\t%s\t%s\t%s\n' % (item[0], item[1], item[2], item[3], item[4], item[5], item[6]))
+			print >> output_file, item[0], item[1], item[2], item[3], item[4], item[5], item[6]
+	print "total snp number :", current_row
 
 def output_data_filter(file_name, start_line, end_line):
-	output_file = open(currentPath + file_name, "w")
-	print >> output_file, "pos", "chr", "ref_allele", "A", "T", "C", "G"
-	rows = get_data(db_name, table_name, start_line, end_line)
-	for item in rows:
-		temp_list = [int(x) for x in item[3:7]]
-		if temp_list.count(0) < 3:
-			temp_list.sort()
-			print >> output_file, item[0], item[1], item[2], item[3], item[4], item[5], item[6], temp_list[3], temp_list[2], temp_list[1], temp_list[0] 
-	output_file.close()
+	total_row_number = int(end_line) - int(start_line)
+	if total_row_number <= 0:
+		print "error in start point and end point"
+		sys.exit(0)
+	percentage_of_total = 0
+	current_row = 0	
+	with open(currentPath + file_name, "w") as output_file:
+		print >> output_file, "pos", "chr", "ref_allele", "A", "T", "C", "G"
+		rows = get_data(db_name, table_name, start_line, end_line)
+		for item in rows:
+			temp_list = [int(x) for x in item[3:7]]
+			if temp_list.count(0) < 3:
+				temp_list.sort()
+				current_percent = int(float(total_row_number * percentage_of_total)/100)
+				if current_row == current_percent:
+					print "current progress: ", percentage_of_total, "current row:", current_row + int(start_line)
+					percentage_of_total += 10			
+				current_row += 1
+				print >> output_file, item[0], item[1], item[2], item[3], item[4], item[5], item[6], temp_list[3], temp_list[2], temp_list[1], temp_list[0] 
+	print "total snp number :", current_row
 
 def get_args():
 	desc="variation call"
@@ -222,6 +244,7 @@ def get_args():
 	return options
 	
 if __name__=='__main__':
+	start_time = time.time()
 	options = get_args()
 	
 	chr_name = options.chrName
@@ -262,5 +285,8 @@ if __name__=='__main__':
 		file_name = "zebra_" + chr_name + "_" + start_line + "_" + end_line + "_filtered.txt"
 		#print file_name
 		output_data_filter(file_name, start_line, end_line)
+	
+	elapse_time = time.time() - start_time
+	print "run time: " + str(format(elapse_time, "0.3f")) + "s"
 	
 

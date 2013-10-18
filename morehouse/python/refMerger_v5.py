@@ -119,6 +119,7 @@ def make_hifi_files(remPercent):
 	hifi_geno_dict = {}
 	hifi_ref_dict = {}
 	
+	
 	last_seed_position = sort_dict_by_key(seed_dict)[-1][0]
 	#print "last_haplotype_position", last_seed_position
 	hap_ref_sorted_list = sort_dict_by_key(hap_ref_dict)
@@ -155,13 +156,19 @@ def make_hifi_files(remPercent):
 				hifi_seed_dict[position] = list_to_line(seed_dict[position])
 			elif position in geno_dict and geno_dict[position][2][0] == geno_dict[position][2][1]:
 				hifi_seed_dict[position] = geno_dict[position][0] + " " + geno_dict[position][1] + " " + geno_dict[position][2][0]	
+			#else:
+			#	seed_not_in_ref[position] = list_to_line(seed_dict[position])
 			if position in geno_dict:
 				#hifi_geno_dict[position] = " ".join(geno_dict[position])
 				hifi_geno_dict[position] = list_to_line(geno_dict[position])
 	
+	
 	output_files("haplotype.txt", seed_title_info, hifi_seed_dict)
 	output_files("genotype.txt", geno_title_info, hifi_geno_dict)
 	output_files("refHaplos.txt", ref_title_info, hifi_ref_dict)
+	
+	seed_not_in_ref = dict_substract(seed_dict, hap_ref_dict)
+	output_files("seed_not_in_ref.txt", seed_title_info, seed_not_in_ref)
 
 def refMerger(haplotype_file, chr_name, remPercent):
 	global seed_title_info

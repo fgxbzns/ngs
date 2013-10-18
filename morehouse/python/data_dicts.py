@@ -31,6 +31,7 @@ class data_dicts:
         self.ref_file_name = "refHaplos.txt"
         self.ref_title_info = ""
         self.hap_ref_dict = {}
+        self.hap_ref_major_allele_dict = {}
         
         self.hap_std_dict = {}
         self.ref_cluster_dict = {}
@@ -90,6 +91,28 @@ class data_dicts:
                 for pos, ref in cluster_dict.iteritems():
                     self.cluster_pos_dict[pos] = ref
         print "cluster_pos_dict: ", len(self.cluster_pos_dict)
+    
+    def update_ref_major_allele(self):
+        maf_dict = {}
+        for pos, snp in self.hap_ref_dict.iteritems():
+            alleles = snp[2:]
+            unique_alleles = set(alleles)
+            n_alleles = len(unique_alleles)
+            major_allele = ""
+            if n_alleles == 0 or n_alleles > 2:
+                print "maf error in ref: ", position
+                sys.exit(1)
+            else:
+                maf_temp_list = []
+                for ref_allele in unique_alleles:
+                    maf_temp_list.append(ref_allele, alleles.count(ref_allele))
+                major_allele = maf_temp_list[0][0] if maf_temp_list[0][1] >= maf_temp_list[1][1] else maf_temp_list[1][0]
+            if pos not in maf_dict:
+                maf_dict[pos] = major_allele
+            maf_dict[maf_num].append(pos)
+
+        print len(maf_dict)
+        self.hap_ref_major_allele_dict = maf_dict
     
     def load_data_dicts(self):
         self.update_geno_dict()

@@ -565,13 +565,20 @@ def seed_recover_extract_ref_1():
 				if file_number in window_info:
 					info = window_info[file_number]
 					window_pos = info[9:]
+					homo_window = True
 					distance_distribution_score = 0
 					for w_pos in window_pos:
 						distance_distribution_score += (int(w_pos) - position)**2
+						if int(w_pos) in data_dict.geno_hetero_dict:
+							homo_window = False
 					distance_distribution_score = math.sqrt(distance_distribution_score)/len(window_pos)
 
 					#temp_hap_list.append(info[4])
-					print >> window_info_file, file_number, info[2], info[4],  info[6], format(float(info[8]), "0.4f"), distance_distribution_score
+					print >> window_info_file, file_number, info[2], info[4],  info[6], format(float(info[8]), "0.4f"), distance_distribution_score, homo_window
+					for w_pos in window_pos:
+						if int(w_pos) in data_dict.geno_dict:
+							print >> window_info_file, w_pos, data_dict.geno_dict[int(w_pos)][2],
+					print >> window_info_file, " "
 				else:
 					print >> window_info_file, "\t", "\t",  "\t",  "\t"
 			
@@ -579,8 +586,8 @@ def seed_recover_extract_ref_1():
 			if len(temp_hap_list) >= int(number_of_subfile/2):
 				# remove min and max window size
 				temp_size_dict = {file_number:int(info[6]) for file_number, info in window_info.iteritems()}
-				#del window_info[keywithminval(window_info)]
-				#del window_info[keywithmaxval(window_info)]
+				del window_info[keywithminval(window_info)]
+				del window_info[keywithmaxval(window_info)]
 				
 				
 				temp_hap_set = set(temp_hap_list)
@@ -644,6 +651,8 @@ def seed_recover_extract_ref_1():
 	same_to_B_dict = seed_std_compare(file_name, data_dict.chr_name)[1]
 	
 	window_info_file = open(currentPath + "window_info_output_B.txt", "w")
+	
+	homo_window_total = 0
 	for position, snp in same_to_B_dict.iteritems():
 		if position in window_info_dict and position in data_dict.hap_std_dict and data_dict.hap_std_dict[position][2] != 'X':
 			window_info = window_info_dict[position]
@@ -654,18 +663,37 @@ def seed_recover_extract_ref_1():
 				if file_number in window_info:
 					info = window_info[file_number]
 					window_pos = info[9:]
+					homo_window = True
 					distance_distribution_score = 0
 					for w_pos in window_pos:
 						distance_distribution_score += (int(w_pos) - position)**2
+						if int(w_pos) in data_dict.geno_hetero_dict:
+							homo_window = False
+						
 					distance_distribution_score = math.sqrt(distance_distribution_score)
 					
 					temp_hap_list.append(info[4])
-					print >> window_info_file, file_number, info[2], info[4],  info[6], format(float(info[8]), "0.4f"), distance_distribution_score
+					print >> window_info_file, file_number, info[2], info[4],  info[6], format(float(info[8]), "0.4f"), distance_distribution_score, homo_window
+					for w_pos in window_pos:
+						if int(w_pos) in data_dict.hap_std_dict:
+							print >> window_info_file, w_pos, data_dict.hap_std_dict[int(w_pos)][2], data_dict.hap_std_dict[int(w_pos)][3], data_dict.geno_dict[int(w_pos)][2],
+						if int(w_pos) in window_info_dict and file_number in window_info_dict[int(w_pos)]:
+							print >> window_info_file, window_info_dict[int(w_pos)][file_number][4]
+						else:
+							print >> window_info_file, " "
+					print >> window_info_file, " "
+					"""
+					if homo_window:
+						print >> window_info_file, homo_window
+						homo_window_total += 1
+					else:
+						print >> window_info_file, " "
+					"""
 				else:
 					print >> window_info_file, "\t", "\t",  "\t",  "\t"
 	
 	window_info_file.close()	
-	
+	print "homo_window_total", homo_window_total
 	#hifi_run(file_name, chr_name)
 	#hifiAccuCheck("imputed_"+file_name, chr_name)
 

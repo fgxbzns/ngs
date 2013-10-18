@@ -93,6 +93,32 @@ def analyze_data():
 	
 	print "maf_total", maf_total
 	print "maf_total", maf_total/error_snp	
+
+def output_genohomo(geno_file_name, seed_file_name):
+	geno_file = open(currentPath + geno_file_name, "r")
+	seed_new_file = open(currentPath + seed_file_name, "w")
+	for line in geno_file:
+		if line.startswith("rsID"):
+			print >> seed_new_file, line.strip()
+		else:
+			elements = line.strip().split()
+			if elements[2][0] == elements[2][1]:
+				print >> seed_new_file, elements[0], elements[1], elements[2][0], elements[2][1]
+	geno_file.close()
+	seed_new_file.close()
+
+def output_hapstdhomo(hap_std_file_name, seed_file_name):
+	hap_std_file = open(currentPath + hap_std_file_name, "r")
+	seed_new_file = open(currentPath + seed_file_name, "w")
+	for line in hap_std_file:
+		if line.startswith("rsID"):
+			print >> seed_new_file, line.strip()
+		else:
+			elements = line.strip().split()
+			if elements[2] == elements[3]:
+				print >> seed_new_file, line.strip()
+	hap_std_file.close()
+	seed_new_file.close()
 	
 def get_args():
 	desc = "Compare seed and std hap, to check purity of seed"
@@ -120,9 +146,10 @@ if __name__ == '__main__':
 	#hifiAccuCheck("imputed_" + seed_input_file, chr_name)
 	#hifiAccuCheck("imputedhaplotype_1.txt", chr_name)
 	
-	analyze_data()
-	
-	
+	#analyze_data()
+	seed_file_name = "hap_homo.txt"
+	#output_genohomo(seed_input_file, seed_file_name)
+	output_hapstdhomo(seed_input_file, seed_file_name)
 	
 	elapse_time = time.time() - start_time
 	print "***********************to_impute_window time is: " + str(format(elapse_time, "0.3f")) + "s"

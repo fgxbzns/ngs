@@ -61,7 +61,7 @@ def seed_std_compare(seed_input_file, chr_name):
 				elif std_B != "N":
 					seed_same_to_A += 1	
 					same_to_A_dict[position] = elements_seed		
-			elif seed_A == std_B and std_A != "N":
+			elif seed_A == std_B and std_A != "N" and std_A != "X":
 				seed_same_to_B += 1
 				same_to_B_dict[position] = elements_seed
 			elif std_A == "X" or std_B == "X":
