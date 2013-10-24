@@ -142,14 +142,14 @@ if __name__ == '__main__':
 	seed_input_file = options.hifiSeed	
 	
 	start_time = time.time()
-	#hifi_test(seed_input_file)
-	#hifiAccuCheck("imputed_" + seed_input_file, chr_name)
+	hifi_test(seed_input_file)
+	hifiAccuCheck("imputed_" + seed_input_file, chr_name)
 	#hifiAccuCheck("imputedhaplotype_1.txt", chr_name)
 	
 	#analyze_data()
-	seed_file_name = "hap_homo.txt"
+	#seed_file_name = "hap_homo.txt"
 	#output_genohomo(seed_input_file, seed_file_name)
-	output_hapstdhomo(seed_input_file, seed_file_name)
+	#output_hapstdhomo(seed_input_file, seed_file_name)
 	
 	elapse_time = time.time() - start_time
 	print "***********************to_impute_window time is: " + str(format(elapse_time, "0.3f")) + "s"

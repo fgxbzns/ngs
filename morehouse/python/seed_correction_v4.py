@@ -699,6 +699,124 @@ def seed_recover_extract_ref_1():
 
 	return revised_seed_dict
 
+
+def get_refID():
+	
+	refID_dict = {}
+	
+	refID_A_count_dict = {}
+	refID_B_count_dict = {}
+	
+	refID_list = data_dict.ref_title_info.strip().split()[2:]
+	print len(refID_list)
+	#print refID_list
+	
+	hifi_dict = {}
+	#hifi_dict = load_hifi_result("imputed_" + data_dict.seed_file, hifi_dict)
+	hifi_dict = load_raw_data("imputed_" + data_dict.seed_file)[1]
+	print len(hifi_dict)
+
+	window_info_dict = load_raw_data("window_" + data_dict.seed_file)[1]
+	print len(window_info_dict)
+	
+	for pos, elements in window_info_dict.iteritems():
+		window_info = elements[9:]
+		match_to_A_index_list = range(2, len(refID_list))
+		match_to_B_index_list = range(2, len(refID_list))
+		hifi_seq_A = ""
+		hifi_seq_B = ""
+		for window_pos in window_info:
+			window_pos = int(window_pos)
+			hifi_seq_A += hifi_dict[window_pos][2]
+			hifi_seq_B += hifi_dict[window_pos][3]
+			
+			match_to_A_index_list = [index for index in match_to_A_index_list if data_dict.hap_ref_dict[window_pos][index] == hifi_dict[window_pos][2]]
+			match_to_B_index_list = [index for index in match_to_B_index_list if data_dict.hap_ref_dict[window_pos][index] == hifi_dict[window_pos][3]]		
+		match_to_A_refID = [refID_list[index] for index in match_to_A_index_list]
+		match_to_B_refID = [refID_list[index] for index in match_to_B_index_list]
+		for refID in match_to_A_refID:
+			refID_A_count_dict[refID] = 0 if refID not in refID_A_count_dict else (refID_A_count_dict[refID] + 1)
+		for refID in match_to_B_refID:
+			refID_B_count_dict[refID] = 0 if refID not in refID_B_count_dict else (refID_B_count_dict[refID] + 1)
+		match_to_A_seq = ""
+		match_to_B_seq = ""
+		
+		for window_pos in window_info:
+			window_pos = int(window_pos)
+			if len(match_to_A_index_list) > 0:
+				match_to_A_seq += data_dict.hap_ref_dict[window_pos][match_to_A_index_list[0]]
+			if len(match_to_B_index_list) > 0:
+				match_to_B_seq += data_dict.hap_ref_dict[window_pos][match_to_B_index_list[0]]
+		#for index in match_to_A_index_list:
+			
+		#refID_dict[pos] = (hifi_seq_A, hifi_seq_B, list_to_line(match_to_A_refID), match_to_A_seq, list_to_line(match_to_B_refID), match_to_B_seq)
+		refID_dict[pos] = (hifi_seq_A, hifi_seq_B, match_to_A_refID, match_to_A_seq, match_to_B_refID, match_to_B_seq)
+	
+	same_to_B_dict = seed_std_compare("imputed_" + data_dict.seed_file, data_dict.chr_name)[0]
+	
+
+	for pos, items in refID_dict.iteritems():
+		if True:
+		#if pos in same_to_B_dict:
+			print pos, items[0], items[1], len(items[2]), items[3], len(items[4]), items[5]	
+			#print pos, items[0], items[1], items[2], items[3], items[4], items[5]
+	
+	# output hifi results filtered by number of refID
+	hifi_new_output = open("non_one.txt", 'w')
+	print >> hifi_new_output, data_dict.seed_title_info
+	seed_dict_from_hifi = {}
+	for pos in hifi_dict.keys():
+		if (pos in refID_dict and len(refID_dict[pos][2]) <= 50) or (pos in refID_dict and len(refID_dict[pos][4]) <= 50):
+			pass
+			#a = hifi_dict[pos]
+			#print >> hifi_new_output, a[0], a[1], a[3], a[2], 
+		else:
+			print >> hifi_new_output, list_to_line(hifi_dict[pos])
+			seed_dict_from_hifi[pos] = hifi_dict[pos]
+			#print >> hifi_new_output, hifi_dict[pos][0], hifi_dict[pos][1], hifi_dict[pos][2]
+	hifi_new_output.close()
+	
+	output_revised_seed_dict("seed_from_hifi.txt", seed_dict_from_hifi)
+	
+	
+	
+	refID_A_count_sorted_list = sort_dict_by_value(refID_A_count_dict)
+	refID_B_count_sorted_list = sort_dict_by_value(refID_B_count_dict)
+	
+	for i in range(100):
+		print refID_A_count_sorted_list[i][0], refID_A_count_sorted_list[i][1], refID_B_count_sorted_list[i][0], refID_B_count_sorted_list[i][1]
+	
+	#hifiAccuCheck("non_one.txt", chr_name)
+	
+	
+	"""" check overlapping of refIDs of adjacent snps"""
+	refID_sorted_list = sort_dict_by_key(refID_dict)
+	all_zero = 0
+	for i in range(len(refID_sorted_list)):
+		pos = refID_sorted_list[i][0]
+		current_snp_data = refID_sorted_list[i][1]
+		if i != 0 and i != len(refID_sorted_list)-1:
+			#if True:
+			if pos in same_to_B_dict:
+				previous_snp_data = refID_sorted_list[i-1][1]
+				p_refID_A_common = [id for id in current_snp_data[2] if id in previous_snp_data[2]]
+				p_refID_B_common = [id for id in current_snp_data[4] if id in previous_snp_data[4]]
+				next_snp_data = refID_sorted_list[i+1][1]
+				n_refID_A_common = [id for id in current_snp_data[2] if id in previous_snp_data[2]]
+				n_refID_B_common = [id for id in current_snp_data[4] if id in previous_snp_data[4]]
+				
+				print pos, window_info_dict[pos][6], "pre A", len(p_refID_A_common), "pre B", len(p_refID_B_common), \
+				"next A", len(n_refID_A_common), "next B", len(n_refID_B_common)
+				
+				if len(p_refID_A_common) == 0 and len(p_refID_B_common) == 0 and len(n_refID_A_common) == 0 and len(n_refID_B_common) == 0:
+					all_zero += 1
+
+	print "all_zero", all_zero
+	
+	seed_std_compare("seed_from_hifi.txt", chr_name)
+	
+	
+	
 def seed_recover_extract_ref_cluster():
 	recovered_seed_dict = {}
 	
@@ -1906,6 +2024,9 @@ def seed_correction(seed_file, chr_name, mode):
 	elif mode == "sgroup":
 		#get_seed_group()
 		get_seed_group_index()
+	
+	elif mode == "refid":
+		get_refID()
 		
 	else:
 		clean_up()

@@ -100,6 +100,14 @@ def sort_dict_by_key(input_dict):
 	#sorted_list.sort(key=lambda x: x[1]) # sort by value
 	return sorted_list
 
+def sort_dict_by_value(input_dict):
+	sorted_list = []
+	sorted_list = [x for x in input_dict.iteritems()] 
+	#sorted_list.sort(key=lambda x: x[0]) # sort by key
+	sorted_list.sort(key=lambda x: x[1]) # sort by value
+	sorted_list.reverse()
+	return sorted_list
+
 def wccount(file_name):
     out = subprocess.Popen(['wc', '-l', file_name],
                          stdout=subprocess.PIPE,
