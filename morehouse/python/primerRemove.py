@@ -6,8 +6,6 @@
 import os, glob, subprocess, random, operator, time, sys
 from optparse import OptionParser
 
-from tools import *
-
 def primer_remove():
 	output_file = open(input_file_name[:input_file_name.find('.')] + "_priRem.fastq",'w')
 
@@ -41,7 +39,7 @@ def process_seq(read_seq, qual_line):
 			seq_length = len(read_seq)
 			primer_position = read_seq.find(primer_seq)
 			if primer_position <= (seq_length/2):
-				new_start_position = primer_position + len(primer_seq)
+				new_start_position = primer_position + len(primer_seq) + 8
 				read_seq = read_seq[new_start_position:]
 				qual_line = qual_line[new_start_position:]
 			else:
@@ -76,7 +74,7 @@ if __name__ == '__main__':
 	global input_file_name
 	global primer_list
 	
-	primer_list = ["TGTGTTGGGTGTGTTTGG", "TGTNTTGGGTGTGTTTGG", "TGTNTTGGGGTGTTTGG", "CGCCTTGGCCGTACAGCA"]
+	primer_list = ["TGTGTTGGGTGTGTTTGG", "TGTNTTGGGTGTGTTTGG", "TGTNTTGGGGTGTTTGG"]
 	#primer_list = ["TGTGTTGGGTGTGTTTGG", "TGTGTTGGGTGTGTTTGG", "CGCCTTGGCCGTACAGCA"]
 		
 	options = get_args()

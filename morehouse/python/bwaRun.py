@@ -59,3 +59,37 @@ data_record_file_name = fastq_file_name + "_BWAtime_" + ".txt"
 data_record_file = open(currentPath + data_record_file_name, "a")
 print >> data_record_file, "run time is: " + run_time + "s"
 data_record_file.close()
+
+
+
+def get_args():
+	desc = "remove primer"
+	usage = "primerRemove -i input_fastq" 
+	parser = OptionParser(usage=usage, description=desc) 
+	parser.add_option("-i", "--inputFile", type="string", dest="inputFile",help = "Input File Name", default="null")
+	
+	
+	parser.add_option("-p", "--ps", type="string", dest="primerSequence",help = "Input primer sequence", default="null")
+	(options, args) = parser.parse_args()
+	if options.inputFile == "null":
+		print "parameters missing..."
+		print usage
+		sys.exit(1)
+	return options
+
+if __name__ == '__main__':
+	global input_file_name
+	global primer_list
+	
+	primer_list = ["TGTGTTGGGTGTGTTTGG", "TGTNTTGGGTGTGTTTGG", "TGTNTTGGGGTGTTTGG", "TGTGTTTGG"]
+	#primer_list = ["TGTGTTGGGTGTGTTTGG", "TGTGTTGGGTGTGTTTGG", "CGCCTTGGCCGTACAGCA"]
+		
+	options = get_args()
+	input_file_name = options.inputFile
+	
+	start_time = time.time()
+	primer_remove()
+	elapse_time = time.time() - start_time
+	print "elapse_time is: " + str(format(elapse_time, "0.3f")) + "s"
+
+

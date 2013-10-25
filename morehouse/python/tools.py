@@ -28,22 +28,21 @@ def usage():
 def load_raw_data(file_name, raw_data_format = "list"):		
 	title_info = ""
 	data = {}
-	fp = open(file_name, "r")
-	for line in fp:
-		if line.startswith("rsID"):
-			title_info = list_to_line(line.strip().split())
-		else:
-			elements = line.strip().split()
-			try:
-				# convert the position to int for sorting
-				if raw_data_format == "list":
-					data[int(elements[1])] = elements
-				elif raw_data_format == "string":
-					data[int(elements[1])] = line.strip()
-			except ValueError:
-				#print "error in ", line
-				pass
-	fp.close()
+	with open(file_name, "r") as fp:
+		for line in fp:
+			if line.startswith("rsID"):
+				title_info = list_to_line(line.strip().split())
+			else:
+				elements = line.strip().split()
+				try:
+					# convert the position to int for sorting
+					if raw_data_format == "list":
+						data[int(elements[1])] = elements
+					elif raw_data_format == "string":
+						data[int(elements[1])] = line.strip()
+				except ValueError:
+					#print "error in ", line
+					pass
 	return (title_info, data)
 
 def hifi_run(file_name, chr_name):
