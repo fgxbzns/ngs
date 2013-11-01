@@ -227,7 +227,7 @@ def output_data_filter(file_name, start_line, end_line):
 
 def get_args():
 	desc="variation call"
-	usage = "snpPick_fish -s sam_file -c chr -m update \n snpPick_fish -c chr -m output -b startLine -e endLine" 
+	usage = "snpPick_fish -s sam_file -c chr -m update -d db_name -q qscore \nsnpPick_fish -c chr -m output -b startLine -e endLine -d db_name -q qscore" 
 	parser = OptionParser(usage = usage)
 	parser.add_option("-s", "--sam", type="string", dest="samFile",help = "Input File Name", default="null")
 	parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="null")

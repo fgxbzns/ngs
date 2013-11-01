@@ -122,4 +122,49 @@ if __name__=='__main__':
 	print "abdcd"
 	if os.path.exists("haplotype.txt"):
 		print "a"
+
+
+
+
+
+#!/usr/bin/env python
+
+import sys
+import os
+
+if len(sys.argv) != 3:
+    print "usage: %s fastq bcfile" % sys.argv[0]
+    sys.exit(1)
+
+outpath=os.path.dirname(sys.argv[2])    
+seq={}
+for x in open(sys.argv[2],'r'):
+    v=x.rstrip('\r\n').split(' ')
+    seq[v[1]]=[0,v[0],open(os.path.join(outpath,v[0]+'.txt'),'w')]
+
+with open(sys.argv[1],'r') as fi:
+    k=0
+    while True:
+        k+=1
+        if k%1000==0:
+            print 'Processing sequence '+str(k)
+        row1=fi.readline()
+        if not row1:
+            break
+        row2=fi.readline()
+        row3=fi.readline()
+        row4=fi.readline()
+        for i in range(5,16):
+            s=row2[:i]
+            if s in seq:
+                entry=seq[s]
+                entry[0]+=1
+                entry[2].write(''.join([row1,row2,row3,row4]))
+                break
+
+with open(os.path.join(outpath,'count.txt'),'w') as fo:
+    for key,val in seq.items():
+        fo.write('%s\t%s\t%d\n' % (val[1],key,val[0]))
+        val[2].close()
+
 	
