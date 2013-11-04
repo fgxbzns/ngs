@@ -54,6 +54,7 @@ alias node2='ssh guoxing@10.20.1.224 -p 25'
 alias node2sftp='sftp guoxing@10.20.1.224 -p 23'
 alias node3='ssh -l lima -p 26 10.20.1.224'
 alias node3sftp='sftp -l lima -p 26 10.20.1.224'
+alias lima='ssh lima@192.168.1.106'
 
 
 # Alias's to modified commands
