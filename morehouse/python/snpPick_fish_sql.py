@@ -225,6 +225,28 @@ def output_data_filter(file_name, start_line, end_line):
 				print >> output_file, item[0], item[1], item[2], item[3], item[4], item[5], item[6], temp_list[3], temp_list[2], temp_list[1], temp_list[0] 
 	print "total snp number :", current_row
 
+def output_filtered_data(start_line, end_line):
+	start_line = int(start_line)
+	end_line = int(end_line)
+	total_row_number = end_line - start_line
+	if total_row_number <= 0:
+		print "error in start point and end point"
+		sys.exit(0)
+	
+	elif total_row_number >= 1000:
+		number_of_subfile = 10
+		total_number_ceilling = int(math.ceil(float(total_row_number)/100)*100)
+		print "total_number_ceilling: ", total_number_ceilling
+		num_in_each_file = total_number_ceilling/number_of_subfile
+		print "total_number_ceilling in each: ", num_in_each_file
+		#seed_removed_in_last_subfile = int(math.fmod(len(seed_hetero_sorted_list), seed_removed_in_each_subfile))
+		for i in range(number_of_subfile):
+			if i != number_of_subfile - 1:
+				print i, start_line, start_line + num_in_each_file - 1
+			else:
+				print i, start_line, end_line
+			start_line = start_line + num_in_each_file
+
 def get_args():
 	desc="variation call"
 	usage = "snpPick_fish -s sam_file -c chr -m update -d db_name -q qscore \nsnpPick_fish -c chr -m output -b startLine -e endLine -d db_name -q qscore" 
@@ -252,10 +274,10 @@ if __name__=='__main__':
 	
 	global db_name
 	# gx
-	#db_name = "/home/guoxing/disk2/ngs_" + chr_name + ".db"
+	db_name = "/home/guoxing/disk2/ngs_" + chr_name + ".db"
 	# lm
-	db_name = options.dbname
-	db_name = "/home/lima/disk2_node3/" + db_name + ".db"
+	#db_name = options.dbname
+	#db_name = "/home/lima/disk2_node3/" + db_name + ".db"
 	
 	global quality_score_threshold
 	quality_score_threshold = options.qscore	
@@ -285,6 +307,11 @@ if __name__=='__main__':
 		file_name = "zebra_" + chr_name + "_" + start_line + "_" + end_line + "_filtered.txt"
 		#print file_name
 		output_data_filter(file_name, start_line, end_line)
+		output_filtered_data(start_line, end_line)
+	elif (mode == "mf"):
+		start_line = options.startLine
+		end_line = options.endLine
+		output_filtered_data(start_line, end_line)
 	
 	elapse_time = time.time() - start_time
 	print "run time: " + str(format(elapse_time, "0.3f")) + "s"

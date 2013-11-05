@@ -109,7 +109,7 @@ def pair_end_indel(sam_file, chr_name):
 				try:
 					read_ID_second = elements_second[0].strip()
 					chrName_second = elements_second[2].strip()
-					insert_size_second = abs(int(elements_second[8].strip()))			#  insert_size for second read is negative
+					insert_size_second = abs(int(elements_second[8].strip()))		#  insert_size for second read is negative
 					indel_info_second = elements_second[5].strip()
 					read_seq_second = elements_second[9].strip()
 					qual_line_second = elements_second[10].strip()
@@ -148,7 +148,7 @@ def single_end_indel(sam_file, chr_name):
 	total_reads_num = 0
 	reads_after_process_total_number = 0
 
-	while sam_line_first!='':
+	while sam_line_first != '':
 		keep_this_pair = False	
 		if not sam_line_first.startswith("@"):
 			total_reads_num += 1
@@ -276,20 +276,6 @@ def seperate_by_chr(sam_file):
 	print cmd
 	os.system(cmd)
 
-def get_args():
-	desc="variation call"
-	usage = "snpPick_fish -s sam_file" 
-	parser = OptionParser(usage = usage)
-	parser.add_option("-s", "--sam", type="string", dest="samFile",help = "Input File Name", default="null")
-	parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="chr")
-	parser.add_option("-m", "--mode", type="string", dest="mode",help = "", default="null")
-	(options, args) = parser.parse_args()
-	if options.samFile == "null":
-		print "parameters missing..."
-		print usage
-		sys.exit(1)
-	return options
-
 def sam_process(sam_file, chr_name, mode):
 	if mode == "single":
 		single_end_indel(sam_file, chr_name)
@@ -298,8 +284,24 @@ def sam_process(sam_file, chr_name, mode):
 	elif mode == "pair_mutiple":
 		pair_end_indel_multiple()
 	elif mode == "sep_chr":
-		seperate_by_chr(sam_file, chr_name)
-	
+		seperate_by_chr(sam_file)
+	elif mode == "combine":
+		combine_files()
+
+def get_args():
+	desc="variation call"
+	usage = "snpPick_fish -s sam_file -c chr -m mode" 
+	parser = OptionParser(usage = usage)
+	parser.add_option("-s", "--sam", type="string", dest="samFile",help = "Input File Name", default="null")
+	parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="chr")
+	parser.add_option("-m", "--mode", type="string", dest="mode",help = "", default="null")
+	(options, args) = parser.parse_args()
+	if options.mode == "null":
+		print "parameters missing..."
+		print usage
+		sys.exit(1)
+	return options
+
 if __name__=='__main__':
 	
 	global parameter

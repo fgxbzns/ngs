@@ -9,6 +9,12 @@ from ctypes import *
 #from hifiAccuCheck_v2 import hifiAccuCheck
 
 
+
+"""
+check if an element is in a group, dict is much faster than list
+***********************dict time is: 0.0000009537s
+***********************list time is: 0.0000209808s
+"""
 """cannot import other files"""
 
 file_path = "/home/guoxing/disk2/solid/common_files/"
