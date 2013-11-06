@@ -37,12 +37,6 @@ class reads:
 
 def get_ref_geno(chr_name):
 	chr_seq = ""
-	#ref_path = "/home/guoxing/disk2/zebra_fish/ref_genome/"
-	#ref_file = ref_path + "danRer7_" + chr_name + ".fa"
-	#ref_file = ref_path + "lm_" + chr_name + ".fa"
-	
-	ref_path = "/home/lima/Public/"
-	ref_file = ref_path + "chrX.fa"
 	
 	#print ref_file
 	input_file = open(ref_file, "r")
@@ -52,7 +46,6 @@ def get_ref_geno(chr_name):
 	print "total base number: ", len(chr_seq)
 	return chr_seq
 
-		
 def variant_call_pair_end(sam_file):
 	"""the sequence pair has already been processed
 	now treat the read as single end """
@@ -95,7 +88,6 @@ def variant_call_pair_end(sam_file):
 				if (insert_size_first > insert_size_lower_bond) and (insert_size_first <= insert_size_upper_bond):
 				#if True:
 					if True:
-						#if True:
 						if chrName_first.startswith(chr_name): 
 						#if chrName_first == chr_name: 
 							# first read
@@ -152,20 +144,11 @@ def variant_call_pair_end(sam_file):
 	return total_reads_num
 
 def snpPick(sam_file):
-	start = time.time()		
-	
-	global sam_file_name
-	
+	global sam_file_name	
 	sam_file_name = sam_file[:(len(sam_file)-4)]
-	
 	print "sam file: ", sam_file_name
-
 	total_reads_num = variant_call_pair_end(sam_file)
 	print "total_reads_num", total_reads_num
-	
-	end = time.time()
-	run_time = str(format((end - start), "0.3f"))
-	print "run time is: " + run_time + "s"
 
 def get_data(db_name, table_name, start_line, end_line):
 	con = lite.connect(db_name)
@@ -204,6 +187,7 @@ def output_data(file_name, start_line, end_line):
 	print "total snp number :", current_row
 
 def output_data_filter(file_name, start_line, end_line):
+	# output data with small total number
 	total_row_number = int(end_line) - int(start_line)
 	if total_row_number <= 0:
 		print "error in start point and end point"
@@ -225,27 +209,70 @@ def output_data_filter(file_name, start_line, end_line):
 				print >> output_file, item[0], item[1], item[2], item[3], item[4], item[5], item[6], temp_list[3], temp_list[2], temp_list[1], temp_list[0] 
 	print "total snp number :", current_row
 
+def data_filter(start_line, end_line):
+	# prepare data portion for output_filtered_data
+	start_time = time.time()
+	total_row_number = int(end_line) - int(start_line)
+	data_list = []
+	percentage_of_total = 0
+	current_row = 0	
+	rows = get_data(db_name, table_name, str(start_line), str(end_line))
+	for item in rows:
+		temp_list = [int(x) for x in item[3:7]]
+		if temp_list.count(0) < 3:
+			temp_list.sort()
+			current_percent = int(float(total_row_number * percentage_of_total)/100)
+			if current_row == current_percent:
+				print "current progress: ", percentage_of_total, "current row:", current_row + int(start_line)
+				percentage_of_total += 10			
+			current_row += 1
+			data_list.append(list((item[0], item[1], item[2], item[3], item[4], item[5], item[6], temp_list[3], temp_list[2], temp_list[1], temp_list[0])))
+	elapse_time = time.time() - start_time
+	print "time: " + str(format(elapse_time, "0.3f")) + "s"
+	return data_list 
+
 def output_filtered_data(start_line, end_line):
+	file_name = chr_name + "_" + start_line + "_" + end_line + "_filtered.txt"
+	total_snp_num = 0
 	start_line = int(start_line)
 	end_line = int(end_line)
 	total_row_number = end_line - start_line
-	if total_row_number <= 0:
-		print "error in start point and end point"
-		sys.exit(0)
-	
-	elif total_row_number >= 1000:
-		number_of_subfile = 10
-		total_number_ceilling = int(math.ceil(float(total_row_number)/100)*100)
-		print "total_number_ceilling: ", total_number_ceilling
-		num_in_each_file = total_number_ceilling/number_of_subfile
-		print "total_number_ceilling in each: ", num_in_each_file
-		#seed_removed_in_last_subfile = int(math.fmod(len(seed_hetero_sorted_list), seed_removed_in_each_subfile))
-		for i in range(number_of_subfile):
-			if i != number_of_subfile - 1:
-				print i, start_line, start_line + num_in_each_file - 1
-			else:
-				print i, start_line, end_line
-			start_line = start_line + num_in_each_file
+	with open(currentPath + file_name, "w") as output_file:
+		print >> output_file, "pos", "chr", "ref_allele", "A", "T", "C", "G"
+		if total_row_number <= 0:
+			print "error in start point and end point"
+			sys.exit(0)
+		elif total_row_number >= 100000:
+			number_of_subfile = 10
+			total_number_ceilling = int(math.ceil(float(total_row_number)/100)*100)
+			print "total_number_ceilling: ", total_number_ceilling
+			num_in_each_file = total_number_ceilling/number_of_subfile
+			print "total_number_ceilling in each: ", num_in_each_file
+			#seed_removed_in_last_subfile = int(math.fmod(len(seed_hetero_sorted_list), seed_removed_in_each_subfile))
+			for i in range(number_of_subfile):
+				if i != number_of_subfile - 1:
+					print "processing ", i, start_line, start_line + num_in_each_file - 1
+					data_list = data_filter(start_line, start_line + num_in_each_file - 1)
+					print "filtered snp number: ", len(data_list)
+					total_snp_num += len(data_list)
+					for data in data_list:
+						print >> output_file, " ".join(str(x) for x in data)
+				else:
+					print "processing ", i, start_line, end_line
+					data_list = data_filter(start_line, end_line)
+					print "filtered snp number: ", len(data_list)
+					total_snp_num += len(data_list)
+					for data in data_list:
+						print >> output_file, " ".join(str(x) for x in data)
+				start_line = start_line + num_in_each_file
+		else:
+			print "processing ", i, start_line, end_line
+			data_list = data_filter(start_line, end_line)
+			print "filtered snp number: ", len(data_list)
+			total_snp_num += len(data_list)
+			for data in data_list:
+				print >> output_file, " ".join(str(x) for x in data)
+	print "total_snp_num: ", total_snp_num
 
 def get_args():
 	desc="variation call"
@@ -267,20 +294,34 @@ def get_args():
 	
 if __name__=='__main__':
 	start_time = time.time()
+	
+	global db_name
+	global ref_file
 	options = get_args()
 	
 	chr_name = options.chrName
+	db_name = options.dbname
 	mode = options.mode	
 	
-	global db_name
 	# gx
-	db_name = "/home/guoxing/disk2/ngs_" + chr_name + ".db"
+	#db_name = "/home/guoxing/disk2/" + db_name + ".db"
+	#ref_path = "/home/guoxing/disk2/zebra_fish/ref_genome/"
+	#ref_file = ref_path + "danRer7_" + chr_name + ".fa"
+	#ref_file = ref_path + "lm_" + chr_name + ".fa"
 	# lm
-	#db_name = options.dbname
-	#db_name = "/home/lima/disk2_node3/" + db_name + ".db"
+	db_name = "/home/lima/disk2_node3/" + db_name + ".db"
+	ref_path = "/home/lima/Public/"
+	ref_file = ref_path + "chrX.fa"
 	
+	# wli
+	"""
+	db_name = "/home/wli/nfs1_node2/" + db_name + ".db"
+	ref_path = "/home/wli/nfs1_node2/ref_genome/"
+	ref_file = ref_path + "danRer7_" + chr_name + ".fa"
+	"""
 	global quality_score_threshold
-	quality_score_threshold = options.qscore	
+	quality_score_threshold = options.qscore
+	print "quality_score_threshold: ", quality_score_threshold	
 
 	global table_name
 	table_name = "zebra"
@@ -298,13 +339,13 @@ if __name__=='__main__':
 	elif (mode == "output"):
 		start_line = options.startLine
 		end_line = options.endLine
-		file_name = "zebra_" + chr_name + "_" + start_line + "_" + end_line + ".txt"
+		file_name = chr_name + "_" + start_line + "_" + end_line + ".txt"
 		#print file_name
 		output_data(file_name, start_line, end_line)
 	elif (mode == "filter"):
 		start_line = options.startLine
 		end_line = options.endLine
-		file_name = "zebra_" + chr_name + "_" + start_line + "_" + end_line + "_filtered.txt"
+		file_name = chr_name + "_" + start_line + "_" + end_line + "_filtered.txt"
 		#print file_name
 		output_data_filter(file_name, start_line, end_line)
 		output_filtered_data(start_line, end_line)
