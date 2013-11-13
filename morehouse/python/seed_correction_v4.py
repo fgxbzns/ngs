@@ -766,7 +766,8 @@ def get_refID():
 	print >> hifi_new_output, data_dict.seed_title_info
 	seed_dict_from_hifi = {}
 	for pos in hifi_dict.keys():
-		if (pos in refID_dict and len(refID_dict[pos][2]) <= 50) or (pos in refID_dict and len(refID_dict[pos][4]) <= 50):
+		#if (pos in refID_dict and len(refID_dict[pos][2]) <= 50) or (pos in refID_dict and len(refID_dict[pos][4]) <= 50):
+		if (pos in refID_dict and len(refID_dict[pos][2]) <= 2) or (pos in refID_dict and len(refID_dict[pos][4]) <= 2):
 			pass
 			#a = hifi_dict[pos]
 			#print >> hifi_new_output, a[0], a[1], a[3], a[2], 
@@ -792,6 +793,7 @@ def get_refID():
 	"""" check overlapping of refIDs of adjacent snps"""
 	refID_sorted_list = sort_dict_by_key(refID_dict)
 	all_zero = 0
+	all_zero_dict = {}
 	for i in range(len(refID_sorted_list)):
 		pos = refID_sorted_list[i][0]
 		current_snp_data = refID_sorted_list[i][1]
@@ -802,20 +804,99 @@ def get_refID():
 				p_refID_A_common = [id for id in current_snp_data[2] if id in previous_snp_data[2]]
 				p_refID_B_common = [id for id in current_snp_data[4] if id in previous_snp_data[4]]
 				next_snp_data = refID_sorted_list[i+1][1]
-				n_refID_A_common = [id for id in current_snp_data[2] if id in previous_snp_data[2]]
-				n_refID_B_common = [id for id in current_snp_data[4] if id in previous_snp_data[4]]
+				n_refID_A_common = [id for id in current_snp_data[2] if id in next_snp_data[2]]
+				n_refID_B_common = [id for id in current_snp_data[4] if id in next_snp_data[4]]
 				
 				print pos, window_info_dict[pos][6], "pre A", len(p_refID_A_common), "pre B", len(p_refID_B_common), \
 				"next A", len(n_refID_A_common), "next B", len(n_refID_B_common)
 				
 				if len(p_refID_A_common) == 0 and len(p_refID_B_common) == 0 and len(n_refID_A_common) == 0 and len(n_refID_B_common) == 0:
 					all_zero += 1
+					all_zero_dict[pos] = ""
 
 	print "all_zero", all_zero
+	print "seed_dict_from_hifi before:", len(seed_dict_from_hifi)
+	remove_all_zero_dict = dict_substract(seed_dict_from_hifi, all_zero_dict)
+	print "remove_all_zero_dict after:", len(remove_all_zero_dict)
 	
+	hifi_new_output = open("non_one_remove_all_zero.txt", 'w')
+	print >> hifi_new_output, data_dict.seed_title_info
+	for pos in remove_all_zero_dict:
+		print >> hifi_new_output, list_to_line(hifi_dict[pos])
+	hifi_new_output.close()
 	seed_std_compare("seed_from_hifi.txt", chr_name)
 	
+	print "**************** group here"
+	i = 0
+	temp_continus_snp = []
+	n_refID_A_common = []
+	n_refID_B_common = []
 	
+	seed_dict_from_linkage = {}
+	
+	while i < (len(refID_sorted_list)-1):
+		pos = refID_sorted_list[i][0]
+		current_snp_data = refID_sorted_list[i][1]	
+		next_snp_data = refID_sorted_list[i+1][1]
+		if len(temp_continus_snp) == 0:
+			n_refID_A_common = [id for id in current_snp_data[2] if id in next_snp_data[2]]
+			print "current_snp_data[2]", current_snp_data[2]
+			print "current_snp_data[4]", current_snp_data[4]
+			print "next_snp_data[2]", next_snp_data[2]
+			print "next_snp_data[4]", next_snp_data[4]
+			
+			
+			#print "n_refID_A_common", n_refID_A_common
+			n_refID_B_common = [id for id in current_snp_data[4] if id in next_snp_data[4]]
+			#print "n_refID_B_common", n_refID_B_common
+			#n_refID_A_common = [id for id in current_snp_data[2]] if len(n_refID_A_common) == 0 else n_refID_A_common
+			#n_refID_B_common = [id for id in current_snp_data[4]] if len(n_refID_B_common) == 0 else n_refID_B_common
+			# to keep a copy of the last common refID of this group. n_refID_A/B_common may become zero in the last check
+			last_common_refID_A = n_refID_A_common
+			last_common_refID_B = n_refID_B_common
+		else:
+			last_common_refID_A = n_refID_A_common
+			last_common_refID_B = n_refID_B_common
+			n_refID_A_common = [id for id in n_refID_A_common if id in next_snp_data[2]]
+			n_refID_B_common = [id for id in n_refID_B_common if id in next_snp_data[4]]
+		
+		if len(n_refID_A_common) > 0 and len(n_refID_B_common) > 0:	# use and to make sure both A and B have common refID
+			temp_continus_snp.append(pos)
+			i += 1
+		else:
+			if len(temp_continus_snp) > 0:
+				for pos in temp_continus_snp:
+					print pos, window_info_dict[pos][6], refID_dict[pos][2], refID_dict[pos][4]
+				
+				next_pos = refID_sorted_list[i+1][0]	# to include the last pos in the group
+				print next_pos, window_info_dict[next_pos][6], refID_dict[next_pos][2], refID_dict[next_pos][4]
+				print temp_continus_snp, last_common_refID_A, last_common_refID_B
+			
+			if len(temp_continus_snp) > 5:
+				for pos in temp_continus_snp:
+					seed_dict_from_linkage[pos] = list_to_line(hifi_dict[pos])
+					#seed_dict_from_linkage.append(list_to_line(hifi_dict[pos])) 
+			
+			temp_continus_snp = []	
+			n_refID_A_common = []
+			n_refID_B_common = []
+			last_common_refID_A = []
+			last_common_refID_B = []
+			i += 1
+			print ""
+	
+	print "seed_dict_from_hifi before:", len(seed_dict_from_hifi)
+	temp_dict = dict_substract(seed_dict_from_hifi, seed_dict_from_linkage)
+	print "temp_dict before:", len(temp_dict)
+	temp_list = sort_dict_by_key(temp_dict)
+	
+	hifi_new_output = open("hifi_from_linkage.txt", 'w')
+	print >> hifi_new_output, data_dict.seed_title_info
+		
+	for pos in temp_list:
+		print >> hifi_new_output, list_to_line(pos[1])
+	hifi_new_output.close()
+	hifiAccuCheck("hifi_from_linkage.txt", chr_name)
 	
 def seed_recover_extract_ref_cluster():
 	recovered_seed_dict = {}

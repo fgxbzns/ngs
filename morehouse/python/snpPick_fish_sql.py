@@ -219,11 +219,12 @@ def data_filter(start_line, end_line):
 	rows = get_data(db_name, table_name, str(start_line), str(end_line))
 	for item in rows:
 		temp_list = [int(x) for x in item[3:7]]
-		if temp_list.count(0) < 3:
+		if True: # wli
+		#if temp_list.count(0) < 3:	# lima
 			temp_list.sort()
 			current_percent = int(float(total_row_number * percentage_of_total)/100)
 			if current_row == current_percent:
-				print "current progress: ", percentage_of_total, "current row:", current_row + int(start_line)
+				#print "current progress: ", percentage_of_total, "current row:", current_row + int(start_line)
 				percentage_of_total += 10			
 			current_row += 1
 			data_list.append(list((item[0], item[1], item[2], item[3], item[4], item[5], item[6], temp_list[3], temp_list[2], temp_list[1], temp_list[0])))
@@ -248,25 +249,17 @@ def output_filtered_data(start_line, end_line):
 			print "total_number_ceilling: ", total_number_ceilling
 			num_in_each_file = total_number_ceilling/number_of_subfile
 			print "total_number_ceilling in each: ", num_in_each_file
-			#seed_removed_in_last_subfile = int(math.fmod(len(seed_hetero_sorted_list), seed_removed_in_each_subfile))
 			for i in range(number_of_subfile):
-				if i != number_of_subfile - 1:
-					print "processing ", i, start_line, start_line + num_in_each_file - 1
-					data_list = data_filter(start_line, start_line + num_in_each_file - 1)
-					print "filtered snp number: ", len(data_list)
-					total_snp_num += len(data_list)
-					for data in data_list:
-						print >> output_file, " ".join(str(x) for x in data)
-				else:
-					print "processing ", i, start_line, end_line
-					data_list = data_filter(start_line, end_line)
-					print "filtered snp number: ", len(data_list)
-					total_snp_num += len(data_list)
-					for data in data_list:
-						print >> output_file, " ".join(str(x) for x in data)
+				current_end_line = start_line + num_in_each_file - 1 if i != number_of_subfile - 1 else end_line
+				print "processing ", i, start_line, current_end_line
+				data_list = data_filter(start_line, current_end_line)
+				print "filtered snp number: ", len(data_list)
+				total_snp_num += len(data_list)
+				for data in data_list:
+					print >> output_file, " ".join(str(x) for x in data)
 				start_line = start_line + num_in_each_file
 		else:
-			print "processing ", i, start_line, end_line
+			print "processing ", start_line, end_line
 			data_list = data_filter(start_line, end_line)
 			print "filtered snp number: ", len(data_list)
 			total_snp_num += len(data_list)
@@ -284,7 +277,7 @@ def get_args():
 	parser.add_option("-b", "--startLine", type="string", dest="startLine",help = "start line", default="null")
 	parser.add_option("-e", "--endLine", type="string", dest="endLine",help = "end line", default="null")
 	parser.add_option("-d", "--dbname", type="string", dest="dbname",help = "db name", default="null")
-	parser.add_option("-q", "--qscore", type="int", dest="qscore",help = "qscore", default="40")
+	parser.add_option("-q", "--qscore", type="int", dest="qscore",help = "qscore", default="30")
 	(options, args) = parser.parse_args()
 	if options.mode == "null" or options.chrName == "null":
 		print "parameters missing..."
