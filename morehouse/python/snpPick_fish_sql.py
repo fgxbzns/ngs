@@ -267,6 +267,40 @@ def output_filtered_data(start_line, end_line):
 				print >> output_file, " ".join(str(x) for x in data)
 	print "total_snp_num: ", total_snp_num
 
+def compare_filtered_data(a_file_name, b_file_name):
+	a_file = open(currentPath + a_file_name, "r")
+	b_file = open(currentPath + b_file_name, "r")
+	
+	# skip the firs line
+	a_line = a_file.readline()
+	b_line = b_file.readline()
+	a_line = a_file.readline().strip()
+	b_line = b_file.readline().strip()
+	
+	output_name = a_file_name + "_combine_" + b_file_name
+	with open(currentPath + output_name, "w") as output_file:
+		while a_line != "" or b_line != "":
+			if a_line != "" and b_line == "":
+				print >> output_file, " ".join(a_line.split()[:7])
+				a_line = a_file.readline().strip()
+			if a_line == "" and b_line != "":
+				print >> output_file, " ".join(a_line.split()[:3]), " ".join(b_line.split()[3:7])
+				b_line = b_file.readline().strip()
+			if a_line != "" and b_line != "":
+				a_elements = a_line.split()
+				b_elements = b_line.split()
+				a_pos = int(a_elements[0])
+				b_pos = int(b_elements[0])
+				if a_pos < b_pos:
+					print >> output_file, " ".join(a_line.split()[:7])
+					a_line = a_file.readline().strip()
+				elif a_pos > b_pos:
+					print >> output_file, " ".join(a_line.split()[:3]), " ".join(b_line.split()[3:7])
+					b_line = b_file.readline().strip()
+		 		else:
+		 			pass
+
+
 def get_args():
 	desc="variation call"
 	usage = "snpPick_fish -s sam_file -c chr -m update -d db_name -q qscore \nsnpPick_fish -c chr -m output -b startLine -e endLine -d db_name -q qscore" 

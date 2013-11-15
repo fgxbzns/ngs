@@ -872,7 +872,7 @@ def get_refID():
 				print next_pos, window_info_dict[next_pos][6], refID_dict[next_pos][2], refID_dict[next_pos][4]
 				print temp_continus_snp, last_common_refID_A, last_common_refID_B
 			
-			if len(temp_continus_snp) > 5:
+			if len(temp_continus_snp) > 2:
 				for pos in temp_continus_snp:
 					seed_dict_from_linkage[pos] = list_to_line(hifi_dict[pos])
 					#seed_dict_from_linkage.append(list_to_line(hifi_dict[pos])) 
