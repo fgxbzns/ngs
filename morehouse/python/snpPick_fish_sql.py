@@ -268,6 +268,7 @@ def output_filtered_data(start_line, end_line):
 	print "total_snp_num: ", total_snp_num
 
 def compare_filtered_data(a_file_name, b_file_name):
+
 	a_file = open(currentPath + a_file_name, "r")
 	b_file = open(currentPath + b_file_name, "r")
 	
@@ -284,7 +285,7 @@ def compare_filtered_data(a_file_name, b_file_name):
 				print >> output_file, " ".join(a_line.split()[:7])
 				a_line = a_file.readline().strip()
 			if a_line == "" and b_line != "":
-				print >> output_file, " ".join(a_line.split()[:3]), " ".join(b_line.split()[3:7])
+				print >> output_file, " ".join(b_line.split()[:3]), " ", " ", " ", " ", " ".join(b_line.split()[3:7])
 				b_line = b_file.readline().strip()
 			if a_line != "" and b_line != "":
 				a_elements = a_line.split()
@@ -292,14 +293,19 @@ def compare_filtered_data(a_file_name, b_file_name):
 				a_pos = int(a_elements[0])
 				b_pos = int(b_elements[0])
 				if a_pos < b_pos:
-					print >> output_file, " ".join(a_line.split()[:7])
+					print >> output_file, " ".join(a_elements[:7])
 					a_line = a_file.readline().strip()
 				elif a_pos > b_pos:
-					print >> output_file, " ".join(a_line.split()[:3]), " ".join(b_line.split()[3:7])
+					print >> output_file, " ".join(a_elements[:3]), " ".join(b_elements[3:7])
 					b_line = b_file.readline().strip()
 		 		else:
-		 			pass
-
+		 			# if the index of zero is different, the snp is different
+		 			a_index_of_zero = [i for i in range(len(a_elements)) if a_elements[i] == "0"]
+		 			b_index_of_zero = [i for i in range(len(b_elements)) if b_elements[i] == "0"]
+		 			if a_index_of_zero != b_index_of_zero:	
+			 			print >> output_file, " ".join(a_elements[:3]), " ".join(a_elements[3:7]), " ".join(b_elements[3:7])
+			 	a_line = a_file.readline().strip()
+				b_line = b_file.readline().strip()
 
 def get_args():
 	desc="variation call"
@@ -312,6 +318,10 @@ def get_args():
 	parser.add_option("-e", "--endLine", type="string", dest="endLine",help = "end line", default="null")
 	parser.add_option("-d", "--dbname", type="string", dest="dbname",help = "db name", default="null")
 	parser.add_option("-q", "--qscore", type="int", dest="qscore",help = "qscore", default="30")
+	
+	parser.add_option("-x", "--afile", type="string", dest="afile",help = "afile", default="null")
+	parser.add_option("-y", "--bfile", type="string", dest="bfile",help = "bfile", default="null")
+	
 	(options, args) = parser.parse_args()
 	if options.mode == "null" or options.chrName == "null":
 		print "parameters missing..."
@@ -331,15 +341,18 @@ if __name__=='__main__':
 	mode = options.mode	
 	
 	# gx
-	#db_name = "/home/guoxing/disk2/" + db_name + ".db"
-	#ref_path = "/home/guoxing/disk2/zebra_fish/ref_genome/"
-	#ref_file = ref_path + "danRer7_" + chr_name + ".fa"
-	#ref_file = ref_path + "lm_" + chr_name + ".fa"
+	
+	db_name = "/home/guoxing/disk2/" + db_name + ".db"
+	ref_path = "/home/guoxing/disk2/zebra_fish/ref_genome/"
+	ref_file = ref_path + "danRer7_" + chr_name + ".fa"
+	ref_file = ref_path + "lm_" + chr_name + ".fa"
+	
+	"""
 	# lm
 	db_name = "/home/lima/disk2_node3/" + db_name + ".db"
 	ref_path = "/home/lima/Public/"
 	ref_file = ref_path + "chrX.fa"
-	
+	"""
 	# wli
 	"""
 	db_name = "/home/wli/nfs1_node2/" + db_name + ".db"
@@ -380,6 +393,10 @@ if __name__=='__main__':
 		start_line = options.startLine
 		end_line = options.endLine
 		output_filtered_data(start_line, end_line)
+	elif (mode == "compare"):	
+		a_file_name = options.afile
+		b_file_name = options.bfile	
+		compare_filtered_data(a_file_name, b_file_name)
 	
 	elapse_time = time.time() - start_time
 	print "run time: " + str(format(elapse_time, "0.3f")) + "s"
