@@ -844,8 +844,7 @@ def get_refID():
 			print "current_snp_data[4]", current_snp_data[4]
 			print "next_snp_data[2]", next_snp_data[2]
 			print "next_snp_data[4]", next_snp_data[4]
-			
-			
+						
 			#print "n_refID_A_common", n_refID_A_common
 			n_refID_B_common = [id for id in current_snp_data[4] if id in next_snp_data[4]]
 			#print "n_refID_B_common", n_refID_B_common
@@ -872,7 +871,7 @@ def get_refID():
 				print next_pos, window_info_dict[next_pos][6], refID_dict[next_pos][2], refID_dict[next_pos][4]
 				print temp_continus_snp, last_common_refID_A, last_common_refID_B
 			
-			if len(temp_continus_snp) > 2:
+			if len(temp_continus_snp) > 15:
 				for pos in temp_continus_snp:
 					seed_dict_from_linkage[pos] = list_to_line(hifi_dict[pos])
 					#seed_dict_from_linkage.append(list_to_line(hifi_dict[pos])) 
@@ -959,7 +958,7 @@ def seed_expand_geno():
 	#print "seed_geno_difference_dict", len(seed_geno_difference_dict)
 	
 	seed_geno_difference_sorted_list = sort_dict_by_key(seed_geno_difference_dict)
-	#
+	
 	random_geno_seed_dict = {}
 	geno_seed_selected_number = 2000
 	for i in range (0, geno_seed_selected_number):
@@ -1095,8 +1094,7 @@ def error_seed_distance(seed_dict, same_to_B_dict):
 
 
 def seed_verify():
-	
-	
+		
 	experiment_seed_file_name = "haplotype_expanded.txt_1822_100"	#original seed from experiment, hifh accuracy
 	middle_expand_seed_file = "haplotype.txt_4247" #"haplotype.txt_4942_0"	#"haplotype.txt_4574"		# seed expanded from seed_ori
 	"""current seed file contains more expanded seed, which will be verified, haplotype.txt_8403_28"""
