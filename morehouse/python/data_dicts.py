@@ -38,7 +38,7 @@ class data_dicts:
         self.cluster_pos_dict = {}
           
         self.number_of_subfile = 10
-        self.ref_cycle_number = 3
+        self.cycle_number = 5
         
         self.maf_upper_bound = 0.5
         self.maf_lower_bound = 0.3
@@ -46,7 +46,9 @@ class data_dicts:
         self.cluster_pos_dict = {}
         
         # parameters for ref extract
-        self.ref_position_distance = 500000
+        #self.ref_position_distance = 500000
+       # self.ref_expand_range = 5
+        self.ref_position_distance = 50000
         self.ref_expand_range = 5
         self.remPercent = 0.6
         self.allele_new_percentage = 0.80
@@ -175,7 +177,7 @@ def load_hap_std(file_name):
     return hap_std_dict    
 
 def load_hifi_result(file_name, hifi_dict):
-    temp_data_dict = load_raw_data(file_name, raw_data_format)[1]
+    temp_data_dict = load_raw_data(file_name)[1]
     for position, elements in temp_data_dict.iteritems():        
         try:
             if position not in hifi_dict:

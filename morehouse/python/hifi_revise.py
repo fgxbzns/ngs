@@ -103,7 +103,7 @@ def output_genohomo(geno_file_name, seed_file_name):
 		else:
 			elements = line.strip().split()
 			if elements[2][0] == elements[2][1]:
-				print >> seed_new_file, elements[0], elements[1], elements[2][0], elements[2][1]
+				print >> seed_new_file, elements[0], elements[1], elements[2][0]#, elements[2][1]
 	geno_file.close()
 	seed_new_file.close()
 

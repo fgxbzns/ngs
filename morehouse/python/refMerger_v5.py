@@ -136,7 +136,7 @@ def make_hifi_files(remPercent):
 		#print len(hap_ref_sorted_list)
 		
 		hap_ref_size = len(hap_ref_dict)
-		for i in range(int(remPercent*hap_ref_size)):
+		for i in range(int(remPercent*hap_ref_size/100)):
 			if len(hap_ref_sorted_list) > 1:	
 				random_index = random.randrange(0,(len(hap_ref_sorted_list)-1))
 				position = hap_ref_sorted_list[random_index][0]
@@ -223,7 +223,13 @@ if __name__=='__main__':
 	haplotype_file = options.haplotypeFile
 	chr_name = options.chrName
 	remPercent = options.remPercent
+	start_time = time.time()
+	
 	refMerger(haplotype_file, chr_name, remPercent)
+	
+	elapsed_time = time.time() - start_time
+	print "Elapsed time is: " + str(format(elapsed_time, "0.3f")) + "s"
+	
 	
 	#file_name = "haplotype.txt"
 	#seed_std_compare(file_name, chr_name)

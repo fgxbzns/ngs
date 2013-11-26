@@ -128,7 +128,7 @@ def load_window_info(number_of_subfile):
 	print "total snp number in: ", len(window_info_dict) 
 	return window_info_dict
 
-def seed_error_remove(seed_dict):
+def seed_error_remove():
 	# reduce error seed from ori seed
 	#global seed_hetero_dict
 	#global seed_homo_dict
@@ -142,13 +142,13 @@ def seed_error_remove(seed_dict):
 	#seed_removed_in_last_subfile = int(math.fmod(len(seed_hetero_sorted_list), seed_removed_in_each_subfile))
 	#print "seed_removed_in_last_subfile: ", seed_removed_in_last_subfile
 		
-	seed_homo_sorted_list = [x for x in seed_homo_dict.iteritems()]
+	seed_homo_sorted_list = [x for x in data_dict.seed_homo_dict.iteritems()]
 	
 	#process_list = []
 	
 	print "seed_hetero_sorted_list", len(seed_hetero_sorted_list)
 	for file_number in range(number_of_subfile):
-		hap_subfile_name = seed_file_name + "_" + str(file_number) + ".txt"
+		hap_subfile_name = data_dict.seed_file_name + "_" + str(file_number) + ".txt"
 		output_subfile = open(currentPath + hap_subfile_name, "w")
 		print >> output_subfile, seed_title_info
 
@@ -172,13 +172,12 @@ def seed_error_remove(seed_dict):
 				position = seed_hetero_sorted_list[random_index][0]
 				del data_dict.seed_hetero_dict[position]
 				""" error, size of the sorted list will change each time after one element is deleted"""
-
 			except:
 				pass
 
 		print "seed_hetero_sorted_list new", len(seed_hetero_sorted_list)
 		
-		sub_seed_dict = dict_add(data_dict.seed_hetero_dict, seed_homo_dict)				
+		sub_seed_dict = dict_add(data_dict.seed_hetero_dict, data_dict.seed_homo_dict)				
 		sub_seed_list = sort_dict_by_key(sub_seed_dict)
 		
 		print len(sub_seed_list)
@@ -197,9 +196,9 @@ def seed_error_remove(seed_dict):
 	for process in process_list:
 	    process.join()
 		"""
-def seed_error_remove_extract(seed_dict):
+def seed_error_remove_extract():
 	revised_seed_dict = {}
-	hifi_dict = seed_dict.copy()
+	hifi_dict = data_dict.seed_dict.copy()
 	print "hifi_dict initial", len(hifi_dict)
 			
 	for file_number in range(number_of_subfile):
@@ -217,7 +216,7 @@ def seed_error_remove_extract(seed_dict):
 		max_value = seed.allele_dict[max_base]
 		seed.allele_new_percentage = float(max_value)/float(number_of_subfile)
 		""" ??? """
-		if seed.allele_new_percentage*100 >= 100 and max_base == seed.allele_ori and position in seed_dict:
+		if seed.allele_new_percentage*100 >= 100 and max_base == seed.allele_ori and position in data_dict.seed_dict:
 			seed.allele_new = max_base
 			revised_seed_dict[position] = seed
 		if position in data_dict.seed_hetero_dict and seed.allele_ori != max_base and seed.allele_new_percentage*100 >= 80:
@@ -229,7 +228,7 @@ def seed_error_remove_extract(seed_dict):
 			
 	#seed_hetero_new_file.close()	
 	print "new seed total number", len(revised_seed_dict)
-	output_revised_seed("haplotype_new.txt", revised_seed_dict)
+	output_revised_seed("haplotype_error_removed.txt", revised_seed_dict)
 	return revised_seed_dict
 
 def seed_recover(seed_dict, revised_seed_dict):
@@ -303,7 +302,7 @@ def seed_recover_extract(seed_hetero_dict, revised_seed_dict):
 			max_value = seed.allele_dict[max_base]
 			seed.allele_new_percentage = float(max_value)/float(number_of_subfile)
 			#if seed.allele_new_percentage*100 >= 90:	# ref
-			if seed.allele_new_percentage >= 0.7 and max_base == data_dict.seed_hetero_dict[position].allele_ori:	# ori
+			if seed.allele_new_percentage >= 0.9 and max_base == data_dict.seed_hetero_dict[position].allele_ori:	# ori
 				seed.allele_new = max_base
 				recovered_seed_dict[position] = seed
 	
@@ -532,10 +531,6 @@ def seed_recover_extract_ref():
 	
 	#hifi_run(file_name, chr_name)
 	#hifiAccuCheck("imputed_"+file_name, chr_name)
-	
-	
-	
-	
 
 	return revised_seed_dict
 
@@ -701,6 +696,8 @@ def seed_recover_extract_ref_1():
 
 
 def get_refID():
+		
+	log_file = open("refID_log.txt", 'w')
 	
 	refID_dict = {}
 	
@@ -758,7 +755,7 @@ def get_refID():
 	for pos, items in refID_dict.iteritems():
 		if True:
 		#if pos in same_to_B_dict:
-			print pos, items[0], items[1], len(items[2]), items[3], len(items[4]), items[5]	
+			print >> log_file, pos, items[0], items[1], len(items[2]), items[3], len(items[4]), items[5]	
 			#print pos, items[0], items[1], items[2], items[3], items[4], items[5]
 	
 	# output hifi results filtered by number of refID
@@ -779,13 +776,11 @@ def get_refID():
 	
 	output_revised_seed_dict("seed_from_hifi.txt", seed_dict_from_hifi)
 	
-	
-	
 	refID_A_count_sorted_list = sort_dict_by_value(refID_A_count_dict)
 	refID_B_count_sorted_list = sort_dict_by_value(refID_B_count_dict)
 	
 	for i in range(100):
-		print refID_A_count_sorted_list[i][0], refID_A_count_sorted_list[i][1], refID_B_count_sorted_list[i][0], refID_B_count_sorted_list[i][1]
+		print >> log_file, refID_A_count_sorted_list[i][0], refID_A_count_sorted_list[i][1], refID_B_count_sorted_list[i][0], refID_B_count_sorted_list[i][1]
 	
 	#hifiAccuCheck("non_one.txt", chr_name)
 	
@@ -807,7 +802,7 @@ def get_refID():
 				n_refID_A_common = [id for id in current_snp_data[2] if id in next_snp_data[2]]
 				n_refID_B_common = [id for id in current_snp_data[4] if id in next_snp_data[4]]
 				
-				print pos, window_info_dict[pos][6], "pre A", len(p_refID_A_common), "pre B", len(p_refID_B_common), \
+				print >> log_file, pos, window_info_dict[pos][6], "pre A", len(p_refID_A_common), "pre B", len(p_refID_B_common), \
 				"next A", len(n_refID_A_common), "next B", len(n_refID_B_common)
 				
 				if len(p_refID_A_common) == 0 and len(p_refID_B_common) == 0 and len(n_refID_A_common) == 0 and len(n_refID_B_common) == 0:
@@ -833,6 +828,7 @@ def get_refID():
 	n_refID_B_common = []
 	
 	seed_dict_from_linkage = {}
+	linkage_size_dict = []
 	
 	while i < (len(refID_sorted_list)-1):
 		pos = refID_sorted_list[i][0]
@@ -840,10 +836,10 @@ def get_refID():
 		next_snp_data = refID_sorted_list[i+1][1]
 		if len(temp_continus_snp) == 0:
 			n_refID_A_common = [id for id in current_snp_data[2] if id in next_snp_data[2]]
-			print "current_snp_data[2]", current_snp_data[2]
-			print "current_snp_data[4]", current_snp_data[4]
-			print "next_snp_data[2]", next_snp_data[2]
-			print "next_snp_data[4]", next_snp_data[4]
+			print >> log_file, "current_snp_data[2]", current_snp_data[2]
+			print >> log_file, "current_snp_data[4]", current_snp_data[4]
+			print >> log_file, "next_snp_data[2]", next_snp_data[2]
+			print >> log_file, "next_snp_data[4]", next_snp_data[4]
 						
 			#print "n_refID_A_common", n_refID_A_common
 			n_refID_B_common = [id for id in current_snp_data[4] if id in next_snp_data[4]]
@@ -865,13 +861,15 @@ def get_refID():
 		else:
 			if len(temp_continus_snp) > 0:
 				for pos in temp_continus_snp:
-					print pos, window_info_dict[pos][6], refID_dict[pos][2], refID_dict[pos][4]
+					print >> log_file, pos, window_info_dict[pos][6], refID_dict[pos][2], refID_dict[pos][4]
 				
 				next_pos = refID_sorted_list[i+1][0]	# to include the last pos in the group
-				print next_pos, window_info_dict[next_pos][6], refID_dict[next_pos][2], refID_dict[next_pos][4]
-				print temp_continus_snp, last_common_refID_A, last_common_refID_B
+				print >> log_file, next_pos, window_info_dict[next_pos][6], refID_dict[next_pos][2], refID_dict[next_pos][4]
+				print >> log_file, temp_continus_snp, last_common_refID_A, last_common_refID_B
+				
+				linkage_size_dict.append(len(temp_continus_snp))
 			
-			if len(temp_continus_snp) > 15:
+			if len(temp_continus_snp) > 150:
 				for pos in temp_continus_snp:
 					seed_dict_from_linkage[pos] = list_to_line(hifi_dict[pos])
 					#seed_dict_from_linkage.append(list_to_line(hifi_dict[pos])) 
@@ -882,20 +880,177 @@ def get_refID():
 			last_common_refID_A = []
 			last_common_refID_B = []
 			i += 1
-			print ""
+			print >> log_file, ""
+	
+	linkage_size_dict.sort()
+	print "min linkage size:",  linkage_size_dict[0]
+	print "max linkage size:",  linkage_size_dict[-1]
 	
 	print "seed_dict_from_hifi before:", len(seed_dict_from_hifi)
-	temp_dict = dict_substract(seed_dict_from_hifi, seed_dict_from_linkage)
+	#temp_dict = dict_substract(seed_dict_from_hifi, seed_dict_from_linkage)
+	temp_dict = seed_dict_from_linkage
+	#temp_dict = dict_add(data_dict.seed_dict, seed_dict_from_linkage)
 	print "temp_dict before:", len(temp_dict)
-	temp_list = sort_dict_by_key(temp_dict)
+	
+	temp_list = data_dict.seed_dict.keys() + temp_dict.keys()
+	temp_list.sort()
+	#temp_list = sort_dict_by_key(temp_dict)
 	
 	hifi_new_output = open("hifi_from_linkage.txt", 'w')
 	print >> hifi_new_output, data_dict.seed_title_info
 		
 	for pos in temp_list:
-		print >> hifi_new_output, list_to_line(pos[1])
+		#print >> hifi_new_output, list_to_line(pos[1])
+		#print >> hifi_new_output, data[1]
+		if pos in data_dict.seed_dict.keys():
+			print >> hifi_new_output, list_to_line(data_dict.seed_dict[pos])
+		if pos in temp_dict:
+			print >> hifi_new_output, temp_dict[pos]
+		
 	hifi_new_output.close()
 	hifiAccuCheck("hifi_from_linkage.txt", chr_name)
+	seed_std_compare("hifi_from_linkage.txt", chr_name)
+
+def add_seed_by_linkage():
+	refID_dict = {}
+	
+	refID_A_count_dict = {}
+	refID_B_count_dict = {}
+	
+	refID_list = data_dict.ref_title_info.strip().split()[2:]
+	print "refID_list", len(refID_list)
+	#print refID_list
+	
+	hifi_dict = {}
+	#hifi_dict = load_hifi_result("imputed_" + data_dict.seed_file, hifi_dict)
+	hifi_dict = load_raw_data("imputed_" + data_dict.seed_file)[1]
+	print "hifi_dict", len(hifi_dict)
+
+	window_info_dict = load_raw_data("window_" + data_dict.seed_file)[1]
+	print "window_info_dict", len(window_info_dict)
+	
+	for pos, elements in window_info_dict.iteritems():
+		window_info = elements[9:]
+		match_to_A_index_list = range(2, len(refID_list))
+		match_to_B_index_list = range(2, len(refID_list))
+		hifi_seq_A = ""
+		hifi_seq_B = ""
+		for window_pos in window_info:
+			window_pos = int(window_pos)
+			hifi_seq_A += hifi_dict[window_pos][2]
+			hifi_seq_B += hifi_dict[window_pos][3]
+			
+			match_to_A_index_list = [index for index in match_to_A_index_list if data_dict.hap_ref_dict[window_pos][index] == hifi_dict[window_pos][2]]
+			match_to_B_index_list = [index for index in match_to_B_index_list if data_dict.hap_ref_dict[window_pos][index] == hifi_dict[window_pos][3]]		
+		match_to_A_refID = [refID_list[index] for index in match_to_A_index_list]
+		match_to_B_refID = [refID_list[index] for index in match_to_B_index_list]
+		for refID in match_to_A_refID:
+			refID_A_count_dict[refID] = 0 if refID not in refID_A_count_dict else (refID_A_count_dict[refID] + 1)
+		for refID in match_to_B_refID:
+			refID_B_count_dict[refID] = 0 if refID not in refID_B_count_dict else (refID_B_count_dict[refID] + 1)
+		match_to_A_seq = ""
+		match_to_B_seq = ""
+		
+		for window_pos in window_info:
+			window_pos = int(window_pos)
+			if len(match_to_A_index_list) > 0:
+				match_to_A_seq += data_dict.hap_ref_dict[window_pos][match_to_A_index_list[0]]
+			if len(match_to_B_index_list) > 0:
+				match_to_B_seq += data_dict.hap_ref_dict[window_pos][match_to_B_index_list[0]]
+		#for index in match_to_A_index_list:
+			
+		#refID_dict[pos] = (hifi_seq_A, hifi_seq_B, list_to_line(match_to_A_refID), match_to_A_seq, list_to_line(match_to_B_refID), match_to_B_seq)
+		refID_dict[pos] = (hifi_seq_A, hifi_seq_B, match_to_A_refID, match_to_A_seq, match_to_B_refID, match_to_B_seq)
+			
+	print "**************** group here"
+	refID_sorted_list = sort_dict_by_key(refID_dict)
+	
+	i = 0
+	temp_continus_snp = []
+	n_refID_A_common = []
+	n_refID_B_common = []
+	
+	seed_dict_from_linkage = {}
+	linkage_size_dict = {}
+	
+	while i < (len(refID_sorted_list)-1):
+		pos = refID_sorted_list[i][0]
+		current_snp_data = refID_sorted_list[i][1]	
+		next_snp_data = refID_sorted_list[i+1][1]
+		if len(temp_continus_snp) == 0:
+			n_refID_A_common = [id for id in current_snp_data[2] if id in next_snp_data[2]]				
+			n_refID_B_common = [id for id in current_snp_data[4] if id in next_snp_data[4]]
+			# to keep a copy of the last common refID of this group. n_refID_A/B_common may become zero in the last check
+			last_common_refID_A = n_refID_A_common
+			last_common_refID_B = n_refID_B_common
+		else:
+			last_common_refID_A = n_refID_A_common
+			last_common_refID_B = n_refID_B_common
+			n_refID_A_common = [id for id in n_refID_A_common if id in next_snp_data[2]]
+			n_refID_B_common = [id for id in n_refID_B_common if id in next_snp_data[4]]
+		
+		if len(n_refID_A_common) > 0 and len(n_refID_B_common) > 0:	# use and to make sure both A and B have common refID
+			temp_continus_snp.append(pos)
+			i += 1
+		else:
+			if len(temp_continus_snp) > 0:
+				#for pos in temp_continus_snp:
+				#	print >> log_file, pos, window_info_dict[pos][6], refID_dict[pos][2], refID_dict[pos][4]
+				
+				#next_pos = refID_sorted_list[i+1][0]	# to include the last pos in the group
+				#print >> log_file, next_pos, window_info_dict[next_pos][6], refID_dict[next_pos][2], refID_dict[next_pos][4]
+				#print >> log_file, temp_continus_snp, last_common_refID_A, last_common_refID_B
+				
+				#linkage_size_dict.append(len(temp_continus_snp))
+				linkage_size_dict[len(temp_continus_snp)] = temp_continus_snp
+			"""
+			if len(temp_continus_snp) > 150:
+				for pos in temp_continus_snp:
+					seed_dict_from_linkage[pos] = list_to_line(hifi_dict[pos])
+					#seed_dict_from_linkage.append(list_to_line(hifi_dict[pos])) 
+			"""
+			temp_continus_snp = []	
+			n_refID_A_common = []
+			n_refID_B_common = []
+			last_common_refID_A = []
+			last_common_refID_B = []
+			i += 1
+			#print >> log_file, ""
+	
+	linkage_size_sorted_list = sort_dict_by_key(linkage_size_dict)
+	#linkage_size_dict.sort()
+	print "min linkage size:",  linkage_size_sorted_list[0][0]
+	print "max linkage size:",  linkage_size_sorted_list[-1][0]
+	
+	max_linkage_pos_list = linkage_size_sorted_list[-1][1]
+	print len(max_linkage_pos_list)
+	
+	ori_seed_pos_list = data_dict.seed_dict.keys()
+	print len(ori_seed_pos_list)
+	
+	seed_pos_list = data_dict.seed_dict.keys()
+	seed_pos_list.extend([x for x in max_linkage_pos_list if x not in ori_seed_pos_list])
+	seed_pos_list.sort()
+	
+	print len(seed_pos_list)
+	
+	a = 0
+	hifi_new_output = open("seed_from_linkage.txt", 'w')
+	print >> hifi_new_output, data_dict.seed_title_info
+	for pos in seed_pos_list:
+		if pos in ori_seed_pos_list and not pos in max_linkage_pos_list:
+			print >> hifi_new_output, data_dict.seed_dict[pos].rsID + "\t" + str(data_dict.seed_dict[pos].position) + "\t" + data_dict.seed_dict[pos].allele_ori
+
+			#print >> hifi_new_output, data_dict.seed_dict[pos].rsID + "\t" + str(data_dict.seed_dict[pos].position) + "\t" + data_dict.seed_dict[pos].allele_ori
+		elif pos in max_linkage_pos_list and not pos in ori_seed_pos_list:	
+			print >> hifi_new_output, list_to_line(hifi_dict[pos])
+		else:
+			#print pos
+			a += 1
+	hifi_new_output.close()
+	print "a",a
+	seed_std_compare("seed_from_linkage.txt", chr_name)
+	
 	
 def seed_recover_extract_ref_cluster():
 	recovered_seed_dict = {}
@@ -960,7 +1115,7 @@ def seed_expand_geno():
 	seed_geno_difference_sorted_list = sort_dict_by_key(seed_geno_difference_dict)
 	
 	random_geno_seed_dict = {}
-	geno_seed_selected_number = 2000
+	geno_seed_selected_number = 5000
 	for i in range (0, geno_seed_selected_number):
 		random_index = random.randrange(0,len(seed_geno_difference_dict))
 		position = seed_geno_difference_sorted_list[random_index][0]
@@ -977,7 +1132,7 @@ def seed_expand_geno():
 	for geno_allele_index in (0, 1): # 0 for A, 1 for B
 		#process_list = []
 		for file_number in range(number_of_subfile):
-			hap_subfile_name = seed_file_name +  "_" + str(geno_allele_index) +  "_" + str(file_number) + ".txt"
+			hap_subfile_name = data_dict.seed_file_name +  "_" + str(geno_allele_index) +  "_" + str(file_number) + ".txt"
 			output_subfile = open(currentPath + hap_subfile_name, "w")
 			print >> output_subfile, data_dict.seed_title_info
 			seed_hetero_dict_bkup = data_dict.seed_hetero_dict.copy()
@@ -1048,20 +1203,20 @@ def seed_geno_extract():
 				qscore_dict = load_qscore_result(qscore_subfile_name, qscore_dict)
 		#print "qscore_dict size: ", len(qscore_dict)
 		
-		random_geno_seed_sorted_list = sort_dict_by_key(random_geno_seed_dict)
-		#hifi_dict_sorted_list = sort_dict_by_key(hifi_dict)
+		#random_geno_seed_sorted_list = sort_dict_by_key(random_geno_seed_dict)
+		hifi_dict_sorted_list = sort_dict_by_key(hifi_dict)
 		
 		added_seed = 0
-		#for snp in hifi_dict_sorted_list:	
-		for snp in random_geno_seed_sorted_list:	
+		for snp in hifi_dict_sorted_list:	
+		#for snp in random_geno_seed_sorted_list:	
 			position = snp[0]
-			if position not in revised_seed_dict and position in hifi_dict:
+			if position not in revised_seed_dict and position in hifi_dict and position in data_dict.geno_dict:
 				seed = hifi_dict[position]
 				max_base = keywithmaxval(seed.allele_dict)
 				max_value = seed.allele_dict[max_base]
 				seed.allele_new_percentage = float(max_value)/float(number_of_subfile)
-				if seed.allele_new_percentage >= 0.80 and max_base == data_dict.geno_dict[position][2][geno_allele_index]:
-					if position in qscore_dict and qscore_dict[position]/float(number_of_subfile) >= 0.80:
+				if seed.allele_new_percentage >= 0.90 and max_base == data_dict.geno_dict[position][2][geno_allele_index]:
+					if position in qscore_dict and qscore_dict[position]/float(number_of_subfile) >= 0.70:
 				#if position in hap_std_dict and max_base == hap_std_dict[position][2]:
 				#	if True:
 						added_seed += 1
@@ -1481,20 +1636,21 @@ def combine_hifi_seed(input_prefix, ori_seed_file):
 	
 	revised_seed_dict = {}
 	hifi_dict = {}
-	ref_cycle_number = data_dict.ref_cycle_number
+	cycle_number = data_dict.cycle_number
 	ori_seed_dict = load_seed_data(ori_seed_file)[1]
-	#ref_cycle_number = 2	
-	for i in range (ref_cycle_number):
+
+	for i in range (cycle_number):
 		input_subfile_name = input_prefix + str(i)
 		hifi_dict = load_hifi_result(input_subfile_name, hifi_dict)	
 	print "hifi_dict seed total number", len(hifi_dict)
 	
 	for position, snp in hifi_dict.iteritems():
-		if position not in ori_seed_dict:
+		if True:
+		#if position not in ori_seed_dict:
 			seed = hifi_dict[position]
 			max_base = keywithmaxval(seed.allele_dict)
 			max_value = seed.allele_dict[max_base]
-			seed.allele_new_percentage = float(max_value)/float(ref_cycle_number)
+			seed.allele_new_percentage = float(max_value)/float(cycle_number)
 			if seed.allele_new_percentage >= 0.9:
 				seed.allele_new = max_base
 				revised_seed_dict[position] = seed
@@ -1503,18 +1659,18 @@ def combine_hifi_seed(input_prefix, ori_seed_file):
 				pass
 
 	print "consistent seed total number", len(revised_seed_dict)
-	revised_seed_dict = dict_add(ori_seed_dict, revised_seed_dict)
+	#revised_seed_dict = dict_add(ori_seed_dict, revised_seed_dict)
 	print "new seed total number", len(revised_seed_dict)
-	output_filename = "haplotype.txt"
+	output_filename = "haplotype_combined.txt"
 	output_revised_seed(output_filename, revised_seed_dict)
 	seed_std_compare(output_filename, data_dict.chr_name)
 
 def multple_ref_expand(seed_file, chr_name, mode):
 	sub_cycle = 3
 	os.system("cp haplotype.txt haplotype_ori.txt")
-	ref_cycle_number = data_dict.ref_cycle_number
+	ref_cycle_number = data_dict.cycle_number
 	
-	for j in range(2):
+	for j in range(3):
 		
 		for i in range (ref_cycle_number):
 			
@@ -1524,7 +1680,7 @@ def multple_ref_expand(seed_file, chr_name, mode):
 			print "ref_expand_range", data_dict.ref_expand_range
 			#remPercent = float(0)/(100.0)
 			
-			remPercent = 0 if i == 0 else float(random.randrange(5, 15))/(100.0)
+			remPercent = 0 if i == 0 else float(random.randrange(40, 80))/(100.0)
 			#remPercent = float(random.randrange(5, 15))/(100.0)
 			print "remPercent", remPercent
 			haplotype_file = "haplotype.txt"
@@ -1538,8 +1694,8 @@ def multple_ref_expand(seed_file, chr_name, mode):
 				same_to_A_dict, same_to_B_dict = seed_std_compare("haplotype.txt", data_dict.chr_name)
 				os.system("cp haplotype.txt " + "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict)))
 				
-				data_dict.allele_new_percentage = data_dict.allele_new_percentage - 0.05 if (data_dict.allele_new_percentage - 0.05)>=0.5 else 0.5
-				data_dict.qscore_threshold = data_dict.qscore_threshold - 0.05 if (data_dict.qscore_threshold - 0.05)>=0.5 else 0.5
+				data_dict.allele_new_percentage = data_dict.allele_new_percentage - 0.05 if (data_dict.allele_new_percentage - 0.05) >= 0.5 else 0.5
+				data_dict.qscore_threshold = data_dict.qscore_threshold - 0.05 if (data_dict.qscore_threshold - 0.05) >= 0.5 else 0.5
 				print "allele_new_percentage", data_dict.allele_new_percentage
 				print "qscore_threshold", data_dict.qscore_threshold
 			"""			
@@ -1574,20 +1730,21 @@ def multple_ref_expand(seed_file, chr_name, mode):
 	hifiAccuCheck("imputed_"+file_name, chr_name)
 	#clean_up()
 
-def multple_ref_expand_1(seed_file, chr_name, mode):
+def multple_ref_early_stage(seed_file, chr_name, mode):
+	
+	data_dict.ref_position_distance = 5000
+	data_dict.ref_expand_range = 1
 	sub_cycle = 3
 	os.system("cp haplotype.txt haplotype_ori.txt")
-	ref_cycle_number = data_dict.ref_cycle_number
+	ref_cycle_number = data_dict.cycle_number
 	
-	for j in range(10):
+	for j in range(1):
 		
-		
-		for i in range (ref_cycle_number):
-			remPercent = float(50-10*i)/(100.0)
-			#remPercent = float(random.randrange(40, 70))/(100.0)
+		for i in range (1):
+			remPercent = float(random.randrange(40, 80))/(100.0)
 			print "remPercent", remPercent
 			haplotype_file = "haplotype.txt"
-			refMerger(haplotype_file, chr_name, remPercent)
+			#refMerger(haplotype_file, chr_name, remPercent)
 			
 			mode = "ref"
 			print "########### ref expand cycle #########", i
@@ -1595,22 +1752,17 @@ def multple_ref_expand_1(seed_file, chr_name, mode):
 			os.system("cp haplotype_expanded.txt haplotype.txt")
 			same_to_A_dict, same_to_B_dict = seed_std_compare("haplotype.txt", data_dict.chr_name)
 			os.system("cp haplotype.txt " + "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict)))
-			
-			mode = "recover"
-			print "########### recover expand cycle #########", i
-			seed_correction(seed_file, chr_name, mode)
-			os.system("cp haplotype_expanded.txt haplotype.txt")
-			same_to_A_dict, same_to_B_dict = seed_std_compare("haplotype.txt", data_dict.chr_name)
-			os.system("cp haplotype.txt " + "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict)))
+
 		os.system("cp haplotype.txt " + "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict)) + "_run_"+str(j))
 		os.system("cp haplotype_ori.txt haplotype.txt")
 		file_name = "haplotype_expanded.txt"
 		output_file = file_name + "_" + str(j)
 		os.system("cp haplotype.txt " + output_file)
 	
-	input_prefix = "haplotype_expanded.txt_"
-	combine_hifi_seed(input_prefix, "haplotype_ori.txt")
-		
+	#input_prefix = "haplotype_expanded.txt_"
+	#combine_hifi_seed(input_prefix, "haplotype_ori.txt")
+	
+	os.system("cp haplotype_expanded.txt haplotype.txt")
 	file_name = "haplotype.txt"
 	hifi_run(file_name, chr_name)
 	hifiAccuCheck("imputed_"+file_name, chr_name)
@@ -1964,6 +2116,46 @@ def output_genohomo(filename):
 		print >> seed_new_file, line
 	seed_new_file.close()
 
+
+def overall_process(seed_file, chr_name, mode):
+	sub_cycle = data_dict.cycle_number
+	os.system("cp haplotype.txt haplotype_ori.txt")
+	
+	# remove error in exp seed
+	mode = "remove"
+	print "########### seed error remove #########"
+
+	for i in range(sub_cycle):
+		os.system("cp haplotype_ori.txt haplotype.txt")
+		seed_correction(seed_file, chr_name, mode)
+		os.system("cp haplotype_error_removed.txt haplotype_error_removed.txt_" + str(i))
+		same_to_A_dict, same_to_B_dict = seed_std_compare("haplotype_error_removed.txt", chr_name)
+		os.system("cp haplotype_error_removed.txt " + "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict)))
+	
+	input_prefix = "haplotype_error_removed.txt_"
+	combine_hifi_seed(input_prefix, "haplotype_ori.txt")
+	same_to_A_dict, same_to_B_dict = seed_std_compare("haplotype_combined.txt", chr_name)
+	os.system("cp haplotype_combined.txt haplotype.txt")
+	os.system("cp haplotype.txt " + "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict)))
+	
+"""
+	print "########### recover expand cycle #########"
+	mode = "recover"
+	seed_correction(seed_file, chr_name, mode)
+	os.system("cp haplotype_expanded.txt haplotype.txt")
+	same_to_A_dict, same_to_B_dict = seed_std_compare("haplotype.txt", data_dict.chr_name)
+	os.system("cp haplotype.txt " + "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict)))
+	
+	print "########### mref expand cycle #########"
+	mode = "mref"
+	seed_correction(seed_file, chr_name, mode)
+	os.system("cp haplotype_expanded.txt haplotype.txt")
+	same_to_A_dict, same_to_B_dict = seed_std_compare("haplotype.txt", data_dict.chr_name)
+	os.system("cp haplotype.txt " + "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict)))
+"""	
+			
+			
+			
 def seed_correction(seed_file, chr_name, mode):
 	
 	global number_of_subfile
@@ -1975,19 +2167,25 @@ def seed_correction(seed_file, chr_name, mode):
 	#data_dict.load_data_dicts()
 	data_dict.load_seed_geno_ref()
 
-	if mode == "split":
+	if mode == "overall":
+		overall_process(seed_file, chr_name, mode)
+	
+	elif mode == "remove":
 		seed_std_compare(seed_file, chr_name)
-		seed_error_remove(seed_dict)
-		seed_error_remove_extract(seed_dict)
-		seed_std_compare("haplotype_new.txt", chr_name)
+		seed_error_remove()
+		seed_error_remove_extract()
+		seed_std_compare("haplotype_error_removed.txt", chr_name)
+	elif mode == "reme":
+		seed_error_remove_extract()
+		seed_std_compare("haplotype_error_removed.txt", chr_name)
 	elif mode == "recover":
 		for i in range(1):
-			revised_seed_dict = load_seed_data("haplotype_new.txt")[1]
+			revised_seed_dict = load_seed_data("haplotype_combined.txt")[1]
 			seed_recover(data_dict.seed_dict, revised_seed_dict)
 			seed_recover_extract(data_dict.seed_hetero_dict, revised_seed_dict)
 			seed_std_compare("haplotype_expanded.txt", chr_name)
 	elif mode == "recovere":
-		revised_seed_dict = load_seed_data("haplotype_new.txt")[1]
+		revised_seed_dict = load_seed_data("haplotype_combined.txt")[1]
 		seed_recover_extract(data_dict.seed_hetero_dict, revised_seed_dict)
 		seed_std_compare("haplotype_expanded.txt", chr_name)
 	elif mode == "expand":
@@ -2006,14 +2204,14 @@ def seed_correction(seed_file, chr_name, mode):
 		file_name = "haplotype_expanded.txt"
 		seed_expand_ref_hetero()
 		#seed_expand_ref_all()
-		seed_recover_extract_ref_1()
+		seed_recover_extract_ref()
 		#seed_std_compare(file_name, chr_name)
 		#hifi_run(file_name, chr_name)
 		#hifiAccuCheck("imputed_"+file_name, chr_name)
 	elif mode == "refe":
 		#seed_expand_ref()
 		file_name = "haplotype_expanded.txt"
-		seed_recover_extract_ref_1()
+		seed_recover_extract_ref()
 		#seed_tuple = seed_std_compare(file_name, chr_name)
 		#same_to_A_dict = seed_tuple[0]
 		#same_to_A_dict = load_seed_data_from_dict(same_to_A_dict)
@@ -2029,7 +2227,8 @@ def seed_correction(seed_file, chr_name, mode):
 		"""
 	
 	elif mode == "mref":
-		multple_ref_expand(seed_file, chr_name, mode)
+		#multple_ref_expand(seed_file, chr_name, mode)
+		multple_ref_early_stage(seed_file, chr_name, mode)
 	elif mode == "mgeno":
 		multple_geno_expand(seed_file, chr_name, mode)
 	elif mode == "cluster":	
@@ -2070,7 +2269,9 @@ def seed_correction(seed_file, chr_name, mode):
 		
 	
 	elif mode == "combine":
-		combine_hifi_seed("haplotype_expanded.txt_", "haplotype.txt")
+		input_prefix = "haplotype_error_removed.txt_"
+
+		combine_hifi_seed(input_prefix, "haplotype_ori.txt")
 	
 	elif mode == "seed_v":
 		seed_verify_reverse()
@@ -2079,7 +2280,7 @@ def seed_correction(seed_file, chr_name, mode):
 		seed_std_compare(seed_file, chr_name)
 		geno_subfile_name = "genotype.txt"
 		ref_subfile_name = "refHaplos.txt"
-		hifi = program_path + "hifi_fu_ref " + hap_subfile_name + " " + geno_subfile_name + " " + ref_subfile_name + " " + str(0.1) # make sure the other hifi processes are finished
+		hifi = program_path + "hifi_fu_revise " + hap_subfile_name + " " + geno_subfile_name + " " + ref_subfile_name + " " + str(0.1) # make sure the other hifi processes are finished
 		hifi_process = subprocess.Popen(hifi, shell=True)
 		hifi_process.wait()
 		hifiAccuCheck("imputed_"+seed_file, chr_name)
@@ -2106,7 +2307,9 @@ def seed_correction(seed_file, chr_name, mode):
 	
 	elif mode == "refid":
 		get_refID()
-		
+	elif mode == "linkage":
+		add_seed_by_linkage()
+			
 	else:
 		clean_up()
 		"""check error seed"""
@@ -2199,9 +2402,10 @@ if __name__=='__main__':
 	data_dict = data_dicts()
 	data_dict.seed_file = seed_file
 	data_dict.chr_name = chr_name
-	data_dict.load_data_dicts()
+	#data_dict.load_data_dicts()
 	
 	start_time = time.time()
+	#overall_process(seed_file, chr_name, mode)
 	seed_correction(seed_file, chr_name, mode)
 	elapse_time = time.time() - start_time
 	print "***********************to_impute_window time is: " + str(format(elapse_time, "0.3f")) + "s"

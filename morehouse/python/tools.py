@@ -46,8 +46,8 @@ def load_raw_data(file_name, raw_data_format = "list"):
 						data[int(elements[1])] = elements
 					elif raw_data_format == "string":
 						data[int(elements[1])] = line.strip()
-				except ValueError:
-					#print "error in ", line
+				except:
+					#print "error in ", line, file_name
 					pass
 	return (title_info, data)
 

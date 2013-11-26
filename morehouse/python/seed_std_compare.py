@@ -74,8 +74,8 @@ def seed_std_compare(seed_input_file, chr_name):
 	
 	A_in_hetero = 0
 	B_in_hetero = 0
-	#A_in_hetero = format((float(seed_same_to_A)/float(seed_same_to_A + seed_same_to_B))*100, "0.2f")
-	#B_in_hetero = format((float(seed_same_to_B)/float(seed_same_to_A + seed_same_to_B))*100, "0.2f")
+	A_in_hetero = format((float(seed_same_to_A)/float(seed_same_to_A + seed_same_to_B))*100, "0.2f")
+	B_in_hetero = format((float(seed_same_to_B)/float(seed_same_to_A + seed_same_to_B))*100, "0.2f")
 	
 	print "seed_same_to_A", seed_same_to_A
 	print "seed_same_to_B", seed_same_to_B

@@ -3,7 +3,7 @@
 # location /home/guoxing/tool/morehouse
 
 # this is for solid data May 09 2013
-# June 22, 2013, added purity. >= 0.90 max_allele_number will be kept as seed. A. B, X, homo will be kept as seeds.
+# June 22, 2013, added purity. >= 0.80 max_allele_number will be kept as seed. A. B, X, homo will be kept as seeds.
 # quality score check. ord('!')-33 > 13
 
 import os, glob, subprocess, random, operator, time, sys
@@ -39,21 +39,6 @@ class read:
 		self.read_length = read_length
 		self.covered_snp = covered_snp
 		
-def get_args():
-	desc="variation call"
-	usage = "snpPick_solid -i haplotypeFile -c chr#" 
-	parser = OptionParser(usage = usage)
-	parser.add_option("-i", "--haplotype", type="string", dest="haplotypeFile",help = "Input File Name", default="null")
-	parser.add_option("-s", "--sam", type="string", dest="samFile",help = "Input File Name", default="null")
-	parser.add_option("-d", "--threshold", type="string", dest="threshold",help = "Input the depth threshold", default="3")
-	parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="null")
-	(options, args) = parser.parse_args()
-	if options.chrName == "null" or options.samFile == "null":
-		print "parameters missing..."
-		print usage
-		sys.exit(1)
-	return options
-
 def load_hap_std(file_name):
 	hap_std_dict = {}
 	title_haplotype = load_raw_data(file_name, raw_data_format)[0]
@@ -512,13 +497,35 @@ def snpPick(sam_file, depth_threshold, chr_name):
 	hifi_run(file_name, chr_name)
 	hifiAccuCheck("imputed_"+file_name, chr_name)
 	"""
+
+def get_args():
+	desc="variation call"
+	usage = "snpPick_solid -s sam -c chr# -d depth_threshold" 
+	parser = OptionParser(usage = usage)
+	parser.add_option("-i", "--haplotype", type="string", dest="haplotypeFile",help = "Input File Name", default="null")
+	parser.add_option("-s", "--sam", type="string", dest="samFile",help = "Input File Name", default="null")
+	parser.add_option("-d", "--threshold", type="string", dest="threshold",help = "Input the depth threshold", default="1")
+	parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="null")
+	(options, args) = parser.parse_args()
+	if options.chrName == "null" or options.samFile == "null":
+		print "parameters missing..."
+		print usage
+		sys.exit(1)
+	return options
+
 if __name__=='__main__':
 	options = get_args()
 	sam_file = options.samFile
 	depth_threshold = int(options.threshold)
 	chr_name = options.chrName
 	
+	start_time = time.time()
+	
 	snpPick(sam_file, depth_threshold, chr_name)
+	seed_std_compare(sam_file_name + "_combined_seed.txt", chr_name)
+	
+	elapsed_time = time.time() - start_time
+	print "Elapsed time is: " + str(format(elapsed_time, "0.3f")) + "s"
 	#compare_with_std_hap()
 
 # compare with ori hap file			
