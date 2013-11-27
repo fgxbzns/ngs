@@ -44,8 +44,9 @@ def compare_geno_ref(geno_dict, hap_ref_dict):
 			unique_alleles = list(set(alleles))
 			n_alleles = len(unique_alleles)
 			if n_alleles == 0 or n_alleles > 2:
-				print "error in: ", position, n_alleles, unique_alleles, alleles
-				sys.exit(1)
+				#print "error in: ", position, n_alleles, unique_alleles, alleles
+				#sys.exit(1)
+				pass
 			else:
 				try:
 					if n_alleles == 1:
