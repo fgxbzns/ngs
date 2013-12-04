@@ -933,37 +933,42 @@ def add_seed_by_linkage():
 	print "window_info_dict", len(window_info_dict)
 	
 	for pos, elements in window_info_dict.iteritems():
-		window_info = elements[9:]
-		match_to_A_index_list = range(2, len(refID_list))
-		match_to_B_index_list = range(2, len(refID_list))
-		hifi_seq_A = ""
-		hifi_seq_B = ""
-		for window_pos in window_info:
-			window_pos = int(window_pos)
-			hifi_seq_A += hifi_dict[window_pos][2]
-			hifi_seq_B += hifi_dict[window_pos][3]
+		if elements[3] != 'NN':
+			window_info = elements[9:]
+			match_to_A_index_list = range(2, len(refID_list))
+			match_to_B_index_list = range(2, len(refID_list))
+			hifi_seq_A = ""
+			hifi_seq_B = ""
+			for window_pos in window_info:
+				try:
+					window_pos = int(window_pos)
+					hifi_seq_A += hifi_dict[window_pos][2]
+					hifi_seq_B += hifi_dict[window_pos][3]
+					
+					match_to_A_index_list = [index for index in match_to_A_index_list if data_dict.hap_ref_dict[window_pos][index] == hifi_dict[window_pos][2]]
+					match_to_B_index_list = [index for index in match_to_B_index_list if data_dict.hap_ref_dict[window_pos][index] == hifi_dict[window_pos][3]]		
+				except:
+					print window_info
+			match_to_A_refID = [refID_list[index] for index in match_to_A_index_list]
+			match_to_B_refID = [refID_list[index] for index in match_to_B_index_list]
+			for refID in match_to_A_refID:
+				refID_A_count_dict[refID] = 0 if refID not in refID_A_count_dict else (refID_A_count_dict[refID] + 1)
+			for refID in match_to_B_refID:
+				refID_B_count_dict[refID] = 0 if refID not in refID_B_count_dict else (refID_B_count_dict[refID] + 1)
+			match_to_A_seq = ""
+			match_to_B_seq = ""
 			
-			match_to_A_index_list = [index for index in match_to_A_index_list if data_dict.hap_ref_dict[window_pos][index] == hifi_dict[window_pos][2]]
-			match_to_B_index_list = [index for index in match_to_B_index_list if data_dict.hap_ref_dict[window_pos][index] == hifi_dict[window_pos][3]]		
-		match_to_A_refID = [refID_list[index] for index in match_to_A_index_list]
-		match_to_B_refID = [refID_list[index] for index in match_to_B_index_list]
-		for refID in match_to_A_refID:
-			refID_A_count_dict[refID] = 0 if refID not in refID_A_count_dict else (refID_A_count_dict[refID] + 1)
-		for refID in match_to_B_refID:
-			refID_B_count_dict[refID] = 0 if refID not in refID_B_count_dict else (refID_B_count_dict[refID] + 1)
-		match_to_A_seq = ""
-		match_to_B_seq = ""
-		
-		for window_pos in window_info:
-			window_pos = int(window_pos)
-			if len(match_to_A_index_list) > 0:
-				match_to_A_seq += data_dict.hap_ref_dict[window_pos][match_to_A_index_list[0]]
-			if len(match_to_B_index_list) > 0:
-				match_to_B_seq += data_dict.hap_ref_dict[window_pos][match_to_B_index_list[0]]
-		#for index in match_to_A_index_list:
-			
-		#refID_dict[pos] = (hifi_seq_A, hifi_seq_B, list_to_line(match_to_A_refID), match_to_A_seq, list_to_line(match_to_B_refID), match_to_B_seq)
-		refID_dict[pos] = (hifi_seq_A, hifi_seq_B, match_to_A_refID, match_to_A_seq, match_to_B_refID, match_to_B_seq)
+			for window_pos in window_info:
+				window_pos = int(window_pos)
+				if window_pos != 0:
+					if len(match_to_A_index_list) > 0:
+						match_to_A_seq += data_dict.hap_ref_dict[window_pos][match_to_A_index_list[0]]
+					if len(match_to_B_index_list) > 0:
+						match_to_B_seq += data_dict.hap_ref_dict[window_pos][match_to_B_index_list[0]]
+			#for index in match_to_A_index_list:
+				
+			#refID_dict[pos] = (hifi_seq_A, hifi_seq_B, list_to_line(match_to_A_refID), match_to_A_seq, list_to_line(match_to_B_refID), match_to_B_seq)
+			refID_dict[pos] = (hifi_seq_A, hifi_seq_B, match_to_A_refID, match_to_A_seq, match_to_B_refID, match_to_B_seq)
 			
 	print "**************** group here"
 	refID_sorted_list = sort_dict_by_key(refID_dict)
@@ -977,6 +982,7 @@ def add_seed_by_linkage():
 	linkage_size_dict = {}
 	
 	while i < (len(refID_sorted_list)-1):
+		#last_refID_A_common = []
 		pos = refID_sorted_list[i][0]
 		current_snp_data = refID_sorted_list[i][1]	
 		next_snp_data = refID_sorted_list[i+1][1]
@@ -995,6 +1001,8 @@ def add_seed_by_linkage():
 		if len(n_refID_A_common) > 0 and len(n_refID_B_common) > 0:	# use and to make sure both A and B have common refID
 			temp_continus_snp.append(pos)
 			i += 1
+			last_refID_A_common = n_refID_A_common
+		#elif len(n_refID_A_common) == 1 and len(n_refID_B_common) == 1:
 		else:
 			if len(temp_continus_snp) > 0:
 				#for pos in temp_continus_snp:
@@ -1005,7 +1013,7 @@ def add_seed_by_linkage():
 				#print >> log_file, temp_continus_snp, last_common_refID_A, last_common_refID_B
 				
 				#linkage_size_dict.append(len(temp_continus_snp))
-				linkage_size_dict[len(temp_continus_snp)] = temp_continus_snp
+				linkage_size_dict[len(temp_continus_snp)] = (temp_continus_snp, last_refID_A_common)
 			"""
 			if len(temp_continus_snp) > 150:
 				for pos in temp_continus_snp:
@@ -1022,10 +1030,14 @@ def add_seed_by_linkage():
 	
 	linkage_size_sorted_list = sort_dict_by_key(linkage_size_dict)
 	linkage_size_sorted_list.reverse()
-	print "max linkage size:",  linkage_size_sorted_list[0][0]
+	print "max linkage size:",  linkage_size_sorted_list[0][0], linkage_size_sorted_list[0][1][1]
 	print "min linkage size:",  linkage_size_sorted_list[-1][0]
 	
-	max_linkage_pos_list = linkage_size_sorted_list[0][1]
+	max_linkage_pos_list = linkage_size_sorted_list[0][1][0]
+	
+	for list in linkage_size_sorted_list:
+		if list[0] > 50:
+			print list[0], list[1][1]
 	#max_linkage_pos_list.extend(linkage_size_sorted_list[1][1])
 	#max_linkage_pos_list.extend(linkage_size_sorted_list[2][1])
 	print len(max_linkage_pos_list)
@@ -1046,7 +1058,8 @@ def add_seed_by_linkage():
 			seed.allele_new = hifi_dict[pos][2]
 			data_dict.seed_dict[int(pos)] = seed
 		else:
-			print "pos in linked region and in ori seed: ", pos
+			#print "pos in linked region and in ori seed: ", pos
+			pass
 
 	print len(seed_pos_list)
 	
@@ -1743,9 +1756,11 @@ def multple_ref_expand_late_stage(seed_file, chr_name, mode):
 	
 	sub_cycle = 3
 	same_to_A = 4000
-	error_threshold = 20
+	error_threshold = 30
+	os.system("cp haplotype.txt haplotype_ori.txt")
+	
 	while same_to_A < 6000:
-		
+				
 		for i in range (1):
 			
 			data_dict.ref_position_distance += 2000
@@ -1780,6 +1795,7 @@ def multple_ref_expand_late_stage(seed_file, chr_name, mode):
 					print "new seed updated"
 					os.system("cp haplotype_expanded.txt haplotype.txt")
 					os.system("cp haplotype_expanded.txt " + "haplotype.txt_" + str(same_to_A) + "_" + str(same_to_B))
+					os.system("cp haplotype.txt haplotype_ori.txt")
 
 	file_name = "haplotype.txt"
 	refMerger(haplotype_file, chr_name, 0)
@@ -2088,9 +2104,10 @@ def update_cluster():
 	revised_seed_dict = dict_add(data_dict.seed_dict, revised_seed_dict)
 	output_filename = "haplotype_expanded.txt"
 	output_revised_seed(output_filename, data_dict.seed_dict)
-	seed_std_compare(output_filename, chr_name)
 	
-	
+	same_to_A_dict, same_to_B_dict = seed_std_compare(output_filename, data_dict.chr_name)
+	os.system("cp haplotype_expanded.txt " + "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict)))
+
 	"""
 	file_name = output_filename
 	hifi_run(file_name, chr_name)
@@ -2174,6 +2191,42 @@ def output_genohomo(filename):
 	seed_new_file.close()
 
 
+def overall_process_3(seed_file, chr_name, mode):
+	sub_cycle = data_dict.cycle_number
+	haplotype_file_name = "haplotype.txt"
+	
+	os.system("cp haplotype.txt haplotype_ori.txt")
+	
+	same_to_A = 1
+	error_threshold = 30
+	os.system("cp haplotype.txt haplotype_ori.txt")
+	i = 0
+	while same_to_A < 7000:
+			
+		remPercent = float(random.randrange(20, 60))/(100.0)
+		print "remPercent", remPercent
+		haplotype_file = "haplotype.txt"
+		refMerger(haplotype_file, chr_name, remPercent)
+				
+		hifi_run(haplotype_file_name, data_dict.chr_name)	
+		mode = "linkage"
+		print "########### linkage expand cycle #########", i	
+		seed_correction(seed_file, chr_name, mode)
+		same_to_A_dict, same_to_B_dict = seed_std_compare(haplotype_file, data_dict.chr_name)
+		
+		same_to_A = len(same_to_A_dict)
+		same_to_B = len(same_to_B_dict)
+		if same_to_B > error_threshold:
+			print "ori seed recovered"
+			os.system("cp haplotype_ori.txt haplotype.txt")
+		else:
+			print "new seed updated"
+			#os.system("cp haplotype_expanded.txt haplotype.txt")
+			os.system("cp haplotype.txt " + "haplotype.txt_" + str(same_to_A) + "_" + str(same_to_B))
+			os.system("cp haplotype.txt haplotype_ori.txt")
+
+		i += 1
+
 def overall_process_2(seed_file, chr_name, mode):
 	sub_cycle = data_dict.cycle_number
 	haplotype_file_name = "haplotype.txt"
@@ -2181,6 +2234,14 @@ def overall_process_2(seed_file, chr_name, mode):
 	os.system("cp haplotype.txt haplotype_ori.txt")
 	
 	for i in range(sub_cycle):
+		
+		#remPercent = 0 if i == 0 else float(random.randrange(40, 80))/(100.0)
+		remPercent = float(random.randrange(40, 90))/(100.0)
+		#remPercent = float(random.randrange(5, 15))/(100.0)
+		print "remPercent", remPercent
+		haplotype_file = "haplotype.txt"
+		refMerger(haplotype_file, chr_name, remPercent)
+				
 		hifi_run(haplotype_file_name, data_dict.chr_name)	
 		mode = "linkage"
 		print "########### linkage expand #########", i	
@@ -2205,20 +2266,19 @@ def overall_process(seed_file, chr_name, mode):
 	mode = "remove"
 	print "########### seed error remove #########"
 
-	for i in range(sub_cycle):
-		os.system("cp haplotype_ori.txt haplotype.txt")
+	for i in range(1):
+		#os.system("cp haplotype_ori.txt haplotype.txt")
 		seed_correction(seed_file, chr_name, mode)
 		os.system("cp haplotype_error_removed.txt haplotype_error_removed.txt_" + str(i))
 		same_to_A_dict, same_to_B_dict = seed_std_compare("haplotype_error_removed.txt", chr_name)
 		os.system("cp haplotype_error_removed.txt " + "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict)))
-	
+	"""	
 	input_prefix = "haplotype_error_removed.txt_"
 	combine_hifi_seed(input_prefix, "haplotype_ori.txt")
 	same_to_A_dict, same_to_B_dict = seed_std_compare("haplotype_combined.txt", chr_name)
 	os.system("cp haplotype_combined.txt haplotype.txt")
 	os.system("cp haplotype.txt " + "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict)))
 	
-"""
 	print "########### recover expand cycle #########"
 	mode = "recover"
 	seed_correction(seed_file, chr_name, mode)
@@ -2232,7 +2292,7 @@ def overall_process(seed_file, chr_name, mode):
 	os.system("cp haplotype_expanded.txt haplotype.txt")
 	same_to_A_dict, same_to_B_dict = seed_std_compare("haplotype.txt", data_dict.chr_name)
 	os.system("cp haplotype.txt " + "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict)))
-"""	
+	"""	
 			
 	
 			
@@ -2251,6 +2311,8 @@ def seed_correction(seed_file, chr_name, mode):
 		overall_process(seed_file, chr_name, mode)
 	elif mode == "overall2":
 		overall_process_2(seed_file, chr_name, mode)
+	elif mode == "overall3":
+		overall_process_3(seed_file, chr_name, mode)
 	elif mode == "remove":
 		seed_std_compare(seed_file, chr_name)
 		seed_error_remove()
@@ -2260,13 +2322,17 @@ def seed_correction(seed_file, chr_name, mode):
 		seed_error_remove_extract()
 		seed_std_compare("haplotype_error_removed.txt", chr_name)
 	elif mode == "recover":
-		for i in range(1):
-			revised_seed_dict = load_seed_data("haplotype_combined.txt")[1]
+		same_to_B = 1
+		while same_to_B > 0:
+			revised_seed_dict = load_seed_data("haplotype_revised.txt")[1]
 			seed_recover(data_dict.seed_dict, revised_seed_dict)
 			seed_recover_extract(data_dict.seed_hetero_dict, revised_seed_dict)
-			seed_std_compare("haplotype_expanded.txt", chr_name)
+			same_to_A_dict, same_to_B_dict = seed_std_compare("haplotype_expanded.txt", chr_name)
+			same_to_B = len(same_to_B_dict)
+			os.system("cp haplotype.txt_1002_12 haplotype.txt")
+			
 	elif mode == "recovere":
-		revised_seed_dict = load_seed_data("haplotype_combined.txt")[1]
+		revised_seed_dict = load_seed_data("haplotype_ori.txt")[1]
 		seed_recover_extract(data_dict.seed_hetero_dict, revised_seed_dict)
 		seed_std_compare("haplotype_expanded.txt", chr_name)
 	elif mode == "expand":
