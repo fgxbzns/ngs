@@ -220,7 +220,7 @@ def seed_error_remove_extract():
 			seed.allele_new = max_base
 			revised_seed_dict[position] = seed
 		if position in data_dict.seed_hetero_dict and seed.allele_ori != max_base and seed.allele_new_percentage*100 >= 80:
-			hap_std = hap_std_dict[position]
+			hap_std = data_dict.hap_std_dict[position]
 			allele_dict = hifi_dict[position].allele_dict
 			line = seed.rsID + "\t" + str(seed.position) + "\t" + hap_std[2] + "\t" + \
 					hap_std[3] + "\t" + seed.allele_ori + "\t" + max_base + "\t" + str(seed.allele_new_percentage) + "\t" + str(allele_dict['A']+allele_dict['T']+allele_dict['C']+allele_dict['G'])
@@ -1033,12 +1033,13 @@ def add_seed_by_linkage():
 	print "max linkage size:",  linkage_size_sorted_list[0][0], linkage_size_sorted_list[0][1][1]
 	print "min linkage size:",  linkage_size_sorted_list[-1][0]
 	
+	max_linkage_pos_list = []
 	max_linkage_pos_list = linkage_size_sorted_list[0][1][0]
 	
 	for list in linkage_size_sorted_list:
-		if list[0] > 50:
+		if list[0] > 100:
 			print list[0], list[1][1]
-	#max_linkage_pos_list.extend(linkage_size_sorted_list[1][1])
+			#max_linkage_pos_list.extend(list[1][0])
 	#max_linkage_pos_list.extend(linkage_size_sorted_list[2][1])
 	print len(max_linkage_pos_list)
 	
@@ -2198,12 +2199,12 @@ def overall_process_3(seed_file, chr_name, mode):
 	os.system("cp haplotype.txt haplotype_ori.txt")
 	
 	same_to_A = 1
-	error_threshold = 30
+	error_threshold = 60
 	os.system("cp haplotype.txt haplotype_ori.txt")
 	i = 0
-	while same_to_A < 7000:
+	while same_to_A < 6000:
 			
-		remPercent = float(random.randrange(20, 60))/(100.0)
+		remPercent = float(random.randrange(20, 80))/(100.0)
 		print "remPercent", remPercent
 		haplotype_file = "haplotype.txt"
 		refMerger(haplotype_file, chr_name, remPercent)
@@ -2237,10 +2238,10 @@ def overall_process_2(seed_file, chr_name, mode):
 		
 		#remPercent = 0 if i == 0 else float(random.randrange(40, 80))/(100.0)
 		remPercent = float(random.randrange(40, 90))/(100.0)
-		#remPercent = float(random.randrange(5, 15))/(100.0)
+		#remPercent = float(random.randrange(85, 95))/(100.0)
 		print "remPercent", remPercent
 		haplotype_file = "haplotype.txt"
-		refMerger(haplotype_file, chr_name, remPercent)
+		#refMerger(haplotype_file, chr_name, remPercent)
 				
 		hifi_run(haplotype_file_name, data_dict.chr_name)	
 		mode = "linkage"
