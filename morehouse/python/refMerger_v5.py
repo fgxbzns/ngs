@@ -33,15 +33,25 @@ def compare_geno_ref(geno_dict, hap_ref_dict):
 	geno_ref_not_consistent = {}
 	ref_homo_dict = {}
 	
+	# to remove homo snps in ref
+	for position in hap_ref_dict.keys():
+		alleles = hap_ref_dict[position]
+		alleles = alleles[2:]
+		unique_alleles = list(set(alleles))
+		n_alleles = len(unique_alleles)
+		if n_alleles == 1:
+			ref_homo_dict[position] = list_to_line(unique_alleles)
+			
+	# to remove snps that are conflict in ref and geno
 	for position, snp in geno_dict.iteritems():
 		if position in hap_ref_dict:
 			exist_in_ref = False
-			#snp = snp.split()
 			geno_A = snp[2][0]
 			geno_B = snp[2][1]
 			alleles = hap_ref_dict[position]
 			alleles = alleles[2:]
 			unique_alleles = list(set(alleles))
+			
 			n_alleles = len(unique_alleles)
 			if n_alleles == 0 or n_alleles > 2:
 				#print "error in: ", position, n_alleles, unique_alleles, alleles
@@ -49,8 +59,8 @@ def compare_geno_ref(geno_dict, hap_ref_dict):
 				pass
 			else:
 				try:
-					if n_alleles == 1:
-						ref_homo_dict[position] = list_to_line(snp)
+					#if n_alleles == 1:
+					#	ref_homo_dict[position] = list_to_line(snp)
 					if geno_A == geno_B:
 						if n_alleles == 2:
 							if geno_A == unique_alleles[0] or geno_A == unique_alleles[1]:
@@ -73,13 +83,16 @@ def compare_geno_ref(geno_dict, hap_ref_dict):
 							geno_ref_not_consistent[position] = list_to_line(snp)
 							#print position, unique_alleles, n_alleles, geno_A, geno_B, geno_dict[position][2]
 				except:
-					#print position, unique_alleles, n_alleles
+					print position, unique_alleles, n_alleles
 					pass
+	
 	print "geno_x_dict: ", len(geno_x_dict)
 	print "geno_n_dict: ", len(geno_n_dict)
 	print "geno_ref_not_consistent: ", len(geno_ref_not_consistent)
 	print "ref_homo", len(ref_homo_dict)
+	#print ref_homo_dict[104922938]
 	return (ref_homo_dict, geno_ref_not_consistent, geno_n_dict)
+	
 
 def load_hap_ref_data(chr_name):
 	ref_title_info = ""
@@ -103,7 +116,10 @@ def ref_preprocess(geno_dict, hap_ref_dict):
 	ref_homo_dict, geno_ref_not_consistent, geno_n_dict = compare_geno_ref(geno_dict, hap_ref_dict)
 	hap_ref_dict = dict_substract(hap_ref_dict, geno_ref_not_consistent)
 	hap_ref_dict = dict_substract(hap_ref_dict, geno_n_dict)
+	#print len(hap_ref_dict)
+	#print len(ref_homo_dict)
 	hap_ref_dict = dict_substract(hap_ref_dict, ref_homo_dict)
+	#print len(hap_ref_dict)
 	return hap_ref_dict
 
 def output_files(file_name, title_info, dict):

@@ -125,25 +125,53 @@ class data_dicts:
         maf_dict = {}
         for pos, snp in self.hap_ref_dict.iteritems():
             alleles = snp[2:]
+            number_of_alleles = len(alleles)
             unique_alleles = set(alleles)
             n_alleles = len(unique_alleles)
             major_allele = ""
             if n_alleles == 0 or n_alleles > 2:
-                print "maf error in ref: ", position
+                print "maf error in ref: ", position, unique_alleles
                 sys.exit(1)
-            else:
+            else:      
                 maf_temp_list = []
                 for ref_allele in unique_alleles:
-                    maf_temp_list.append(ref_allele, alleles.count(ref_allele))
+                    maf_temp_list.append((ref_allele, format((float(alleles.count(ref_allele))/number_of_alleles), "0.3f")))
                 if pos not in maf_dict:
-                    maf_dict[pos] = major_allele
+                    maf_dict[pos] = maf_temp_list
                 else:
                     print "duplicated pos", pos
                     pass
         print len(maf_dict)
         self.hap_ref_allele_frequence_dict = maf_dict
     
+    def output_hap_ref_allele_frequence_dict(self):
+       file_name = "hap_ref_allele_frequence_dict.txt"
+       ref_allele_frequence_sorted_list = sort_dict_by_key(self.hap_ref_allele_frequence_dict)
+       with open(file_name, "w") as output_file:
+           for data in ref_allele_frequence_sorted_list:
+                pos = data[0]
+                allele_frequence_list = data[1]
+                try:
+                    if allele_frequence_list[0][1] >= allele_frequence_list[1][1]:
+                        print >> output_file, pos, allele_frequence_list[0][0], allele_frequence_list[0][1], allele_frequence_list[1][0], allele_frequence_list[1][1]
+                    else:
+                        print >> output_file, pos, allele_frequence_list[1][0], allele_frequence_list[1][1], allele_frequence_list[0][0], allele_frequence_list[0][1] 
+                except:
+                    print pos, allele_frequence_list
     
+    def read_hap_ref_allele_frequence_dict(self):
+        maf_dict = {}
+        file_name = "hap_ref_allele_frequence_dict.txt"
+        with open(file_name, "r") as input_file:
+            for line in input_file:
+                elements = line.strip().split()
+                pos = int(elements[0])
+                temp_list = []
+                temp_list.append((elements[1], float(elements[2])))
+                temp_list.append((elements[3], float(elements[4])))
+                maf_dict[pos] = temp_list
+        self.hap_ref_allele_frequence_dict = maf_dict
+                    
     def load_data_dicts(self):
         self.update_geno_dict()
         self.update_seed_dict()
@@ -155,7 +183,12 @@ class data_dicts:
         self.update_geno_dict()
         self.update_seed_dict()
         self.update_ref_dict()
-
+        
+    def load_ref_allele_frequence(self):
+        self.update_hap_ref_allele_frequence_dict()
+        self.output_hap_ref_allele_frequence_dict()
+        #self.read_hap_ref_allele_frequence_dict()
+        #pass
       
 class seeds:
     def __init__(self):
@@ -196,8 +229,7 @@ def load_hap_std(file_name):
         """ ??? N X """
         if elements[2].strip() != "N" and elements[3].strip() != "N": 
             try:
-                position = elements[1].strip()
-                position = int(position)
+                position = int(elements[1].strip())
                 hap_std_dict[position] = elements
             except ValueError:
                 print "error in ", file_name, position

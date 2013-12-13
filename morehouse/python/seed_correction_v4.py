@@ -914,7 +914,8 @@ def get_refID():
 	#hifiAccuCheck("hifi_from_linkage.txt", chr_name)
 	seed_std_compare("hifi_from_linkage.txt", chr_name)
 
-def add_seed_by_linkage():
+
+def add_seed_by_linkage_working_bkup():
 	refID_dict = {}
 	
 	refID_A_count_dict = {}
@@ -933,7 +934,7 @@ def add_seed_by_linkage():
 	print "window_info_dict", len(window_info_dict)
 	
 	for pos, elements in window_info_dict.iteritems():
-		if elements[3] != 'NN':
+		if elements[4] != 'NN':
 			window_info = elements[9:]
 			match_to_A_index_list = range(2, len(refID_list))
 			match_to_B_index_list = range(2, len(refID_list))
@@ -965,7 +966,6 @@ def add_seed_by_linkage():
 						match_to_A_seq += data_dict.hap_ref_dict[window_pos][match_to_A_index_list[0]]
 					if len(match_to_B_index_list) > 0:
 						match_to_B_seq += data_dict.hap_ref_dict[window_pos][match_to_B_index_list[0]]
-			#for index in match_to_A_index_list:
 				
 			#refID_dict[pos] = (hifi_seq_A, hifi_seq_B, list_to_line(match_to_A_refID), match_to_A_seq, list_to_line(match_to_B_refID), match_to_B_seq)
 			refID_dict[pos] = (hifi_seq_A, hifi_seq_B, match_to_A_refID, match_to_A_seq, match_to_B_refID, match_to_B_seq)
@@ -980,6 +980,8 @@ def add_seed_by_linkage():
 	
 	seed_dict_from_linkage = {}
 	linkage_size_dict = {}
+	
+	snp_ld_length_dict = {}
 	
 	while i < (len(refID_sorted_list)-1):
 		#last_refID_A_common = []
@@ -1014,12 +1016,7 @@ def add_seed_by_linkage():
 				
 				#linkage_size_dict.append(len(temp_continus_snp))
 				linkage_size_dict[len(temp_continus_snp)] = (temp_continus_snp, last_refID_A_common)
-			"""
-			if len(temp_continus_snp) > 150:
-				for pos in temp_continus_snp:
-					seed_dict_from_linkage[pos] = list_to_line(hifi_dict[pos])
-					#seed_dict_from_linkage.append(list_to_line(hifi_dict[pos])) 
-			"""
+
 			temp_continus_snp = []	
 			n_refID_A_common = []
 			n_refID_B_common = []
@@ -1036,10 +1033,190 @@ def add_seed_by_linkage():
 	max_linkage_pos_list = []
 	max_linkage_pos_list = linkage_size_sorted_list[0][1][0]
 	
+	same_to_A_dict, same_to_B_dict = seed_std_compare("imputed_haplotype.txt", data_dict.chr_name)
+	
+	
 	for list in linkage_size_sorted_list:
-		if list[0] > 100:
-			print list[0], list[1][1]
+		if list[0] > 0:
+			print list[0],#, list[1][0]
+			average_maf = 0
+			for pos in list[1][0]:
+				imputed_seed, seed_frequence = data_dict.hap_ref_allele_frequence_dict[pos][0] \
+				if hifi_dict[pos][2] == data_dict.hap_ref_allele_frequence_dict[pos][0][0] else data_dict.hap_ref_allele_frequence_dict[pos][1]
+				#print pos, imputed_seed, seed_frequence
+				average_maf += seed_frequence
 			#max_linkage_pos_list.extend(list[1][0])
+			print average_maf/float(list[0]), float(len([pos for pos in list[1][0] if pos in same_to_B_dict]))/float(len(list[1][0]))
+	#max_linkage_pos_list.extend(linkage_size_sorted_list[2][1])
+	print len(max_linkage_pos_list)
+	
+	ori_seed_pos_list = data_dict.seed_dict.keys()
+	print len(ori_seed_pos_list)
+	
+	seed_pos_list = data_dict.seed_dict.keys()
+	#seed_pos_list.extend([x for x in max_linkage_pos_list if x not in ori_seed_pos_list])
+	#seed_pos_list.sort()
+	
+	for pos in max_linkage_pos_list:
+		if pos not in ori_seed_pos_list:
+			seed = seeds()
+			seed.rsID = hifi_dict[pos][0]
+			seed.position = int(hifi_dict[pos][1])
+			seed.allele_ori = hifi_dict[pos][2]
+			seed.allele_new = hifi_dict[pos][2]
+			data_dict.seed_dict[int(pos)] = seed
+		else:
+			#print "pos in linked region and in ori seed: ", pos
+			pass
+
+	print len(seed_pos_list)
+	
+	new_seed_file_name = "haplotype.txt"
+	output_revised_seed(new_seed_file_name, data_dict.seed_dict)
+	same_to_A_dict, same_to_B_dict = seed_std_compare(new_seed_file_name, chr_name)
+	
+	os.system("cp haplotype.txt " + "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict)))
+
+def add_seed_by_linkage():
+	refID_dict = {}
+	
+	refID_A_count_dict = {}
+	refID_B_count_dict = {}
+	
+	refID_list = data_dict.ref_title_info.strip().split()[2:]
+	print "refID_list", len(refID_list)
+	#print refID_list
+	
+	hifi_dict = {}
+	#hifi_dict = load_hifi_result("imputed_" + data_dict.seed_file, hifi_dict)
+	hifi_dict = load_raw_data("imputed_" + data_dict.seed_file)[1]
+	print "hifi_dict", len(hifi_dict)
+
+	window_info_dict = load_raw_data("window_" + data_dict.seed_file)[1]
+	print "window_info_dict", len(window_info_dict)
+	
+	for pos, elements in window_info_dict.iteritems():
+		if elements[4] != 'NN':
+			window_info = elements[9:]
+			match_to_A_index_list = range(2, len(refID_list))
+			match_to_B_index_list = range(2, len(refID_list))
+			hifi_seq_A = ""
+			hifi_seq_B = ""
+			for window_pos in window_info:
+				try:
+					window_pos = int(window_pos)
+					hifi_seq_A += hifi_dict[window_pos][2]
+					hifi_seq_B += hifi_dict[window_pos][3]
+					
+					match_to_A_index_list = [index for index in match_to_A_index_list if data_dict.hap_ref_dict[window_pos][index] == hifi_dict[window_pos][2]]
+					match_to_B_index_list = [index for index in match_to_B_index_list if data_dict.hap_ref_dict[window_pos][index] == hifi_dict[window_pos][3]]		
+				except:
+					print window_info
+			match_to_A_refID = [refID_list[index] for index in match_to_A_index_list]
+			match_to_B_refID = [refID_list[index] for index in match_to_B_index_list]
+			if pos == 21917858:
+				print match_to_A_refID, match_to_A_refID
+			for refID in match_to_A_refID:
+				refID_A_count_dict[refID] = 0 if refID not in refID_A_count_dict else (refID_A_count_dict[refID] + 1)
+			for refID in match_to_B_refID:
+				refID_B_count_dict[refID] = 0 if refID not in refID_B_count_dict else (refID_B_count_dict[refID] + 1)
+			match_to_A_seq = ""
+			match_to_B_seq = ""
+			
+			for window_pos in window_info:
+				window_pos = int(window_pos)
+				if window_pos != 0:
+					if len(match_to_A_index_list) > 0:
+						match_to_A_seq += data_dict.hap_ref_dict[window_pos][match_to_A_index_list[0]]
+					if len(match_to_B_index_list) > 0:
+						match_to_B_seq += data_dict.hap_ref_dict[window_pos][match_to_B_index_list[0]]
+				
+			#refID_dict[pos] = (hifi_seq_A, hifi_seq_B, list_to_line(match_to_A_refID), match_to_A_seq, list_to_line(match_to_B_refID), match_to_B_seq)
+			refID_dict[pos] = (hifi_seq_A, hifi_seq_B, match_to_A_refID, match_to_A_seq, match_to_B_refID, match_to_B_seq)
+			
+			"""
+			if pos == 21917858:
+				print refID_dict[pos]
+				for window_pos in window_info:
+					window_pos = int(window_pos)
+					print hifi_dict[window_pos][2], hifi_dict[window_pos][3],
+					print list_to_line(data_dict.hap_ref_dict[window_pos]),
+					print " "
+			"""
+	print "**************** group here"
+	refID_sorted_list = sort_dict_by_key(refID_dict)
+	
+	i = 0
+	temp_continus_snp = []
+	n_refID_A_common = []
+	n_refID_B_common = []
+	
+	seed_dict_from_linkage = {}
+	linkage_size_dict = {}
+	
+	snp_ld_length_dict = {}		# to store the LD block size of each snp
+	
+	while i < (len(refID_sorted_list)-1):
+		#last_refID_A_common = []
+		pos = refID_sorted_list[i][0]
+		current_snp_data = refID_sorted_list[i][1]	
+		next_snp_data = refID_sorted_list[i+1][1]
+		if len(temp_continus_snp) == 0:
+			n_refID_A_common = [id for id in current_snp_data[2] if id in next_snp_data[2]]				
+			n_refID_B_common = [id for id in current_snp_data[4] if id in next_snp_data[4]]
+			# to keep a copy of the last common refID of this group. n_refID_A/B_common may become zero in the last check
+			last_common_refID_A = n_refID_A_common
+			last_common_refID_B = n_refID_B_common
+		else:
+			last_common_refID_A = n_refID_A_common
+			last_common_refID_B = n_refID_B_common
+			n_refID_A_common = [id for id in n_refID_A_common if id in next_snp_data[2]]
+			n_refID_B_common = [id for id in n_refID_B_common if id in next_snp_data[4]]
+		
+		if len(n_refID_A_common) > 0 and len(n_refID_B_common) > 0:	# use and to make sure both A and B have common refID
+			temp_continus_snp.append(pos)
+			i += 1
+			last_refID_A_common = n_refID_A_common
+		else:
+			if len(temp_continus_snp) > 0:
+				ld_block_size = len(temp_continus_snp)
+				linkage_size_dict[ld_block_size] = (temp_continus_snp, last_refID_A_common)
+				for pos in temp_continus_snp:
+					if pos not in snp_ld_length_dict:
+						snp_ld_length_dict[pos] = ld_block_size
+					else:
+						print "duplicate pos in snp_ld_length_dict:", pos
+
+			temp_continus_snp = []	
+			n_refID_A_common = []
+			n_refID_B_common = []
+			last_common_refID_A = []
+			last_common_refID_B = []
+			i += 1
+			#print >> log_file, ""
+	
+	linkage_size_sorted_list = sort_dict_by_key(linkage_size_dict)
+	linkage_size_sorted_list.reverse()
+	print "max linkage size:",  linkage_size_sorted_list[0][0], linkage_size_sorted_list[0][1][1]
+	print "min linkage size:",  linkage_size_sorted_list[-1][0]
+	
+	max_linkage_pos_list = []
+	max_linkage_pos_list = linkage_size_sorted_list[0][1][0]
+	
+	same_to_A_dict, same_to_B_dict = seed_std_compare("imputed_haplotype.txt", data_dict.chr_name)
+	
+	
+	for list in linkage_size_sorted_list:
+		if list[0] > 0:
+			print list[0],#, list[1][0]
+			average_maf = 0
+			for pos in list[1][0]:
+				imputed_seed, seed_frequence = data_dict.hap_ref_allele_frequence_dict[pos][0] \
+				if hifi_dict[pos][2] == data_dict.hap_ref_allele_frequence_dict[pos][0][0] else data_dict.hap_ref_allele_frequence_dict[pos][1]
+				#print pos, imputed_seed, seed_frequence
+				average_maf += float(seed_frequence)
+			#max_linkage_pos_list.extend(list[1][0])
+			#print average_maf/float(list[0]), float(len([pos for pos in list[1][0] if pos in same_to_B_dict]))/float(len(list[1][0]))
 	#max_linkage_pos_list.extend(linkage_size_sorted_list[2][1])
 	print len(max_linkage_pos_list)
 	
@@ -1070,6 +1247,60 @@ def add_seed_by_linkage():
 	
 	os.system("cp haplotype.txt " + "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict)))
 	
+	# output information
+	#rs#, pos, maf, std_allele,
+	with open("imputed_info.info", 'w') as log_file:
+		print >> log_file, "rs#", "pos", "allele_freq_A", "allele_freq_B", "minor_allele_frequence", "hap_std", "imputed_allele", \
+			"imputed_allele_frequence", "accuracy", \
+			"hap_freq_A", "hap_freq_B", "window_size", \
+			"window_distance", "num_x", "x/seed_in_window", "ld_block_size"
+		
+		window_info_sorted_list = sort_dict_by_key(window_info_dict)
+		print "window_info_dict", len(window_info_dict)
+		
+		for data in window_info_sorted_list:
+			pos = int(data[0])
+			#if pos == 59226724:
+			#	print data
+			elements = data[1]
+			if elements[2] != 'NN' and elements[4] != 'NN':
+				rs_id = elements[0]
+				#x_symbol = elements[2]
+				window_info = elements[9:]
+				allele_frequence_data = data_dict.hap_ref_allele_frequence_dict[pos]
+				allele_freq_A = allele_frequence_data[0][0] + ":" + str(allele_frequence_data[0][1])
+				allele_freq_B = allele_frequence_data[1][0]+ ":" + str(allele_frequence_data[1][1])
+				minor_allele_frequence = str(allele_frequence_data[0][1]) if allele_frequence_data[0][1] <= allele_frequence_data[1][1] else str(allele_frequence_data[1][1])
+				
+				hap_std = data_dict.hap_std_dict[pos][2] if pos in data_dict.hap_std_dict else "NA"
+				imputed_allele = hifi_dict[pos][2]
+				imputed_allele_frequence = str(allele_frequence_data[0][1]) if imputed_allele == allele_frequence_data[0][0] else str(allele_frequence_data[1][1])
+				
+				std_impute_compare = -1
+				if hap_std == imputed_allele:
+					std_impute_compare = 1
+				elif hap_std == "X" or hap_std == "NA":
+					std_impute_compare = 2
+				else:
+					std_impute_compare = 0
+				
+				hap_freq_A = len(refID_dict[pos][2])
+				hap_freq_B = len(refID_dict[pos][4])
+				#refID_dict[pos] = (hifi_seq_A, hifi_seq_B, match_to_A_refID, match_to_A_seq, match_to_B_refID, match_to_B_seq)
+				
+				window_size = len(window_info)
+				window_distance = int(window_info[-1]) - int(window_info[0])
+				ld_block_size = snp_ld_length_dict[pos] if pos in snp_ld_length_dict else 0
+				num_x = len([position for position in window_info if int(position) in window_info_dict and window_info_dict[int(position)][2] == "XX"])
+				x_over_window_size = format(float(num_x)/float(window_size), "0.3f")
+				#if int(pos) == 59226724:
+				#	print data
+				print >> log_file, rs_id, pos, allele_freq_A, allele_freq_B, minor_allele_frequence, \
+				hap_std, imputed_allele, imputed_allele_frequence,\
+				std_impute_compare, hap_freq_A, hap_freq_B, \
+				window_size, window_distance, num_x, x_over_window_size, ld_block_size
+			else:
+				print pos
 
 	
 def seed_recover_extract_ref_cluster():
@@ -2305,8 +2536,9 @@ def seed_correction(seed_file, chr_name, mode):
 	#global data_dict
 	#data_dict = data_dicts()
 	data_dict.seed_file = seed_file
-	#data_dict.load_data_dicts()
-	data_dict.load_seed_geno_ref()
+	data_dict.load_data_dicts()
+	#data_dict.load_seed_geno_ref()
+	data_dict.load_ref_allele_frequence()
 
 	if mode == "overall":
 		overall_process(seed_file, chr_name, mode)
@@ -2314,6 +2546,11 @@ def seed_correction(seed_file, chr_name, mode):
 		overall_process_2(seed_file, chr_name, mode)
 	elif mode == "overall3":
 		overall_process_3(seed_file, chr_name, mode)
+	
+	elif mode == "ref_f":
+		data_dict.load_ref_allele_frequence()
+	
+	
 	elif mode == "remove":
 		seed_std_compare(seed_file, chr_name)
 		seed_error_remove()
