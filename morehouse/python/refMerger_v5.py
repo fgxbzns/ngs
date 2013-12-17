@@ -220,24 +220,49 @@ def refMerger(haplotype_file, chr_name, remPercent):
 	
 	make_hifi_files(remPercent)
 
+def extract_genotype(genotype_file_name, chr_name, person_ID):
+	with open("genotype_"+person_ID+"_"+chr_name+".txt", "w") as genotype_output_file:
+		print >> genotype_output_file, "rsID" + "\t" + "phys_position" + "\t" + person_ID
+		with open(genotype_file_name, "r") as genotype_input_file:
+			for line in genotype_input_file:
+				elements = line.strip().split()
+				if line.startswith("rs#"):
+					try:
+						ID_index = elements.index(person_ID)
+						print "ID_index", ID_index
+					except:
+						print person_ID, "not found in file"
+						pass
+				else:
+					try:
+						rsID = elements[0].strip()							
+						position = elements[3].strip()
+						genotype = elements[ID_index].strip()
+						print >> genotype_output_file, rsID + "\t" + position + "\t" + genotype
+					except ValueError:
+						print "error in ", line
+
 def get_args():
 	desc="Compare seed and std hap, to check purity of seed"
 
 	usage = "seed_std_compare -i seed_file -c chr#" 
 	parser = OptionParser(usage = usage, description=desc) 
 	parser.add_option("-i", "--haplotype", type="string", dest="haplotypeFile",help = "Input File Name", default="null")
-	parser.add_option("-s", "--genotype", type="string", dest="genotypeFile",help = "Input File Name", default="null")
+	parser.add_option("-g", "--genotype", type="string", dest="genotypeFile",help = "Input File Name", default="null")
 	parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="null")
 	parser.add_option("-p", "--pct", type="float", dest="remPercent",help = "percent of ref removed", default=0)
+	parser.add_option("-d", "--id", type="string", dest="personID",help = "personID", default=0)
+	
 	(options, args) = parser.parse_args()
 	if options.haplotypeFile == "null" or options.chrName == "null":
 		print "parameters missing..."
 		print usage
-		sys.exit(1)
+		#sys.exit(1)
 	return options
 
 if __name__=='__main__':
 	options = get_args()
+	
 	haplotype_file = options.haplotypeFile
 	chr_name = options.chrName
 	remPercent = options.remPercent
@@ -248,7 +273,13 @@ if __name__=='__main__':
 	elapsed_time = time.time() - start_time
 	print "Elapsed time is: " + str(format(elapsed_time, "0.3f")) + "s"
 	
-	
+	"""
+	# for extracting genotype
+	genotype_file_name = options.genotypeFile
+	chr_name = options.chrName
+	person_ID = options.personID
+	extract_genotype(genotype_file_name, chr_name, person_ID)
+	"""
 	#file_name = "haplotype.txt"
 	#seed_std_compare(file_name, chr_name)
 	#hifi_run(file_name, chr_name)

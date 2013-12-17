@@ -1096,7 +1096,7 @@ def add_seed_by_linkage():
 	print "window_info_dict", len(window_info_dict)
 	
 	for pos, elements in window_info_dict.iteritems():
-		if elements[4] != 'NN':
+		if elements[2] != 'NN' and elements[4] != 'NN':
 			window_info = elements[9:]
 			match_to_A_index_list = range(2, len(refID_list))
 			match_to_B_index_list = range(2, len(refID_list))
@@ -2686,7 +2686,8 @@ def seed_correction(seed_file, chr_name, mode):
 	elif mode == "compare":
 		#compare_std_hap_ref()
 		#compare_geno_ref()
-		generate_std_seed(8000)
+		#generate_std_seed(8000)
+		pass
 	elif mode == "sgroup":
 		#get_seed_group()
 		get_seed_group_index()
