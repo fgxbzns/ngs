@@ -1249,6 +1249,8 @@ def add_seed_by_linkage():
 	
 	# output information
 	#rs#, pos, maf, std_allele,
+	error_analysis_dict = {}
+	
 	with open("imputed_info.info", 'w') as log_file:
 		print >> log_file, "rs#", "pos", "allele_freq_A", "allele_freq_B", "minor_allele_frequence", "hap_std", "imputed_allele", \
 			"imputed_allele_frequence", "accuracy", \
@@ -1257,6 +1259,7 @@ def add_seed_by_linkage():
 		
 		window_info_sorted_list = sort_dict_by_key(window_info_dict)
 		print "window_info_dict", len(window_info_dict)
+		
 		
 		for data in window_info_sorted_list:
 			pos = int(data[0])
@@ -1299,9 +1302,52 @@ def add_seed_by_linkage():
 				hap_std, imputed_allele, imputed_allele_frequence,\
 				std_impute_compare, hap_freq_A, hap_freq_B, \
 				window_size, window_distance, num_x, x_over_window_size, ld_block_size
+				
+				target_data = window_size
+				if std_impute_compare == 0 or std_impute_compare == 1:
+					if target_data not in error_analysis_dict:
+						error_analysis_dict[target_data] = [0,0]
+					else:
+						if std_impute_compare == 0:
+							error_analysis_dict[target_data][0] = error_analysis_dict[target_data][0] + 1
+						elif std_impute_compare == 1:
+							error_analysis_dict[target_data][1] = error_analysis_dict[target_data][1] + 1
 			else:
-				print pos
-
+				#print pos
+				pass
+			
+	error_analysis_sorted_list = sort_dict_by_key(error_analysis_dict)
+	for data in error_analysis_sorted_list:
+		data_freq = data[0]
+		temp_list = data[1]
+		if temp_list[0] != 0 or temp_list[1] != 0:
+			print data_freq, temp_list[0], temp_list[1], format(float(temp_list[0])/float(temp_list[0] + temp_list[1]), "0.3f")
+	
+	# window_size
+	total_num_if_different_freq = len(error_analysis_dict)
+	inteval = total_num_if_different_freq/100
+	print "inteval", inteval
+	i = 0
+	j = 1
+	error_data = 0
+	correct_data = 0
+	#lower_bound = total_num_if_different_freq[0][0]
+	for data in error_analysis_sorted_list:
+		data_freq = data[0]
+		temp_list = data[1]
+		if temp_list[0] != 0 or temp_list[1] != 0:
+			#pass
+			if i <= j * inteval:
+				error_data += temp_list[0]
+				correct_data += temp_list[1]
+				i += 1
+			else:
+				print i, error_data, correct_data#, format(float(error_data)/float(correct_data), "0.3f")
+				j += 1
+				error_data = 0
+				correct_data = 0
+				
+			#	print data_freq, temp_list[0], temp_list[1], format(float(temp_list[0])/float(temp_list[0] + temp_list[1]), "0.3f")
 	
 def seed_recover_extract_ref_cluster():
 	recovered_seed_dict = {}
