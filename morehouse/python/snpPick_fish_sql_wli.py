@@ -282,10 +282,10 @@ def compare_filtered_data(a_file_name, b_file_name):
 	with open(currentPath + output_name, "w") as output_file:
 		while a_line != "" or b_line != "":
 			if a_line != "" and b_line == "":
-				print >> output_file, " ".join(a_line.split()[:7])
+				#print >> output_file, " ".join(a_line.split()[:7])
 				a_line = a_file.readline().strip()
 			if a_line == "" and b_line != "":
-				print >> output_file, " ".join(b_line.split()[:3]), " ", " ", " ", " ", " ".join(b_line.split()[3:7])
+				#print >> output_file, " ".join(b_line.split()[:3]), " ", " ", " ", " ", " ".join(b_line.split()[3:7])
 				b_line = b_file.readline().strip()
 			if a_line != "" and b_line != "":
 				a_elements = a_line.split()
@@ -293,19 +293,31 @@ def compare_filtered_data(a_file_name, b_file_name):
 				a_pos = int(a_elements[0])
 				b_pos = int(b_elements[0])
 				if a_pos < b_pos:
-					print >> output_file, " ".join(a_elements[:7])
+					#print >> output_file, " ".join(a_elements[:7])
 					a_line = a_file.readline().strip()
 				elif a_pos > b_pos:
-					print >> output_file, " ".join(a_elements[:3]), " ".join(b_elements[3:7])
+					#print >> output_file, " ".join(a_elements[:3]), " ".join(b_elements[3:7])
 					b_line = b_file.readline().strip()
+				else:
+		 			# if the index of zero is different, the snp is different
+		 			a_index_of_zero = [i for i in range(len(a_elements)) if a_elements[i] == "0"]
+		 			b_index_of_zero = [i for i in range(len(b_elements)) if b_elements[i] == "0"]
+		 			if a_index_of_zero != b_index_of_zero:	
+			 			print >> output_file, " ".join(a_elements[:3]), " ".join(a_elements[3:7]), " ".join(b_elements[3:7])
+				 	a_line = a_file.readline().strip()
+					b_line = b_file.readline().strip()
+		 		"""
+		 		keep the other base with number 1
 		 		else:
 		 			# if the index of zero is different, the snp is different
 		 			a_index_of_zero = [i for i in range(len(a_elements)) if a_elements[i] == "0"]
 		 			b_index_of_zero = [i for i in range(len(b_elements)) if b_elements[i] == "0"]
 		 			if a_index_of_zero != b_index_of_zero:	
 			 			print >> output_file, " ".join(a_elements[:3]), " ".join(a_elements[3:7]), " ".join(b_elements[3:7])
-			 	a_line = a_file.readline().strip()
-				b_line = b_file.readline().strip()
+				 	a_line = a_file.readline().strip()
+					b_line = b_file.readline().strip()
+				"""
+				
 
 def get_args():
 	desc="variation call"
@@ -332,71 +344,74 @@ def get_args():
 if __name__=='__main__':
 	start_time = time.time()
 	
-	global db_name
-	global ref_file
 	options = get_args()
-	
-	chr_name = options.chrName
-	db_name = options.dbname
 	mode = options.mode	
 	
-	# gx
-	
-	db_name = "/home/guoxing/disk2/" + db_name + ".db"
-	ref_path = "/home/guoxing/disk2/zebra_fish/ref_genome/"
-	ref_file = ref_path + "danRer7_" + chr_name + ".fa"
-	ref_file = ref_path + "lm_" + chr_name + ".fa"
-	
-	"""
-	# lm
-	db_name = "/home/lima/disk2_node3/" + db_name + ".db"
-	ref_path = "/home/lima/Public/"
-	ref_file = ref_path + "chrX.fa"
-	"""
-	# wli
-	"""
-	db_name = "/home/wli/nfs1_node2/" + db_name + ".db"
-	ref_path = "/home/wli/nfs1_node2/ref_genome/"
-	ref_file = ref_path + "danRer7_" + chr_name + ".fa"
-	"""
-	global quality_score_threshold
-	quality_score_threshold = options.qscore
-	print "quality_score_threshold: ", quality_score_threshold	
-
-	global table_name
-	table_name = "zebra"
-	
-	if (mode == "update"):
-		sam_file = options.samFile
-		attribute = "position INT PRIMARY KEY, chr TEXT, ref_allele TEXT, 	\
-		A_depth INT, T_depth INT, C_depth INT, G_depth INT"
-		#attribute = "position INT PRIMARY KEY, chr TEXT, geno_allele TEXT, total_depth INT, 	\
-		#A_depth INT, T_depth INT, C_depth INT, G_depth INT, max_allele TEXT, max_allele_number INT, max_allele_percentage FLOAT"
-		sql.creat_table(db_name, table_name, attribute)
-		
-		#output_data("chr1.output")
-		snpPick(sam_file)
-	elif (mode == "output"):
-		start_line = options.startLine
-		end_line = options.endLine
-		file_name = chr_name + "_" + start_line + "_" + end_line + ".txt"
-		#print file_name
-		output_data(file_name, start_line, end_line)
-	elif (mode == "filter"):
-		start_line = options.startLine
-		end_line = options.endLine
-		file_name = chr_name + "_" + start_line + "_" + end_line + "_filtered.txt"
-		#print file_name
-		output_data_filter(file_name, start_line, end_line)
-		output_filtered_data(start_line, end_line)
-	elif (mode == "mf"):
-		start_line = options.startLine
-		end_line = options.endLine
-		output_filtered_data(start_line, end_line)
-	elif (mode == "compare"):	
+	if (mode == "compare"):	
 		a_file_name = options.afile
-		b_file_name = options.bfile	
+		b_file_name = options.bfile
 		compare_filtered_data(a_file_name, b_file_name)
+	else:
+		global db_name
+		global ref_file
+		
+		chr_name = options.chrName
+		db_name = options.dbname
+		
+		# gx
+		"""
+		db_name = "/home/guoxing/disk2/" + db_name + ".db"
+		ref_path = "/home/guoxing/disk2/zebra_fish/ref_genome/"
+		ref_file = ref_path + "danRer7_" + chr_name + ".fa"
+		ref_file = ref_path + "lm_" + chr_name + ".fa"
+		
+		
+		# lm
+		db_name = "/home/lima/disk2_node3/" + db_name + ".db"
+		ref_path = "/home/lima/Public/"
+		ref_file = ref_path + "chrX.fa"
+		"""
+		# wli
+		
+		db_name = "/home/wli/nfs1_node2/" + db_name + ".db"
+		ref_path = "/home/wli/nfs1_node2/ref_genome/"
+		ref_file = ref_path + "danRer7_" + chr_name + ".fa"
+		
+		global quality_score_threshold
+		quality_score_threshold = options.qscore
+		print "quality_score_threshold: ", quality_score_threshold	
+	
+		global table_name
+		table_name = "zebra"
+		
+		if (mode == "update"):
+			sam_file = options.samFile
+			attribute = "position INT PRIMARY KEY, chr TEXT, ref_allele TEXT, 	\
+			A_depth INT, T_depth INT, C_depth INT, G_depth INT"
+			#attribute = "position INT PRIMARY KEY, chr TEXT, geno_allele TEXT, total_depth INT, 	\
+			#A_depth INT, T_depth INT, C_depth INT, G_depth INT, max_allele TEXT, max_allele_number INT, max_allele_percentage FLOAT"
+			sql.creat_table(db_name, table_name, attribute)
+			
+			#output_data("chr1.output")
+			snpPick(sam_file)
+		elif (mode == "output"):
+			start_line = options.startLine
+			end_line = options.endLine
+			file_name = chr_name + "_" + start_line + "_" + end_line + ".txt"
+			#print file_name
+			output_data(file_name, start_line, end_line)
+		elif (mode == "filter"):
+			start_line = options.startLine
+			end_line = options.endLine
+			file_name = chr_name + "_" + start_line + "_" + end_line + "_filtered.txt"
+			#print file_name
+			output_data_filter(file_name, start_line, end_line)
+			output_filtered_data(start_line, end_line)
+		elif (mode == "mf"):
+			start_line = options.startLine
+			end_line = options.endLine
+			output_filtered_data(start_line, end_line)
+	
 	
 	elapse_time = time.time() - start_time
 	print "run time: " + str(format(elapse_time, "0.3f")) + "s"

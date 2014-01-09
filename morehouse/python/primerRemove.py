@@ -24,10 +24,11 @@ def primer_remove():
 				qual_line = input_file.readline().strip()
 				
 				read_seq, qual_line = process_seq(read_seq, qual_line)
-				output_file.write(title + "\n")
-				output_file.write(read_seq + "\n")
-				output_file.write("+" + "\n")
-				output_file.write(qual_line + "\n")
+				if read_seq != "" and qual_line != "" and len(read_seq) >= 25:
+					output_file.write(title + "\n")
+					output_file.write(read_seq + "\n")
+					output_file.write("+" + "\n")
+					output_file.write(qual_line + "\n")
 			line = input_file.readline().strip()
 	
 	print "total_reads_number", total_reads_number
@@ -74,7 +75,7 @@ if __name__ == '__main__':
 	global input_file_name
 	global primer_list
 	
-	primer_list = ["TGTGTTGGGTGTGTTTGG", "TGTNTTGGGTGTGTTTGG", "TGTNTTGGGGTGTTTGG"]
+	primer_list = ["TGTGTTGGGTGTGTTTGG", "TGTNTTGGGTGTGTTTGG", "TGTNTTGGGGTGTTTGG", "TGTTGGGTGTGTTTGG"]
 	#primer_list = ["TGTGTTGGGTGTGTTTGG", "TGTGTTGGGTGTGTTTGG", "CGCCTTGGCCGTACAGCA"]
 		
 	options = get_args()

@@ -211,8 +211,11 @@ def output_single_pos_data(pos_file_name):
 		print >> output_file, "pos", "chr", "ref_allele", "A", "T", "C", "G"
 		for pos in pos_list:
 			rows = get_single_pos_data(db_name, table_name, pos)
-			for item in rows:	
-				print >> output_file, item[0], item[1], item[2], item[3], item[4], item[5], item[6]
+			if len(rows) != 0:
+				for item in rows:	
+					print >> output_file, item[0], item[1], item[2], item[3], item[4], item[5], item[6]
+			else:
+				print >> output_file, pos
 
 def output_data_filter(file_name, start_line, end_line):
 	# output data with small total number
