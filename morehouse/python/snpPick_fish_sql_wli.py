@@ -277,7 +277,7 @@ def compare_filtered_data(a_file_name, b_file_name):
 	b_line = b_file.readline()
 	a_line = a_file.readline().strip()
 	b_line = b_file.readline().strip()
-	
+	total_line_with_1 = 0
 	output_name = a_file_name + "_combine_" + b_file_name
 	with open(currentPath + output_name, "w") as output_file:
 		while a_line != "" or b_line != "":
@@ -300,10 +300,37 @@ def compare_filtered_data(a_file_name, b_file_name):
 					b_line = b_file.readline().strip()
 				else:
 		 			# if the index of zero is different, the snp is different
+		 			"""
+		 			temp_a_elements = []
+		 			for a in a_elements:
+		 				temp_a = a if a != "1" else "0"
+		 				temp_a_elements.append(temp_a)
+		 			a_elements = temp_a_elements
+		 			
+		 			temp_b_elements = []
+		 			for b in b_elements:
+		 				temp_b = b if b != "1" else "0"
+		 				temp_b_elements.append(temp_b)
+		 			b_elements = temp_b_elements
+		 			"""
 		 			a_index_of_zero = [i for i in range(len(a_elements)) if a_elements[i] == "0"]
+		 			print a_index_of_zero
 		 			b_index_of_zero = [i for i in range(len(b_elements)) if b_elements[i] == "0"]
-		 			if a_index_of_zero != b_index_of_zero:	
-			 			print >> output_file, " ".join(a_elements[:3]), " ".join(a_elements[3:7]), " ".join(b_elements[3:7])
+		 			print b_index_of_zero
+		 			
+		 			if a_index_of_zero != b_index_of_zero:
+		 				keep_line = True
+		 				a_covered_base_index = 	[i for i in range(len(a_elements)) if i not in a_index_of_zero]
+		 				b_covered_base_index = 	[i for i in range(len(b_elements)) if i not in b_index_of_zero]
+		 				large_group = a_covered_base_index if len(a_covered_base_index) > len(b_covered_base_index) else b_covered_base_index
+		 				small_group = a_covered_base_index if len(a_covered_base_index) < len(b_covered_base_index) else b_covered_base_index
+		 				different_index = [i for i in large_group if i not in small_group]
+		 				#print different_index
+		 				if len(different_index) == 1 and (a_elements[different_index[0]] == "1" or b_elements[different_index[0]] == "1"):
+		 					keep_line = False
+		 					total_line_with_1 += 1
+		 				if keep_line == True:
+			 				print >> output_file, " ".join(a_elements[:3]), " ".join(a_elements[3:7]), " ".join(b_elements[3:7])
 				 	a_line = a_file.readline().strip()
 					b_line = b_file.readline().strip()
 		 		"""
@@ -317,6 +344,7 @@ def compare_filtered_data(a_file_name, b_file_name):
 				 	a_line = a_file.readline().strip()
 					b_line = b_file.readline().strip()
 				"""
+	print "total_line_with_1: ", total_line_with_1
 				
 
 def get_args():
