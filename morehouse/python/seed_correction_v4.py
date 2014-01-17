@@ -1114,8 +1114,8 @@ def add_seed_by_linkage():
 					print window_info
 			match_to_A_refID = [refID_list[index] for index in match_to_A_index_list]
 			match_to_B_refID = [refID_list[index] for index in match_to_B_index_list]
-			if pos == 21917858:
-				print match_to_A_refID, match_to_A_refID
+			#if pos == 21917858:
+			#	print match_to_A_refID, match_to_A_refID
 			for refID in match_to_A_refID:
 				refID_A_count_dict[refID] = 0 if refID not in refID_A_count_dict else (refID_A_count_dict[refID] + 1)
 			for refID in match_to_B_refID:
@@ -2839,9 +2839,10 @@ if __name__=='__main__':
 	start_time = time.time()
 	#overall_process(seed_file, chr_name, mode)
 	seed_correction(seed_file, chr_name, mode)
-	elapse_time = time.time() - start_time
-	print "***********************to_impute_window time is: " + str(format(elapse_time, "0.3f")) + "s"
-	
+	#elapse_time = time.time() - start_time
+	print "run time is: ", round((time.time() - start_time), 3), "s"
+
+		
 	
 	
 	
