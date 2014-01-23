@@ -277,8 +277,9 @@ def compare_filtered_data(a_file_name, b_file_name):
 	b_line = b_file.readline()
 	a_line = a_file.readline().strip()
 	b_line = b_file.readline().strip()
+	total_line_kept = 0
 	total_line_with_1 = 0
-	output_name = a_file_name + "_combine_" + b_file_name
+	output_name = a_file_name + "_combine_" + b_file_name + "_depthcutoff_" + str(depth_cutoff)
 	with open(currentPath + output_name, "w") as output_file:
 		while a_line != "" or b_line != "":
 			if a_line != "" and b_line == "":
@@ -300,41 +301,51 @@ def compare_filtered_data(a_file_name, b_file_name):
 					b_line = b_file.readline().strip()
 				else:
 		 			# if the index of zero is different, the snp is different
-		 			"""
+		 			
+		 					 			
 		 			temp_a_elements = []
 		 			for a in a_elements:
-		 				temp_a = a if a != "1" else "0"
+		 				temp_a = "0" if a in depth_remove_list else a
 		 				temp_a_elements.append(temp_a)
 		 			a_elements = temp_a_elements
 		 			
 		 			temp_b_elements = []
 		 			for b in b_elements:
-		 				temp_b = b if b != "1" else "0"
+		 				temp_b = "0" if b in depth_remove_list else b
 		 				temp_b_elements.append(temp_b)
 		 			b_elements = temp_b_elements
-		 			"""
-		 			a_index_of_zero = [i for i in range(len(a_elements)) if a_elements[i] == "0"]
-		 			print a_index_of_zero
-		 			b_index_of_zero = [i for i in range(len(b_elements)) if b_elements[i] == "0"]
-		 			print b_index_of_zero
 		 			
-		 			if a_index_of_zero != b_index_of_zero:
-		 				keep_line = True
-		 				a_covered_base_index = 	[i for i in range(len(a_elements)) if i not in a_index_of_zero]
-		 				b_covered_base_index = 	[i for i in range(len(b_elements)) if i not in b_index_of_zero]
-		 				large_group = a_covered_base_index if len(a_covered_base_index) > len(b_covered_base_index) else b_covered_base_index
-		 				small_group = a_covered_base_index if len(a_covered_base_index) < len(b_covered_base_index) else b_covered_base_index
-		 				different_index = [i for i in large_group if i not in small_group]
-		 				#print different_index
-		 				if len(different_index) == 1 and (a_elements[different_index[0]] == "1" or b_elements[different_index[0]] == "1"):
-		 					keep_line = False
-		 					total_line_with_1 += 1
-		 				if keep_line == True:
+		 			a_index_of_zero = [i for i in range(3,7) if a_elements[i] == "0"]
+		 			#print a_index_of_zero
+		 			b_index_of_zero = [i for i in range(3,7) if b_elements[i] == "0"]
+		 			#print b_index_of_zero
+		 			
+		 			if len(a_index_of_zero) != 4 and len(b_index_of_zero) != 4 and a_index_of_zero != b_index_of_zero:
+		 				
+		 				
+		 				keep_line = False
+		 				a_covered_base_index = 	[i for i in range(3,7) if i not in a_index_of_zero]
+		 				b_covered_base_index = 	[i for i in range(3,7) if i not in b_index_of_zero]
+		 				if len(a_covered_base_index) > len(b_covered_base_index):
+		 					different_index = [i for i in a_covered_base_index if i not in b_covered_base_index]
+		 					for index in different_index:
+		 						if int(a_elements[index]) >= depth_cutoff:
+		 							keep_line = True
+		 				else:
+		 					different_index = [i for i in b_covered_base_index if i not in a_covered_base_index]
+		 					for index in different_index:
+		 						if int(b_elements[index]) >= depth_cutoff:
+		 							keep_line = True
+		 				
+		 				if keep_line == True:	
+		 					total_line_kept += 1		
 			 				print >> output_file, " ".join(a_elements[:3]), " ".join(a_elements[3:7]), " ".join(b_elements[3:7])
+			 		else:
+			 			total_line_with_1 += 1
 				 	a_line = a_file.readline().strip()
 					b_line = b_file.readline().strip()
 		 		"""
-		 		keep the other base with number 1
+		 		keep the different base with number 1
 		 		else:
 		 			# if the index of zero is different, the snp is different
 		 			a_index_of_zero = [i for i in range(len(a_elements)) if a_elements[i] == "0"]
@@ -344,6 +355,7 @@ def compare_filtered_data(a_file_name, b_file_name):
 				 	a_line = a_file.readline().strip()
 					b_line = b_file.readline().strip()
 				"""
+	print "total_line_kept: ", total_line_kept
 	print "total_line_with_1: ", total_line_with_1
 				
 
@@ -361,6 +373,7 @@ def get_args():
 	
 	parser.add_option("-x", "--afile", type="string", dest="afile",help = "afile", default="null")
 	parser.add_option("-y", "--bfile", type="string", dest="bfile",help = "bfile", default="null")
+	parser.add_option("-z", "--dcut", type="string", dest="depthcutoff",help = "depth remove cutoff", default="2")
 	
 	(options, args) = parser.parse_args()
 	if options.mode == "null" or options.chrName == "null":
@@ -376,12 +389,24 @@ if __name__=='__main__':
 	mode = options.mode	
 	
 	if (mode == "compare"):	
+		global depth_remove_list
+		global depth_cutoff
 		a_file_name = options.afile
 		b_file_name = options.bfile
-		compare_filtered_data(a_file_name, b_file_name)
+		for depth_cutoff in range(1, 5):
+			print "depth_cutoff", depth_cutoff
+			depth_remove_list = []
+			depth_cutoff = int(options.depthcutoff)
+			for i in range(1, depth_cutoff+1):
+				depth_remove_list.append(str(i))
+		
+			print "depth_remove_list", depth_remove_list
+	
+			compare_filtered_data(a_file_name, b_file_name)
 	else:
 		global db_name
 		global ref_file
+
 		
 		chr_name = options.chrName
 		db_name = options.dbname
@@ -441,7 +466,6 @@ if __name__=='__main__':
 			output_filtered_data(start_line, end_line)
 	
 	
-	elapse_time = time.time() - start_time
-	print "run time: " + str(format(elapse_time, "0.3f")) + "s"
+	print "run time is: ", round((time.time() - start_time), 3), "s"
 	
 

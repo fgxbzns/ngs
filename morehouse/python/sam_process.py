@@ -16,12 +16,12 @@ class parameters:
 
 def is_multiple_maping(elements):
 	multiple_maping = False
-	XA = ""
-	try:
-		XA = elements_first[21].strip()
+	#XA = ""
+	XA = elements[-1].strip()
+	if XA.startswith('XA'):
 		multiple_maping = True
-	except:
-		pass
+	else:
+		XA = ""
 	return multiple_maping, XA
 
 def pair_end_filter(sam_file, chr_name):
@@ -315,7 +315,7 @@ def filter_by_XA():
 	reads_after_process_total_number = 0
 	
 	with open(currentPath + parameter.sam_file, "r") as inputfile_sam:
-		with open(parameter.sam_file_name + "_pairend.sam", "w") as output_file:
+		with open(parameter.sam_file_name + "_XA.sam", "w") as output_file:
 			sam_line_first = inputfile_sam.readline() # the first read line in a pair
 			while sam_line_first != '':
 				if not sam_line_first.startswith("@"):
@@ -333,7 +333,7 @@ def filter_by_XA():
 						print "error in first read:", sam_line_first
 						
 					# process all chr or one particular chr, keep these steps for other files that do not need pair match
-					check_chr_name = chrName_first.startswith("chr") if (chr_name == "chr") else (chr_name == chrName_first)
+					check_chr_name = chrName_first.startswith("chr") if (parameter.chr_name == "chr") else (parameter.chr_name == chrName_first)
 					if check_chr_name and (insert_size_first >= parameter.insert_size_lower_bond) and (insert_size_first <= parameter.insert_size_upper_bond):					# only keep the reads mapped to chr 
 						# if the first read is within insert size limit, check the second read
 						# the insert_size for a pair is the same. If the first read is passed, the second will be passed, too.
@@ -357,19 +357,21 @@ def filter_by_XA():
 								keep_this_pair = True
 								"""only check XA when both of the reads have XA"""							
 								if first_is_XA and second_is_XA:
-									pass
-
+									keep_this_pair = check_XA(first_XA_info, second_XA_info)
+									
 								if keep_this_pair:
 									reads_after_process_total_number += 2
 									
 									read_qual_first = indel_correction(read_seq_first, qual_line_first, indel_info_first)
 									sam_line_first = sam_line_first.replace(read_seq_first, read_qual_first[0])
 									sam_line_first = sam_line_first.replace(qual_line_first, read_qual_first[1])
+									#print sam_line_first
 									print >> output_file, sam_line_first.strip()
 									
 									read_qual_second = indel_correction(read_seq_second, qual_line_second, indel_info_second)
 									sam_line_second = sam_line_second.replace(read_seq_second, read_qual_second[0])
 									sam_line_second= sam_line_second.replace(qual_line_second, read_qual_second[1])
+									#print sam_line_second
 									print >> output_file, sam_line_second.strip()
 							else:
 								print "first and second read mapped to different chr", read_ID_first, chrName_first, read_ID_second, chrName_second
@@ -393,21 +395,33 @@ def check_XA(first_XA_info, second_XA_info):
 	first_XA_dict = {}
 	second_XA_dict = {}
 	for info in first_XA_element:
-		data = info.split(",")
-		chr_name = data[0]
-		pos = data[1][1:]
-		first_XA_dict[chr_name] = pos
+		try:
+			data = info.split(",")
+			chr_name = data[0]
+			pos = data[1][1:]
+			first_XA_dict[chr_name] = pos
+		except:
+			#print info
+			pass
 	for info in second_XA_element:
-		data = info.split(",")
-		chr_name = data[0]
-		pos = data[1][1:]
-		second_XA_dict[chr_name] = pos
+		try:
+			data = info.split(",")
+			chr_name = data[0]
+			pos = data[1][1:]
+			second_XA_dict[chr_name] = pos
+		except:
+			#print info
+			pass
 	
+	#print first_XA_dict, second_XA_dict
 	common_chr = [chr for chr in first_XA_dict.keys() if chr in second_XA_dict.keys()]
+	
 	for chr in common_chr:
 		distance = abs(abs(int(first_XA_dict[chr])) - abs(int(second_XA_dict[chr])))
+		#print distance
 		if distance >= parameter.insert_size_lower_bond and distance <= parameter.insert_size_upper_bond:
 			keep_this_pair = False
+			break
 	return keep_this_pair
 
 def is_indel(cigar):
@@ -524,6 +538,8 @@ def sam_process(sam_file, chr_name, mode):
 		match_pairend()
 	elif mode == "fm":		
 		filter_match_pairend()
+	elif mode == "xa":		
+		filter_by_XA()
 
 def get_args():
 	desc="variation call"
@@ -550,10 +566,10 @@ if __name__=='__main__':
 	parameter.sam_file_name = parameter.sam_file[:(len(parameter.sam_file)-4)]
 	parameter.mode = options.mode
 	
-	start = time.time()
+	start_time = time.time()
 	sam_process(parameter.sam_file, parameter.chr_name, parameter.mode)
 	#run_time = str(format((end - start), "0.3f"))
-	print "run time is: ", round((time.time() - start), 3), "s"
+	print "run time is: ", round((time.time() - start_time), 3), "s"
 	
 	"""
 	#combine_files()
