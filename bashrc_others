@@ -1,0 +1,232 @@
+#check size
+alias du='du -h'	#folder
+alias df='df -h'	#disk
+
+# Alias of cd
+alias cd1='cd ..'
+alias cd2='cd ../..'
+alias cd3='cd ../../..'
+alias cd4='cd ../../../..'
+alias cd5='cd ../../../../..'
+
+export CDPATH=.:~:/home/guoxing/disk2/ 
+
+# Alias to multiple ls commands
+alias la='ls -Al'               # show hidden files
+alias ls='ls -lh -F --color=always' # add colors and file type extensions
+alias lx='ls -lXB'              # sort by extension
+alias lk='ls -lSr'              # sort by size
+alias lc='ls -lcr'      		# sort by change time
+alias lu='ls -lur'      		# sort by access time
+alias lr='ls -lR'               # recursive ls
+alias lt='ls -ltr'              # sort by date
+alias lm='ls -al |more'         # pipe through 'more'
+alias ll='ls -l'
+
+# spelling typos - highly personnal and keyboard-dependent :-)
+alias xs='cd'
+alias vf='cd'
+alias moer='more'
+alias moew='more'
+alias kk='ll'
+alias ks='ls'
+alias ;k='ls'
+
+
+#alias chmod commands
+alias mx='chmod a+x'
+alias 000='chmod 000'
+alias 644='chmod 644'
+alias 755='chmod 755'
+alias +x='chmod +x'
+
+
+# Alias's to local workstations
+alias asterix='ssh -Y gxfu@asterix.cs.gsu.edu'
+alias asterixsftp='sftp gxfu@asterix.cs.gsu.edu'
+alias octans='ssh gfu1@octans.gsu.edu'
+alias octanssftp='sshfs gfu1@octans.gsu.edu:/home/iweber/gfu1 ~/remote'
+alias bmcc4='ssh guoxing@bmcc4.cs.gsu.edu'
+alias bmcc4sftp='sshfs guoxing@bmcc4.cs.gsu.edu:/u1/guoxing ~/remote'
+alias node1='ssh -Y guoxing@10.20.1.58'
+alias node1sftp='sshfs guoxing@10.20.1.58:/home/guoxing ~/node1'
+alias node2='ssh guoxing@10.20.1.224 -p 25'
+alias node2sftp='sftp guoxing@10.20.1.224 -p 23'
+alias node3='ssh -l lima -p 26 10.20.1.224'
+alias node3sftp='sftp -l lima -p 26 10.20.1.224'
+alias lima='ssh lima@192.168.1.106'
+
+
+# Alias's to modified commands
+alias ps='ps auxf'
+alias home='cd ~'
+alias pg='ps aux | grep'  #requires an argument
+alias un='tar -zxvf'
+alias mountedinfo='df -hT'
+alias ping='ping -c 10'
+alias openports='netstat -nape --inet'
+alias ns='netstat -alnp --protocol=inet | grep -v CLOSE_WAIT | cut -c-6,21-94 | tail +2'
+alias du1='du -h --max-depth=1'
+alias da='date "+%Y-%m-%d %A    %T %Z"'
+alias ebrc='pico ~/.bashrc'
+alias vibc='vi ~/.bashrc_gx'
+
+#PYMOL
+alias pymol='/home/guoxing/tool/pymol/pymol'
+
+#AMMP
+#alias preammp='/home/guoxing/tool/ammp-2.0/bin/preammp'
+alias preammp='/home/guoxing/tool/preammp/presp4'
+alias preammpf='/home/guoxing/tool/preammp.py'
+alias ammp='/home/guoxing/tool/sadgeom/ammp'
+alias ammpf='/home/guoxing/tool/ammp.py'
+alias gete='/home/guoxing/tool/getE.py'
+
+#CCP4
+alias ccp4i='/home/guoxing/tool/CCP4/ccp4-6.1.0/ccp4i/bin/ccp4i'
+
+#coot
+alias coot='/home/guoxing/tool/coot/bin/coot'
+
+#shelx
+export SHELXPATH=/home/guoxing/tool/shelx
+alias ciftab='$SHELXPATH/ciftab'
+alias shelxa='$SHELXPATH/shelxa'
+alias shelxc='$SHELXPATH/shelxc'
+alias shelxd='$SHELXPATH/shelxd'
+alias shelxe='$SHELXPATH/shelxe'
+alias shelxh='$SHELXPATH/shelxh'
+#alias shelxl='$SHELXPATH/shelxl'
+alias shelxpro='$SHELXPATH/shelxpro'
+alias shelxs='$SHELXPATH/shelxs'
+alias shelxwat='$SHELXPATH/shelxwat'
+alias shelxl='$SHELXPATH/shelxl_ifc'
+
+OMP_NUM_THREADS=2
+
+#gcc
+alias gccf='/home/guoxing/tool/gcc.py'
+
+# PROCHECK environments and aliases
+# ---------------------------------
+export prodir=/home/guoxing/tool/procheck
+alias procheck='$prodir/procheck.scr'
+
+#set    prodir =  @@_procheck_program_directory_@@
+#setenv prodir   '@@_procheck_program_directory_@@'
+#alias procheck      $prodir'/procheck.scr'
+#alias procheck_comp $prodir'/procheck_comp.scr'
+#alias procheck_nmr  $prodir'/procheck_nmr.scr'
+#alias proplot       $prodir'/proplot.scr'
+#alias proplot_comp  $prodir'/proplot_comp.scr'
+#alias proplot_nmr   $prodir'/proplot_nmr.scr'
+#alias aquapro       $prodir'/aquapro.scr'
+#alias gfac2pdb      $prodir'/gfac2pdb.scr'
+#alias viol2pdb      $prodir'/viol2pdb.scr'
+#alias wirplot       $prodir'/wirplot.scr'
+
+# morehouse python
+#export morehousePath=/home/guoxing/disk2/ngs/morehouse/python
+export morehousePath=/nfs/ngs_node1/morehouse/python
+alias fileCutter='$morehousePath/fileCutter.py'
+alias fileCompare='$morehousePath/fileCompare.py'
+#alias file_combine='$morehousePath/file_combine_v2.py'
+alias file_combine='$morehousePath/file_combine_v3.py'
+alias file_combine_cnv='$morehousePath/file_combine_cnv.py'
+#alias snpCoverage='$morehousePath/snpCoverage_v5.py'
+#alias refMerger4='$morehousePath/refMerger_v4.py'
+alias refMerger='$morehousePath/refMerger_v5.py'
+alias hifiAccuCheck='$morehousePath/hifiAccuCheck_v2.py'
+#alias hifiAccuCheck_v3='$morehousePath/hifiAccuCheck_v3.py'
+alias makeGenoHap='$morehousePath/makeGenoHap_v1.py'
+alias hifi='$morehousePath/hifi'
+#alias hifi_fu='$morehousePath/hifi_fu'
+alias hrev='$morehousePath/hifi_revise.py'
+alias hifi_fu_ref='$morehousePath/hifi_fu_ref'
+alias haplotypeExtractor='$morehousePath/haplotypeExtractor.py'
+alias processSolid='$morehousePath/processSolid.py'
+alias fileCheck='$morehousePath/fileCheck.py'
+alias chrCombine='$morehousePath/chrCombine.py'
+alias primerCheck='$morehousePath/primerCheck.py'
+alias primerCheck_454='$morehousePath/primerCheck_454.py'
+alias solid2fastq='$morehousePath/solid2fastq.py'
+alias solid2fastq_454='$morehousePath/solid2fastq_454.py'
+alias primerRemove='$morehousePath/primerRemove.py'
+alias primerRemove_454='$morehousePath/primerRemove_454.py'
+alias chrPercentage='$morehousePath/chrPercentage.py'
+alias bwaRun='$morehousePath/bwaRun.py'
+alias repeatRemove='$morehousePath/repeatRemove.py'
+alias repeatRemove_sorted='$morehousePath/repeatRemove_sorted.py'
+alias dgvRemove='$morehousePath/dgvRemove.py'
+alias segdupsRemove='$morehousePath/segdupsRemove.py'
+alias strvalRemove='$morehousePath/strvalRemove.py'
+alias snpPick_solid='$morehousePath/snpPick_solid.py'
+alias snpPick_fish_sql_wli='$morehousePath/snpPick_fish_sql_wli.py'
+alias snpPick_quake='$morehousePath/snpPick.py'
+#alias solid_process='$morehousePath/solid_process.py'
+#alias solid_process_2='$morehousePath/solid_process_2.py'
+#alias solid_process_3='$morehousePath/solid_process_3.py'
+alias solid_process_4='$morehousePath/solid_process_4.py'
+alias sam_process='$morehousePath/sam_process.py'
+alias chr_spliter='$morehousePath/chr_spliter.py'
+alias fastq_spliter='$morehousePath/fastq_spliter.py'
+alias bwa_process='$morehousePath/bwa_process.py'
+alias bwa_process='$morehousePath/bwa_process.py'
+alias error_distribution='$morehousePath/error_distribution.py'
+alias genotype_extract='$morehousePath/genotype_extract.py'
+alias sam2fastq='$morehousePath/sam2fastq.py'
+alias error_compare='$morehousePath/error_compare.py'
+alias rmsk_preprocess='$morehousePath/rmsk_preprocess.py'
+alias rmsk_preprocess='$morehousePath/rmsk_preprocess.py'
+alias cnv_samprocess='$morehousePath/cnv_samprocess.py'
+alias seed_check='$morehousePath/seed_check.py'
+alias seed_check_homo='$morehousePath/seed_check_homo.py'
+#alias seed_correction3='$morehousePath/seed_correction_v3.py'
+alias seed_correction='$morehousePath/seed_correction_v4.py'
+alias seed_std_compare='$morehousePath/seed_std_compare.py'
+alias calculate_maf='$morehousePath/calculate_maf.py'
+alias sqlite='$morehousePath/sqlite.py'
+alias data_filter='$morehousePath/data_filter.py'
+
+alias cluster='$morehousePath/cluster.py'
+alias nickenzyme='$morehousePath/nickenzyme.py'
+alias test='$morehousePath/test.py'
+alias data_dicts='$morehousePath/data_dicts.py'
+alias hifi2='$morehousePath/hifi_v2.py'
+alias sam_position='$morehousePath/sam_position.py'
+alias 18to19='$morehousePath/18to19.py'
+
+
+# other programs
+export otherPath=/home/guoxing/disk2/tool
+alias samtools='$otherPath/samtools-0.1.18/samtools'
+alias bwa75='$otherPath/bwa-0.7.5a/bwa'
+alias yaha='$otherPath/yaha72/yaha'
+
+#sratools
+export sratools_path=$otherPath"/sratoolkit.2.3.2-5-centos_linux64/bin"
+alias fastq_dump='$sratools_path/fastq-dump'
+alias sam_dump='$sratools_path/sam-dump'
+
+# bash script
+export bash_path=/home/guoxing/disk2/ngs/bash
+alias solid_bash='$bash_path/solid_bash.sh'
+alias grep_position='$bash_path/grep_position.sh'
+alias seperate_sam_by_chr='$bash_path/seperate_sam_by_chr.sh'
+
+ #NGS programs
+#export disk2ToolPath=/home/guoxing/disk2/tool
+#alias samtools='$disk2ToolPath/samtools-0.1.18/samtools'
+
+export hifiPath=/home/guoxing/disk2/ngs/morehouse/other
+#alias hifi_i="$hifiPath/hifi_fu_with_imputing"
+
+# other
+#alias solid2fastq='$morehousePath/other/solid2fastq_gx.pl'
+#alias solid2fastq_lh='$morehousePath/other/solid2fastq_lh.pl'
+#alias solid2fastq_bfast='$morehousePath/bfast-0.7.0a/scripts/solid2fastq'
+
+# bwa
+#alias bwa='/home/guoxing/disk2/bwa-0.6.2/bwa'
+#alias bwa='$morehousePath/other/bwa-0.6.2/bwa'
+#alias bwa_run='$morehousePath/bwa_run.py'

@@ -100,7 +100,7 @@ def pair_end_indel(sam_file, chr_name):
 			
 			# process all chr or one particular chr
 			check_chr_name = chrName_first.startswith("chr") if (chr_name == "chr") else (chr_name == chrName_first)
-			if check_chr_name and (insert_size_first >= parameter.insert_size_lower_bond) and (insert_size_first <= parameter.insert_size_upper_bond):					# only keep the reads mapped to chr 
+			if check_chr_name and (insert_size_first > parameter.insert_size_lower_bond) and (insert_size_first <= parameter.insert_size_upper_bond):					# only keep the reads mapped to chr 
 				# if the first read is within insert size limit, check the second read
 				# the insert_size for a pair is the same. If the first read is passed, the second will be passed, too.
 				sam_line_second = inputfile_sam.readline()
@@ -307,7 +307,7 @@ def filter_by_XA():
 	"""
 	The file is already processed by filter_match_pairend, if both the read in a pair have XA
 	ane they belong to the same chr in XA, check if the start position distance are within
-	the insert size range >= 0 and <= 1000 at this moment
+	the insert size range > 0 and <= 1000 at this moment
 	"""
 	print "filter_match_pairend: ", parameter.sam_file_name
 	
@@ -334,7 +334,7 @@ def filter_by_XA():
 						
 					# process all chr or one particular chr, keep these steps for other files that do not need pair match
 					check_chr_name = chrName_first.startswith("chr") if (parameter.chr_name == "chr") else (parameter.chr_name == chrName_first)
-					if check_chr_name and (insert_size_first >= parameter.insert_size_lower_bond) and (insert_size_first <= parameter.insert_size_upper_bond):					# only keep the reads mapped to chr 
+					if check_chr_name and (insert_size_first > parameter.insert_size_lower_bond) and (insert_size_first <= parameter.insert_size_upper_bond):					# only keep the reads mapped to chr 
 						# if the first read is within insert size limit, check the second read
 						# the insert_size for a pair is the same. If the first read is passed, the second will be passed, too.
 						sam_line_second = inputfile_sam.readline()
@@ -419,7 +419,7 @@ def check_XA(first_XA_info, second_XA_info):
 	for chr in common_chr:
 		distance = abs(abs(int(first_XA_dict[chr])) - abs(int(second_XA_dict[chr])))
 		#print distance
-		if distance >= parameter.insert_size_lower_bond and distance <= parameter.insert_size_upper_bond:
+		if distance > parameter.insert_size_lower_bond and distance <= parameter.insert_size_upper_bond:
 			keep_this_pair = False
 			break
 	return keep_this_pair
