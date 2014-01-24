@@ -521,6 +521,79 @@ def seperate_by_chr():
 	print cmd
 	os.system(cmd)
 
+def combine_cnv_repeat(repeat_cnv_file, combined_file):
+	
+	print "combine_cnv_repeat: ", repeat_cnv_file
+	repeat_cnv_file_name = repeat_cnv_file[:(len(repeat_cnv_file)-4)]
+	
+	#load combined file into repeat list
+	repeat_list = []
+	if os.path.isfile(combined_file):
+		with open(currentPath + combined_file, "r") as inputfile_repeat:
+			for line in inputfile_repeat:
+				if not line.startswith("@"):
+					elements = line.strip().split()
+					try:
+						start_pos = int(elements[0].strip())
+						end_pos = int(elements[1].strip())
+						chr = elements[2].strip()
+						repeat_cnv_file_name = elements[3].strip()
+						repeat_list.append((start_pos, end_pos, chr, repeat_cnv_file_name))
+					except:
+						print "error in line:", line
+					
+		print "repeat_list before", len(repeat_list)
+	#else:
+	#	inputfile_repeat = open(currentPath + combined_file, 'w')
+	#	inputfile_repeat.close()
+	
+	# add new repeat file into combined repeat list
+	read_length = 101
+	# change index for different file
+	start_pos_index = 2
+	end_pos_index = 3
+	chr_index = 1
+	with open(currentPath + repeat_cnv_file, "r") as inputfile_repeat:
+		for line in inputfile_repeat:
+			if not line.startswith("#"):
+				elements = line.strip().split()
+				start_pos = 0
+				end_pos = 0
+				chr = ""
+				try:
+					start_pos = int(elements[start_pos_index].strip())
+					end_pos = int(elements[end_pos_index].strip())
+					chr = elements[chr_index].strip()
+				except:
+					print "error in first read:", line
+				if end_pos - start_pos >= read_length:
+					if len(repeat_list) == 0:
+						repeat_list.append((start_pos, end_pos, chr, repeat_cnv_file_name))
+					else:
+						last_start_pos = repeat_list[-1][0]
+						last_end_pos = repeat_list[-1][1]
+					
+						if start_pos < last_start_pos or end_pos > last_end_pos:
+							if start_pos < last_start_pos and end_pos > last_end_pos:
+								# if the new repeat covers the last repeat, remove the last one.
+								
+								while len(repeat_list) > 1:
+									del repeat_list[-1]
+									last_start_pos = repeat_list[-1][0]
+									last_end_pos = repeat_list[-1][1]	 
+							repeat_list.append((start_pos, end_pos, chr, repeat_cnv_file_name))
+						else: #within the last repeat range do nothing skip this repeat
+							pass
+	# output combined file
+	combined_file_name = combined_file[:(len(combined_file)-4)] + "_" + repeat_cnv_file
+	title_line = "@start_pos	end_pos chr	ori_file"
+	print "repeat_list after", len(repeat_list)
+	with open(currentPath + combined_file_name, "w") as outputfile_combine:
+		print >> outputfile_combine, title_line
+		for repeat in repeat_list:
+			print >> outputfile_combine, repeat[0], repeat[1], repeat[2], repeat[3]
+
+
 def sam_process(sam_file, chr_name, mode):
 	if mode == "single":
 		single_end_indel(sam_file, chr_name)
@@ -541,6 +614,8 @@ def sam_process(sam_file, chr_name, mode):
 	elif mode == "xa":		
 		filter_by_XA()
 
+		
+
 def get_args():
 	desc="variation call"
 	usage = "snpPick_fish -s sam_file -c chr -m mode" 
@@ -548,6 +623,9 @@ def get_args():
 	parser.add_option("-s", "--sam", type="string", dest="samFile",help = "Input File Name", default="null")
 	parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="chr")
 	parser.add_option("-m", "--mode", type="string", dest="mode",help = "", default="null")
+	
+	parser.add_option("-a", "--repeat", type="string", dest="repeatFile",help = "", default="chr")
+	parser.add_option("-b", "--combined", type="string", dest="combinedFile",help = "", default="null")
 	(options, args) = parser.parse_args()
 	if options.mode == "null":
 		print "parameters missing..."
@@ -557,18 +635,21 @@ def get_args():
 
 if __name__=='__main__':
 	
+	start_time = time.time()
 	global parameter
 	parameter = parameters()
 	
 	options = get_args()
-	parameter.sam_file = options.samFile
-	parameter.chr_name = options.chrName
-	parameter.sam_file_name = parameter.sam_file[:(len(parameter.sam_file)-4)]
 	parameter.mode = options.mode
-	
-	start_time = time.time()
-	sam_process(parameter.sam_file, parameter.chr_name, parameter.mode)
-	#run_time = str(format((end - start), "0.3f"))
+	if parameter.mode == "com_repeat":
+		repeat_cnv_file = options.repeatFile
+		combined_file = options.combinedFile
+		combine_cnv_repeat(repeat_cnv_file, combined_file)
+	else:
+		parameter.sam_file = options.samFile
+		parameter.chr_name = options.chrName
+		parameter.sam_file_name = parameter.sam_file[:(len(parameter.sam_file)-4)]
+		sam_process(parameter.sam_file, parameter.chr_name, parameter.mode)
 	print "run time is: ", round((time.time() - start_time), 3), "s"
 	
 	"""

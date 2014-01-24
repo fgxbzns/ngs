@@ -127,7 +127,7 @@ alias procheck='$prodir/procheck.scr'
 
 # morehouse python
 #export morehousePath=/home/guoxing/disk2/ngs/morehouse/python
-export morehousePath=/nfs/ngs_node1/morehouse/python
+export morehousePath=/nfs/ngs/morehouse/python
 alias fileCutter='$morehousePath/fileCutter.py'
 alias fileCompare='$morehousePath/fileCompare.py'
 #alias file_combine='$morehousePath/file_combine_v2.py'
