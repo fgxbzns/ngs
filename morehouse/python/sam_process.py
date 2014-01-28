@@ -521,7 +521,178 @@ def seperate_by_chr():
 	print cmd
 	os.system(cmd)
 
-def combine_cnv_repeat(repeat_cnv_file, combined_file):
+def load_repeat(repeat_cnv_file, chr_index, start_pos_index, end_pos_index):
+	print "combine_cnv_repeat: ", repeat_cnv_file
+	repeat_list = []
+	read_length = 101
+	repeat_cnv_file_name = repeat_cnv_file[:(len(repeat_cnv_file)-4)]
+		
+	with open(currentPath + repeat_cnv_file, "r") as inputfile_repeat:
+		for line in inputfile_repeat:
+			if not line.startswith("#"):
+				elements = line.strip().split()
+				start_pos = 0
+				end_pos = 0
+				chr = ""
+				try:
+					start_pos = int(elements[start_pos_index].strip())
+					end_pos = int(elements[end_pos_index].strip())
+					chr = elements[chr_index].strip()
+				except:
+					print "error in line:", line
+				if end_pos - start_pos >= read_length:
+					repeat_list.append((start_pos, end_pos, chr, repeat_cnv_file_name))
+	print "list size:", repeat_cnv_file, len(repeat_list)
+	return repeat_list
+
+def combine_repeat_list(repeat_list_1, repeat_list_2):
+	repeat_list = []
+	i = 0
+	j = 0
+	start_pos_1 = 0
+	end_pos_1 = 0
+	start_pos_2 = 0
+	end_pos_2 = 0
+	"""
+	start_pos_1 = repeat_list_1[0][0]
+	end_pos_1 = repeat_list_1[0][1]
+	start_pos_2 = repeat_list_2[0][0]
+	end_pos_2 = repeat_list_2[0][1]
+	"""
+	while i < len(repeat_list_1) or j < len(repeat_list_2):
+		
+		if i == len(repeat_list_1) - 1 and j < len(repeat_list_2):
+			repeat_list.append(repeat_list_2[j])
+			j += 1
+		elif j == len(repeat_list_2) - 1 and i < len(repeat_list_1):
+			repeat_list.append(repeat_list_1[i])
+			i += 1
+		else:
+			if i < len(repeat_list_1):
+				start_pos_1 = repeat_list_1[i][0]
+				end_pos_1 = repeat_list_1[i][1]
+	
+			if j < len(repeat_list_2):
+				start_pos_2 = repeat_list_2[j][0]
+				end_pos_2 = repeat_list_2[j][1]
+		
+			if end_pos_1 <= start_pos_2:
+				repeat_list.append(repeat_list_1[i])
+				i += 1
+			elif start_pos_1 < start_pos_2:
+				if end_pos_1 <= end_pos_2:
+					repeat_list.append(repeat_list_1[i])
+					i += 1
+				elif end_pos_1 > end_pos_2:	# repeat 1 contains repeat 2. 2 can be skipped
+					j += 1
+					#print len(repeat_list), start_pos_1, end_pos_1, start_pos_2, end_pos_2
+			elif start_pos_1 >= start_pos_2:
+				if start_pos_1 < end_pos_2:
+					if end_pos_1 <= end_pos_2:	# repeat 2 contains repeat 1. 1 can be skipped
+						i += 1
+						#print len(repeat_list), start_pos_1, end_pos_1, start_pos_2, end_pos_2
+					elif end_pos_1 > end_pos_2:
+						repeat_list.append(repeat_list_2[j])
+						j += 1
+				elif start_pos_1 >= end_pos_2:
+					repeat_list.append(repeat_list_2[j])
+					j += 1
+					
+			else:
+				print "error in", start_pos_1, end_pos_1, start_pos_2, end_pos_2
+			#print len(repeat_list), start_pos_1, end_pos_1, start_pos_2, end_pos_2
+	return repeat_list		
+
+def combine_cnv_repeat(file_1, file_2):
+	
+	print "combine_cnv_repeat: ", file_1, file_2
+	file_1_name = file_1[:(len(file_1)-4)]
+	file_2_name = file_2[:(len(file_2)-4)]
+	"""
+	#MultSNPs_chrX (same pos with DGV_chrX)
+	chr_index = 1
+	start_pos_index = 2
+	end_pos_index = 3
+	repeat_list_1 = load_repeat(file_1, chr_index, start_pos_index, end_pos_index)
+	"""
+	#RepeatMa_chrX
+	chr_index = 5
+	start_pos_index = 6
+	end_pos_index = 7
+	repeat_list_1 = load_repeat(file_1, chr_index, start_pos_index, end_pos_index)
+	"""
+	#SegDups_chrX
+	chr_index = 1
+	start_pos_index = 2
+	end_pos_index = 3
+	repeat_list_2 = load_repeat(file_2, chr_index, start_pos_index, end_pos_index)
+	"""
+	#combined
+	chr_index = 2
+	start_pos_index = 0
+	end_pos_index = 1
+	repeat_list_2 = load_repeat(file_2, chr_index, start_pos_index, end_pos_index)
+	
+	if len(repeat_list_1) > 0 and len(repeat_list_2) > 0:
+		repeat_list = combine_repeat_list(repeat_list_1, repeat_list_2)
+		# output combined file
+		title_line = "#start_pos	end_pos chr	ori_file"
+		print "repeat_list combined size", len(repeat_list)
+		with open(currentPath + file_1_name + "_" + file_2_name + ".txt", "w") as outputfile_combine:
+			print >> outputfile_combine, title_line
+			for repeat in repeat_list:
+				print >> outputfile_combine, repeat[0], repeat[1], repeat[2], repeat[3]
+	else:
+		print "list size is zero.", len(repeat_list_1), len(repeat_list_2)
+
+
+
+def filter_by_repeat(repeat_cnv_file):	
+	"""
+	The file is already processed by insert size, XA, chr
+	"""	
+	print "filter_by_repeat: ", repeat_cnv_file
+	repeat_cnv_file_name = repeat_cnv_file[:(len(repeat_cnv_file)-4)]
+	
+	#MultSNPs_chrX
+	chr_index = 1
+	start_pos_index = 2
+	end_pos_index = 3
+	
+	repeat_list = load_repeat(repeat_cnv_file, chr_index, start_pos_index, end_pos_index)
+	
+	total_reads_num = 0
+	reads_after_process_total_number = 0
+	
+	with open(currentPath + parameter.sam_file, "r") as inputfile_sam:
+		with open(parameter.sam_file_name + "_" + repeat_cnv_file_name + ".sam", "w") as output_file:
+			sam_line_first = inputfile_sam.readline() # the first read line in a pair
+			while sam_line_first != '':
+				if not sam_line_first.startswith("@"):
+					total_reads_num += 1
+					elements_first = sam_line_first.strip().split()
+					try:
+						read_ID_first = elements_first[0].strip()
+						#chrName_first = elements_first[2].strip()
+						start_pos_first = int(elements_first[3].strip())
+						#insert_size_first = abs(int(elements_first[8].strip()))			#  insert_size for one of the read is negative
+						#indel_info_first = elements_first[5].strip()
+						#read_seq_first = elements_first[9].strip()
+						#qual_line_first = elements_first[10].strip()
+						#first_is_XA, first_XA_info = is_multiple_maping(elements_first)
+					except:
+						print "error in first read:", sam_line_first
+						
+					# process all chr or one particular chr, keep these steps for other files that do not need pair match
+					check_chr_name = chrName_first.startswith("chr") if (parameter.chr_name == "chr") else (parameter.chr_name == chrName_first)
+					if check_chr_name and (insert_size_first > parameter.insert_size_lower_bond) and (insert_size_first <= parameter.insert_size_upper_bond):					# only keep the reads mapped to chr 
+						# if the first read is within insert size limit, check the second read
+						# the insert_size for a pair is the same. If the first read is passed, the second will be passed, too.
+						sam_line_second = inputfile_sam.readline()
+						total_reads_num += 1
+	
+
+def combine_cnv_repeat_old(file_1, file_2):
 	
 	print "combine_cnv_repeat: ", repeat_cnv_file
 	repeat_cnv_file_name = repeat_cnv_file[:(len(repeat_cnv_file)-4)]
@@ -550,9 +721,27 @@ def combine_cnv_repeat(repeat_cnv_file, combined_file):
 	# add new repeat file into combined repeat list
 	read_length = 101
 	# change index for different file
+	"""
+	#MultSNPs_chrX
+	chr_index = 1
 	start_pos_index = 2
 	end_pos_index = 3
+	"""
+	"""
+	#RepeatMa_chrX
+	chr_index = 5
+	start_pos_index = 6
+	end_pos_index = 7
+	"""
+	#DGV_chrX
 	chr_index = 1
+	start_pos_index = 2
+	end_pos_index = 3
+	
+	
+	temp_repeat_list = []	# to store the newly loaded repeat list
+	repeat_cnv_file_name = repeat_cnv_file[:(len(repeat_cnv_file)-4)]
+		
 	with open(currentPath + repeat_cnv_file, "r") as inputfile_repeat:
 		for line in inputfile_repeat:
 			if not line.startswith("#"):
@@ -567,6 +756,8 @@ def combine_cnv_repeat(repeat_cnv_file, combined_file):
 				except:
 					print "error in first read:", line
 				if end_pos - start_pos >= read_length:
+					temp_repeat_list.append((start_pos, end_pos, chr, repeat_cnv_file_name))
+					"""
 					if len(repeat_list) == 0:
 						repeat_list.append((start_pos, end_pos, chr, repeat_cnv_file_name))
 					else:
@@ -584,6 +775,11 @@ def combine_cnv_repeat(repeat_cnv_file, combined_file):
 							repeat_list.append((start_pos, end_pos, chr, repeat_cnv_file_name))
 						else: #within the last repeat range do nothing skip this repeat
 							pass
+					"""
+	# combine the new list and the previous loaded list. compare the elements in two lists and remove the overlapped repeat.
+	
+	
+	
 	# output combined file
 	combined_file_name = combined_file[:(len(combined_file)-4)] + "_" + repeat_cnv_file
 	title_line = "@start_pos	end_pos chr	ori_file"
@@ -592,6 +788,7 @@ def combine_cnv_repeat(repeat_cnv_file, combined_file):
 		print >> outputfile_combine, title_line
 		for repeat in repeat_list:
 			print >> outputfile_combine, repeat[0], repeat[1], repeat[2], repeat[3]
+
 
 
 def sam_process(sam_file, chr_name, mode):
@@ -624,7 +821,7 @@ def get_args():
 	parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="chr")
 	parser.add_option("-m", "--mode", type="string", dest="mode",help = "", default="null")
 	
-	parser.add_option("-a", "--repeat", type="string", dest="repeatFile",help = "", default="chr")
+	parser.add_option("-a", "--repeat", type="string", dest="repeatFile",help = "", default="null")
 	parser.add_option("-b", "--combined", type="string", dest="combinedFile",help = "", default="null")
 	(options, args) = parser.parse_args()
 	if options.mode == "null":
