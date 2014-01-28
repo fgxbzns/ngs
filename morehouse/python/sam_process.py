@@ -471,28 +471,29 @@ def indel_correction(read_seq, qual_line, indel_info):
 def indel_process(sam_file):
 	sam_file_name = sam_file[:(len(sam_file)-4)]
 	print "indel_process: ", sam_file_name
-	inputFile_sam = open(currentPath + sam_file, "r")
-	outputFile_sam = open(currentPath + sam_file_name + "_indel.sam", "w")
+	#inputFile_sam = open(currentPath + sam_file, "r")
+	#outputFile_sam = open(currentPath + sam_file_name + "_indel.sam", "w")
 	total_reads_num = 0
-	
-	for read in inputFile_sam:
-		if not read.startswith("@"):
-			total_reads_num += 1	
-			elements_first = read.strip().split()
-			try:
-				indel_info = elements_first[5].strip()
-				read_seq = elements_first[9].strip()
-				qual_line = elements_first[10].strip()
-				read_qual = indel_correction(read_seq, qual_line, indel_info)
-				read = read.replace(read_seq, read_qual[0])
-				read = read.replace(qual_line, read_qual[1])
-				print >> outputFile_sam, read.strip()		
-			except:
-				#print "error in line: ", line
-				pass
+	with open(currentPath + sam_file_name + "_indel.sam", "w") as outputFile_sam:
+		with open(currentPath + sam_file, "r") as inputFile_sam:
+			for read in inputFile_sam:
+				if not read.startswith("@"):
+					total_reads_num += 1	
+					elements_first = read.strip().split()
+					try:
+						indel_info = elements_first[5].strip()
+						read_seq = elements_first[9].strip()
+						qual_line = elements_first[10].strip()
+						read_qual = indel_correction(read_seq, qual_line, indel_info)
+						read = read.replace(read_seq, read_qual[0])
+						read = read.replace(qual_line, read_qual[1])
+						print >> outputFile_sam, read.strip()		
+					except:
+						#print "error in line: ", line
+						pass
 	print "total_reads_num: ", total_reads_num
-	inputFile_sam.close()
-	outputFile_sam.close()
+	#inputFile_sam.close()
+	#outputFile_sam.close()
 
 def pair_end_indel_multiple():
 	"""problem cannot call itself"""
@@ -635,9 +636,12 @@ def combine_cnv_repeat(file_1, file_2):
 	
 	if len(repeat_list_1) > 0 and len(repeat_list_2) > 0:
 		repeat_list = combine_repeat_list(repeat_list_1, repeat_list_2)
+		print "repeat_list combined size before cleanup", len(repeat_list)
+		
+		repeat_list = cleanup_repeat_list(repeat_list)
+		print "repeat_list combined size", len(repeat_list)
 		# output combined file
 		title_line = "#start_pos	end_pos chr	ori_file"
-		print "repeat_list combined size", len(repeat_list)
 		with open(currentPath + file_1_name + "_" + file_2_name + ".txt", "w") as outputfile_combine:
 			print >> outputfile_combine, title_line
 			for repeat in repeat_list:
@@ -645,8 +649,18 @@ def combine_cnv_repeat(file_1, file_2):
 	else:
 		print "list size is zero.", len(repeat_list_1), len(repeat_list_2)
 
-
-
+def cleanup_repeat_list(ori_repeat_list):
+	# compare the repeat inside the list, remove the repeats that are contained in other repeats
+	new_repeat_list = []
+	current_repeat = [0, 0]
+	for repeat in ori_repeat_list:
+		if repeat[0] >= current_repeat[0] and repeat[1] <= current_repeat[1]:
+			pass
+		else:
+			new_repeat_list.append(repeat)
+			current_repeat = repeat
+	return new_repeat_list
+		
 def filter_by_repeat(repeat_cnv_file):	
 	"""
 	The file is already processed by insert size, XA, chr
@@ -691,103 +705,6 @@ def filter_by_repeat(repeat_cnv_file):
 						sam_line_second = inputfile_sam.readline()
 						total_reads_num += 1
 	
-
-def combine_cnv_repeat_old(file_1, file_2):
-	
-	print "combine_cnv_repeat: ", repeat_cnv_file
-	repeat_cnv_file_name = repeat_cnv_file[:(len(repeat_cnv_file)-4)]
-	
-	#load combined file into repeat list
-	repeat_list = []
-	if os.path.isfile(combined_file):
-		with open(currentPath + combined_file, "r") as inputfile_repeat:
-			for line in inputfile_repeat:
-				if not line.startswith("@"):
-					elements = line.strip().split()
-					try:
-						start_pos = int(elements[0].strip())
-						end_pos = int(elements[1].strip())
-						chr = elements[2].strip()
-						repeat_cnv_file_name = elements[3].strip()
-						repeat_list.append((start_pos, end_pos, chr, repeat_cnv_file_name))
-					except:
-						print "error in line:", line
-					
-		print "repeat_list before", len(repeat_list)
-	#else:
-	#	inputfile_repeat = open(currentPath + combined_file, 'w')
-	#	inputfile_repeat.close()
-	
-	# add new repeat file into combined repeat list
-	read_length = 101
-	# change index for different file
-	"""
-	#MultSNPs_chrX
-	chr_index = 1
-	start_pos_index = 2
-	end_pos_index = 3
-	"""
-	"""
-	#RepeatMa_chrX
-	chr_index = 5
-	start_pos_index = 6
-	end_pos_index = 7
-	"""
-	#DGV_chrX
-	chr_index = 1
-	start_pos_index = 2
-	end_pos_index = 3
-	
-	
-	temp_repeat_list = []	# to store the newly loaded repeat list
-	repeat_cnv_file_name = repeat_cnv_file[:(len(repeat_cnv_file)-4)]
-		
-	with open(currentPath + repeat_cnv_file, "r") as inputfile_repeat:
-		for line in inputfile_repeat:
-			if not line.startswith("#"):
-				elements = line.strip().split()
-				start_pos = 0
-				end_pos = 0
-				chr = ""
-				try:
-					start_pos = int(elements[start_pos_index].strip())
-					end_pos = int(elements[end_pos_index].strip())
-					chr = elements[chr_index].strip()
-				except:
-					print "error in first read:", line
-				if end_pos - start_pos >= read_length:
-					temp_repeat_list.append((start_pos, end_pos, chr, repeat_cnv_file_name))
-					"""
-					if len(repeat_list) == 0:
-						repeat_list.append((start_pos, end_pos, chr, repeat_cnv_file_name))
-					else:
-						last_start_pos = repeat_list[-1][0]
-						last_end_pos = repeat_list[-1][1]
-					
-						if start_pos < last_start_pos or end_pos > last_end_pos:
-							if start_pos < last_start_pos and end_pos > last_end_pos:
-								# if the new repeat covers the last repeat, remove the last one.
-								
-								while len(repeat_list) > 1:
-									del repeat_list[-1]
-									last_start_pos = repeat_list[-1][0]
-									last_end_pos = repeat_list[-1][1]	 
-							repeat_list.append((start_pos, end_pos, chr, repeat_cnv_file_name))
-						else: #within the last repeat range do nothing skip this repeat
-							pass
-					"""
-	# combine the new list and the previous loaded list. compare the elements in two lists and remove the overlapped repeat.
-	
-	
-	
-	# output combined file
-	combined_file_name = combined_file[:(len(combined_file)-4)] + "_" + repeat_cnv_file
-	title_line = "@start_pos	end_pos chr	ori_file"
-	print "repeat_list after", len(repeat_list)
-	with open(currentPath + combined_file_name, "w") as outputfile_combine:
-		print >> outputfile_combine, title_line
-		for repeat in repeat_list:
-			print >> outputfile_combine, repeat[0], repeat[1], repeat[2], repeat[3]
 
 
 
