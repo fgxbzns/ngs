@@ -705,9 +705,6 @@ def filter_by_repeat(repeat_cnv_file):
 						sam_line_second = inputfile_sam.readline()
 						total_reads_num += 1
 	
-
-
-
 def sam_process(sam_file, chr_name, mode):
 	if mode == "single":
 		single_end_indel(sam_file, chr_name)
@@ -719,16 +716,14 @@ def sam_process(sam_file, chr_name, mode):
 		seperate_by_chr()
 	elif mode == "combine":
 		combine_files()
-	elif mode == "prefilter":	
+	elif mode == "prefilter":
 		filter_by_chr()
-	elif mode == "match":		
+	elif mode == "match":	
 		match_pairend()
 	elif mode == "fm":		
 		filter_match_pairend()
 	elif mode == "xa":		
 		filter_by_XA()
-
-		
 
 def get_args():
 	desc="variation call"
