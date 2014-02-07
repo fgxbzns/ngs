@@ -186,6 +186,7 @@ alias seed_std_compare='$morehousePath/seed_std_compare.py'
 alias calculate_maf='$morehousePath/calculate_maf.py'
 alias sqlite='$morehousePath/sqlite.py'
 alias data_filter='$morehousePath/data_filter.py'
+alias simulation='$morehousePath/simulation_run.py'
 
 alias cluster='$morehousePath/cluster.py'
 alias nickenzyme='$morehousePath/nickenzyme.py'

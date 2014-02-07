@@ -19,19 +19,6 @@ hap_std_total_number = 0
 hap_std_total_number_withoutXN = 0
 hifi_result_total_number = 0
 
-def get_args():
-	desc="Compare seed and std hap, to check purity of seed"
-	usage = "seed_std_compare -i seed_file -c chr#" 
-	parser = OptionParser(usage = usage) 
-	parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="chr11")
-	parser.add_option("-i", "--imputed", type="string", dest="hifiResult",help = "Input hifiResult file Name", default="null")
-	(options, args) = parser.parse_args()
-	if options.chrName == "null" or options.hifiResult == "null":
-		print "parameters missing..."
-		print usage
-		sys.exit(1)
-	return options
-
 def allele_similarity(hifi_result_dict, hifi_std_dict):
 	same_to_A = 0
 	same_to_B = 0
@@ -62,6 +49,7 @@ def compare_std_result(hifi_result_dict, hifi_std_dict):
 	same_to_AB_dict = {}
 	AT_GC_dict = {}
 	not_same_to_AB_dict = {}
+	same_position_dict = {}
 	different_position_dict = {}
 	same_position_total_number = 0
 	different_position_total_number = 0
@@ -94,12 +82,13 @@ def compare_std_result(hifi_result_dict, hifi_std_dict):
 						AT_GC_dict[position] = elements_hifi
 					else:
 						not_same_to_AB_dict[position] = elements_hifi
-				same_position_total_number += 1			
+				same_position_dict[position] = elements_hifi
+				#same_position_total_number += 1			
 		else:
-			different_position_total_number += 1
+			#different_position_total_number += 1
 			different_position_dict[position] = elements_hifi
 			
-	return (same_to_A_dict, same_to_B_dict, same_to_AB_dict, not_same_to_AB_dict, different_position_dict, same_position_total_number, different_position_total_number, AT_GC_dict)
+	return (same_to_A_dict, same_to_B_dict, same_to_AB_dict, not_same_to_AB_dict, same_position_dict, different_position_dict, AT_GC_dict)
 
 
 def output_dict(file_name, dict, hifi_std_dict):
@@ -108,10 +97,21 @@ def output_dict(file_name, dict, hifi_std_dict):
 		print >> output_file, list_to_line(elements), "std:", list_to_line(hifi_std_dict[position])
 	output_file.close()
 
+def seperate_homo_hetero(same_to_AB_dict):
+    homo_dict = {}
+    hetero_dict = {}
+    for position, snp in same_to_AB_dict.iteritems():
+    	#if snp[2] != 'X' and snp[3] != 'X' and snp[2] != 'N' and snp[3] != 'N':
+    	if snp[2] == snp[3]:
+    		homo_dict[position] = snp
+    	else:
+    		hetero_dict[position] = snp
+    return (homo_dict, hetero_dict)
 
 def hifiAccuCheck (hifi_result_file, chr_name):
-	#hap_std_file_name = "NA12878_hap_new_refed.txt"	# simulation data
-	hap_std_file_name = file_path + "ASW_"+chr_name+"_child_hap_refed.txt"	
+	hap_std_file_name = file_path + "ASW_"+chr_name+"_child_hap_refed.txt"	# 454,solid NA10847
+	#hap_std_file_name = file_path + "NA12878_hap_new_refed.txt"	# simulation data hg18 chr6
+
 	hifi_std_dict = load_raw_data(hap_std_file_name, raw_data_format)[1]
 	
 	hifi_std_dict = removeN(hifi_std_dict)
@@ -129,10 +129,10 @@ def hifiAccuCheck (hifi_result_file, chr_name):
 	same_to_B_dict = compare_tuple[1]
 	same_to_AB_dict = compare_tuple[2]
 	not_same_to_AB_dict = compare_tuple[3]
-	different_position_dict = compare_tuple[4]
-	same_position_total_number = compare_tuple[5]
-	different_position_total_number = compare_tuple[6]
-	AT_GC_dict_number = len(compare_tuple[7])
+	same_position_dict = compare_tuple[4]
+	different_position_dict = compare_tuple[5]
+	AT_GC_dict = compare_tuple[6]
+	
 	"""
 	output_dict("same_to_A_dict.txt", same_to_A_dict, hifi_std_dict)
 	output_dict("same_to_B_dict.txt", same_to_B_dict, hifi_std_dict)
@@ -143,10 +143,29 @@ def hifiAccuCheck (hifi_result_file, chr_name):
 	same_B_total_number = len(same_to_B_dict)
 	same_AB_total_number = len(same_to_AB_dict)
 	not_same_AB_total_number = len(not_same_to_AB_dict)
+	same_position_total_number = len(same_position_dict)
+	different_position_total_number = len(different_position_dict)
+	AT_GC_dict_number = len(AT_GC_dict)
 	
 	pencentage_in_common = format(float(same_position_total_number)/float(hifi_result_total_number)*100, "0.3f")
-	accuracy = format(float(same_A_total_number + same_B_total_number + same_AB_total_number)/float(same_position_total_number-AT_GC_dict_number)*100, "0.3f")	
+	accuracy = round(float(same_A_total_number + same_B_total_number + same_AB_total_number)/float(same_position_total_number-AT_GC_dict_number)*100, 3)	
+
 	
+	same_AB_homo, same_AB_hetero = seperate_homo_hetero(same_to_AB_dict)
+	not_same_AB_homo, not_same_AB_hetero = seperate_homo_hetero(not_same_to_AB_dict)
+	different_AB_homo, different_AB_hetero = seperate_homo_hetero(different_position_dict)
+	AT_GC_homo, AT_GC_hetero = seperate_homo_hetero(AT_GC_dict)
+	imputed_homo, imputed_hetero = seperate_homo_hetero(hifi_result_dict)
+	same_position_homo, same_position_hetero = seperate_homo_hetero(same_position_dict)
+	#hetero_accuracy = round(float(len(same_AB_hetero))/float(len(same_position_hetero)-len(AT_GC_hetero))*100, 3)
+	#homo_accuracy = round(float(len(same_AB_homo))/float(len(same_position_homo)-len(AT_GC_homo))*100, 3)
+	
+	#hetero_accuracy = round(float(same_A_total_number + same_B_total_number + len(same_AB_hetero))/float(len(same_AB_hetero)+len(not_same_AB_hetero) \
+	#														-AT_GC_dict_number )*100, 3)
+	hetero_accuracy = round(float(same_A_total_number + same_B_total_number + len(same_AB_hetero))/float(len(same_position_hetero) \
+															-AT_GC_dict_number )*100, 3)
+	homo_accuracy = round(float(len(same_AB_homo))/float(len(same_position_homo))*100, 3)
+		
 	print "same_position_total_number", same_position_total_number
 	print "different_position_total_number", different_position_total_number
 	print "same_AB_total_number", same_AB_total_number
@@ -156,6 +175,11 @@ def hifiAccuCheck (hifi_result_file, chr_name):
 	print "not_same_AB_total_number", not_same_AB_total_number
 	print "pencentage in common", pencentage_in_common
 	print "accuracy", accuracy
+	#print "len(same_AB_hetero)", len(same_AB_hetero)
+	#print "len(same_position_hetero)", len(same_position_hetero)
+	#print "len(AT_GC_hetero)", len(AT_GC_hetero)
+	print "hetero_accuracy", hetero_accuracy
+	print "homo_accuracy", homo_accuracy
 	
 	accuracy_output_file_name = "hifi_accuracy.txt"
 	accuracy_output_file = open(currentPath + accuracy_output_file_name, "w")	
@@ -183,6 +207,20 @@ def hifiAccuCheck (hifi_result_file, chr_name):
 	#print cmd
 	#os.system(cmd)
 	"""
+
+def get_args():
+	desc="Compare seed and std hap, to check purity of seed"
+	usage = "seed_std_compare -i seed_file -c chr#" 
+	parser = OptionParser(usage = usage) 
+	parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="chr11")
+	parser.add_option("-i", "--imputed", type="string", dest="hifiResult",help = "Input hifiResult file Name", default="null")
+	(options, args) = parser.parse_args()
+	if options.chrName == "null" or options.hifiResult == "null":
+		print "parameters missing..."
+		print usage
+		sys.exit(1)
+	return options
+
 if __name__=='__main__':
 	options = get_args()
 	chr_name = options.chrName

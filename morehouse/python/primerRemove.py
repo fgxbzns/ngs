@@ -84,5 +84,5 @@ if __name__ == '__main__':
 	start_time = time.time()
 	primer_remove()
 	elapse_time = time.time() - start_time
-	print "elapse_time is: " + str(format(elapse_time, "0.3f")) + "s"
+	print "run time is: ", round((time.time() - start_time), 3), "s"
 

@@ -17,12 +17,27 @@ check if an element is in a group, dict is much faster than list
 """
 """cannot import other files"""
 
+chr_length_dict = {"chr1":247249719, "chr2":242951149, "chr3":199501827, "chr4":191273063, "chr5":180857866, "chr6":170899992, "chr7":158821424, 
+					"chr8":146274826, "chr9":140273252, "chr10":135374737, "chr11":134452384, "chr12":132349534, "chr13":114142980, 
+					"chr14":106368585, "chr15":100338915, "chr16":88827254, "chr17":78774742, "chr18":76117153, "chr19":63811651, "chr20":62435964, 
+					"chr21":46944323, "chr22":49691432, "chrX":154913754, "chrY":57772988}
+
+solid_chr = {1:"chr5", 2:"chrX", 3:"chr9", 4:"chr1", 5:"chr11", 6:"chr7", 7:"chr17", 8:"chr13", 9:"chrX", 10:"chr3", 11:"chr11"}
+
 file_path = "/home/guoxing/disk2/solid/common_files/"
 program_path = "/home/guoxing/disk2/ngs/morehouse/python/"
 #bash_path = "/home/guoxing/disk2/ngs/bash/"
 bash_path = "/nfs/ngs/bash/"
 data_record_path = "/home/guoxing/disk2/solid/common_files/data_record/"
 currentPath = os.getcwd() + '/'
+
+# simulation data hg18 chr6
+hap_std_file_name = file_path + "NA12878_hap_new_refed.txt"	# simulation data hg18 chr6
+
+# solid data
+#hap_std_file_name = file_path + "ASW_"+chr_name+"_child_hap_refed.txt"	
+
+
 
 raw_data_format = "list"
 

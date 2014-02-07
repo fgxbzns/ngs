@@ -19,7 +19,9 @@ def output_seed(file_name, seed_title_info, snp_hap_seed_dict, output_seed_dict)
 	seed_new_file.close()
 
 def seed_std_compare(seed_input_file, chr_name):
-	std_file_name = "ASW_"+chr_name+"_child_hap_refed.txt"
+	std_file_name = "ASW_"+chr_name+"_child_hap_refed.txt"	# for solid data
+	#std_file_name = "NA12878_hap_new_refed.txt"	# simulation data hg18 chr6
+
 	std_input_file = file_path + std_file_name
 	snp_hap_std_dict = load_raw_data(std_input_file, raw_data_format)[1]
 	
@@ -39,7 +41,7 @@ def seed_std_compare(seed_input_file, chr_name):
 	same_to_B_dict = {}
 
 	compare_output_file_name = seed_file_name + "_" + chr_name + "_compare.txt"
-	compare_output_file = open(currentPath + compare_output_file_name, "w")
+	compare_output_file = open(compare_output_file_name, "w")
 	print >> compare_output_file, "seed file: ", seed_input_file
 	print >> compare_output_file, "std hap file: ", std_input_file
 
@@ -77,6 +79,7 @@ def seed_std_compare(seed_input_file, chr_name):
 	A_in_hetero = format((float(seed_same_to_A)/float(seed_same_to_A + seed_same_to_B))*100, "0.2f")
 	B_in_hetero = format((float(seed_same_to_B)/float(seed_same_to_A + seed_same_to_B))*100, "0.2f")
 	
+	print "total hetero", seed_same_to_A + seed_same_to_B
 	print "seed_same_to_A", seed_same_to_A
 	print "seed_same_to_B", seed_same_to_B
 	print "A_in_hetero", A_in_hetero, "%"
@@ -95,10 +98,28 @@ def seed_std_compare(seed_input_file, chr_name):
 	compare_output_file.close()
 	
 	#print same_to_B_dict
+	hetero_seed_dict = dict_add(same_to_A_dict, same_to_B_dict)
+	hetero_seed_sorted_list = sort_dict_by_key(hetero_seed_dict)
 	
-	file_name = "refHaplos.txt"
-	for pos, snp in same_to_B_dict.iteritems():
-		pass
+	distribution = 0
+	hetero_seed_sorted_list.reverse()
+	for i in range(len(hetero_seed_sorted_list)-1):
+		distribution = hetero_seed_sorted_list[i][0] - hetero_seed_sorted_list[i+1][0]
+	print "hetero distribution", distribution
+	print "hetero distribution mean", round(float(distribution)/len(hetero_seed_sorted_list), 3)
+	print "hetero distribution mean over chr", round(float(distribution)/len(hetero_seed_sorted_list)/chr_length_dict[chr_name], 10)
+		
+	distribution = 0
+	snp_hap_seed_dict_sorted_list.reverse()
+	for i in range(len(snp_hap_seed_dict_sorted_list)-1):
+		distribution = snp_hap_seed_dict_sorted_list[i][0] - snp_hap_seed_dict_sorted_list[i+1][0] 
+	
+	print "distribution", distribution
+	print "distribution mean", round(float(distribution)/len(snp_hap_seed_dict_sorted_list), 3)
+	print "distribution mean over chr", round(float(distribution)/len(snp_hap_seed_dict_sorted_list)/float(chr_length_dict[chr_name]), 10)
+	#file_name = "refHaplos.txt"
+	#for pos, snp in same_to_B_dict.iteritems():
+	#	pass
 		#print snp_hap_std_dict[pos]
 		#calculate_maf(file_name, pos)
 	#output_seed("haplotype_A.txt", seed_title_info, snp_hap_seed_dict, same_to_A_dict)
@@ -115,6 +136,17 @@ if __name__=='__main__':
 	chr_name=sys.argv[2]
 	seed_std_compare(seed_input_file, chr_name)
 """
+
+def seperate_homo_hetero(same_to_AB_dict):
+    homo_dict = {}
+    hetero_dict = {}
+    for position, snp in same_to_AB_dict.iteritems():
+    	#if snp[2] != 'X' and snp[3] != 'X' and snp[2] != 'N' and snp[3] != 'N':
+    	if snp[2] == snp[3]:
+    		homo_dict[position] = snp
+    	else:
+    		hetero_dict[position] = snp
+    return (homo_dict, hetero_dict)
 
 def get_args():
 	desc="Compare seed and std hap, to check purity of seed"

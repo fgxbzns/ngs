@@ -204,7 +204,7 @@ def refMerger(haplotype_file, chr_name, remPercent):
 	#total_person_number = len(ref_title_info.strip().split())
 	#print "total_person_number", total_element_number/2
 	
-	#genotype_input_file_name = "genotype_NA12878_chr6.txt"	# for simulation data
+	#genotype_file = file_path + "genotype_NA12878_chr6.txt"	# for simulation data
 	genotype_file = file_path + "genotype_NA10847_"+chr_name+".txt"	# for all
 	geno_title_info, geno_dict = load_raw_data(genotype_file, raw_data_format_ref)
 	print "genotype_file", genotype_file 

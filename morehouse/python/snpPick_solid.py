@@ -38,6 +38,12 @@ class read:
 		self.quality_score_sequence = quality_score_sequence
 		self.read_length = read_length
 		self.covered_snp = covered_snp
+
+class parameters:
+	def __init__(self):
+		self.chr_name = ""
+		self.depth_threshold = 1
+
 		
 def load_hap_std(file_name):
 	hap_std_dict = {}
@@ -56,8 +62,8 @@ def load_hap_std(file_name):
 				print "error in ", file_name, position
 	return (title_haplotype, hap_std_dict)	
 
-def variant_call_single_end(sam_file, hap_std_dict):
-	inputfile_sam = open(currentPath + sam_file, "r")
+def variant_call_single_end(sam_file, hap_std_dict, chr_name):
+	inputfile_sam = open(sam_file, "r")
 	sam_line_first = inputfile_sam.readline() # the first read line in a pair
 	total_reads_num = 0
 	covered_snp_total_number = 0
@@ -199,7 +205,7 @@ def output_coverage_info(hap_std_sorted_list):
 	outputfile_allele.write("Chromosome \t position \t Total Depth \t A_depth \t T_depth \t C_depth \t G_depth \n")
 	for snp_data in hap_std_sorted_list:
 		snp = snp_data[1]
-		if len(snp.covered_reads_list) > depth_threshold:
+		if len(snp.covered_reads_list) > parameter.depth_threshold:
 			outputfile_allele.write(chr_name+"\t"+str(snp.position)+"\t"+str(len(snp.covered_reads_list))+"\t"+str(snp.allele_dict['A'])	\
 									+"\t"+str(snp.allele_dict['T'])+"\t"+str(snp.allele_dict['C'])+"\t"+str(snp.allele_dict['G'])+"\n")
 			outputFile_reads.write("@_" + snp.rsID + "\t" + str(snp.position) + "\t" + snp.A  + "\t" + snp.B  + "\t" + str(len(snp.covered_reads_list)) + "\n")
@@ -213,7 +219,7 @@ def update_max_allele_number(max_allele_number, dict):
 	dict[max_allele_number] = 1 if max_allele_number not in dict else (dict[max_allele_number] + 1)
 
 def output_ABX_files(file_name, title_info, data_dict):
-	file = open(currentPath + file_name, "w")
+	file = open(file_name, "w")
 	print >> file, title_info
 	for position, snp in data_dict.iteritems():
 		print >> file, snp.rsID, snp.position, snp.A, snp.B, snp.max_allele, snp.max_allele_number, snp.max_allele_percentage
@@ -222,7 +228,7 @@ def output_ABX_files(file_name, title_info, data_dict):
 	file.close()
 		
 def output_seed_file(file_name, title_info, data_dict):
-	file = open(currentPath + file_name, "w")
+	file = open(file_name, "w")
 	print >> file, title_info
 	for position, snp in data_dict.iteritems():
 		print >> file, snp.rsID, snp.position, snp.max_allele
@@ -234,14 +240,14 @@ def get_called_seed_dict():
 	for snp_data in hap_std_sorted_list:
 		snp = snp_data[1]
 		position = snp.position
-		if len(snp.covered_reads_list) > depth_threshold:	
+		if len(snp.covered_reads_list) > parameter.depth_threshold:	
 			max_allele = keywithmaxval(snp.allele_dict)
 			max_allele_number = snp.allele_dict[max_allele]
 			snp.max_allele = max_allele 
 			snp.max_allele_number = max_allele_number 
 			snp.max_allele_percentage = float(max_allele_number)/float(len(snp.covered_reads_list)) 
 	
-			if snp.max_allele_percentage >= max_allele_percentage_threshold and max_allele_number > depth_threshold:
+			if snp.max_allele_percentage >= max_allele_percentage_threshold and max_allele_number > parameter.depth_threshold:
 				prefiltered_seed_dict[position] = snp
 				# check genotype to remove called base that does not in genotype
 				if max_allele in geno_dict[position][2]:	
@@ -249,7 +255,7 @@ def get_called_seed_dict():
 	return (called_seed_dict, prefiltered_seed_dict)
 
 def compare_with_std_hap():
-	distribution_file = open(currentPath + sam_file_name + "_distribution.txt", "w")
+	distribution_file = open(sam_file_name + "_distribution.txt", "w")
 	distribution_file.write("rsID \t phys_position \t snp.A	\t snp.B \t distribution \n")
 	
 	pure_total = 0
@@ -388,7 +394,8 @@ def combine_called_seed_geno(called_seed_dict, geno_homo_dict):
 def snpPick(sam_file, depth_threshold, chr_name):
 	# start time
 	start = time.time()		
-		
+	
+	#global chr_name	
 	global quality_score_threshold
 	global max_allele_percentage_threshold
 	
@@ -404,25 +411,31 @@ def snpPick(sam_file, depth_threshold, chr_name):
 	global title_haplotype
 	global hap_std_sorted_list
 	
+	global parameter
+	parameter = parameters()
+	parameter.chr_name = chr_name
+	parameter.depth_threshold = depth_threshold
+	
 	quality_score_threshold = 13
 	max_allele_percentage_threshold = 0.8
-		
-	#haplotype_file = "NA12878_hap_new_refed.txt"	# simulation data chr6
-	haplotype_file = "ASW_"+chr_name+"_child_hap_refed.txt"	# for all
-	genotype_file = "genotype_NA10847_"+chr_name+".txt"	# for all
+	
+	haplotype_file = "ASW_"+chr_name+"_child_hap_refed.txt"	# for solid and 454 NA10847
+	genotype_file = "genotype_NA10847_"+chr_name+".txt"	# for solid and 454 NA10847
 	"""
+	haplotype_file = "NA12878_hap_new_refed.txt"	# for simulation hg18 NA12878 chr6
+	genotype_file = "genotype_NA12878_"+chr_name+".txt"	# for simulation
 	haplotype_file = "NA12878_hap_new_refed.txt" # for quake data
 	genotype_file = "genotype_NA12878_chr6.txt"	# for quake data
 	"""
 	
-	sam_file_name = sam_file[:(len(sam_file)-4)] + "_" + str(depth_threshold)
+	sam_file_name = sam_file[:(len(sam_file)-4)] + "_" + str(parameter.depth_threshold)
 	
 	print "haplotype file: ", haplotype_file
 	print "genotype_file : ", genotype_file
 	print "sam file: ", sam_file_name
 	
 	data_record_file_name = sam_file_name + "_data_record.txt"
-	data_record_file = open(currentPath + data_record_file_name, "w")
+	data_record_file = open(data_record_file_name, "w")
 	
 	hap_std_tuple = load_hap_std(file_path + haplotype_file)
 	title_haplotype = hap_std_tuple[0]
@@ -430,7 +443,7 @@ def snpPick(sam_file, depth_threshold, chr_name):
 		
 	geno_dict = load_raw_data(file_path + genotype_file, raw_data_format)[1]
 
-	variant_call_tulpe = variant_call_single_end(sam_file, hap_std_dict)
+	variant_call_tulpe = variant_call_single_end(sam_file, hap_std_dict, chr_name)
 	#variant_call_tulpe = variant_call_pair_end(sam_file, hap_std_dict)
 	total_reads_num = variant_call_tulpe[0]
 	covered_snp_total_number = variant_call_tulpe[1]

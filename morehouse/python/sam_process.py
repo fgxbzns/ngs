@@ -724,6 +724,8 @@ def sam_process(sam_file, chr_name, mode):
 		filter_match_pairend()
 	elif mode == "xa":		
 		filter_by_XA()
+	elif mode == "indel":		
+		indel_process(sam_file)
 
 def get_args():
 	desc="variation call"

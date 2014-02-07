@@ -49,7 +49,9 @@ def load_hap_std(file_name):
 
 def analyze_data():
 	
-	hap_std_file = file_path + "ASW_"+chr_name+"_child_hap_refed.txt" 
+	#hap_std_file = file_path + "ASW_"+chr_name+"_child_hap_refed.txt" 
+	hap_std_file = "NA12878_hap_new_refed.txt"	# simulation data hg18 chr6
+	
 	hap_std_dict = load_hap_std(hap_std_file)
 	
 	window_info_dict = get_window_info()
@@ -134,13 +136,8 @@ def get_args():
 		sys.exit(1)
 	return options
 
-if __name__ == '__main__':
-	global chr_name
-	
-	options = get_args()
-	chr_name = options.chrName
-	seed_input_file = options.hifiSeed	
-	
+def hifi_revise(seed_input_file, chr_name):
+
 	start_time = time.time()
 	hifi_test(seed_input_file)
 	hifiAccuCheck("imputed_" + seed_input_file, chr_name)
@@ -153,6 +150,14 @@ if __name__ == '__main__':
 	
 	elapse_time = time.time() - start_time
 	print "***********************to_impute_window time is: " + str(format(elapse_time, "0.3f")) + "s"
+
+if __name__ == '__main__':
+	global chr_name
+	
+	options = get_args()
+	chr_name = options.chrName
+	seed_input_file = options.hifiSeed	
+	hifi_revise(seed_input_file, chr_name)
 
 
 
