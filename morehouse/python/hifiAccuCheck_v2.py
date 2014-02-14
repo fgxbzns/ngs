@@ -149,6 +149,7 @@ def hifiAccuCheck (hifi_result_file, chr_name):
 	
 	pencentage_in_common = format(float(same_position_total_number)/float(hifi_result_total_number)*100, "0.3f")
 	accuracy = round(float(same_A_total_number + same_B_total_number + same_AB_total_number)/float(same_position_total_number-AT_GC_dict_number)*100, 3)	
+	#accuracy = round(float(same_A_total_number + same_B_total_number + same_AB_total_number)/float(same_position_total_number)*100, 3)	
 
 	
 	same_AB_homo, same_AB_hetero = seperate_homo_hetero(same_to_AB_dict)
