@@ -7,6 +7,8 @@
 import os, glob, subprocess, random, operator, time
 from optparse import OptionParser
 from tools import *
+
+from data_dicts import *
 from refMerger_v5 import refMerger
 from hifiAccuCheck_v2 import hifiAccuCheck
 from snpPick_solid import snpPick
@@ -68,6 +70,67 @@ def depth_cutoff():
             hifi_test("haplotype.txt")
             hifiAccuCheck(data_path + "imputed_haplotype.txt", solid_chr[i])
         
+"""
+def output_revised_seed(filename, selected_seed_dict):
+    seed_new_file = open(currentPath + filename, "w")
+    print >> seed_new_file, "rsID    position    NA10847-F       NA10847-M"
+    selected_seed_sorted_list = sort_dict_by_key(selected_seed_dict)     # need to sort the snps by position
+    for snp in selected_seed_sorted_list:
+        seed = snp[1]
+        line = seed.rsID + "\t" + str(seed.position) + "\t" + seed.allele_new
+        print >> seed_new_file, line
+    seed_new_file.close()
+"""
+def generate_std_seed_run(seed_number, add_range):
+        chr_name = "chr9"
+        hap_std_dict = load_seed_data(file_path+"ASW_"+chr_name+"_child_hap_refed.txt")[1]
+        hap_std_list = sort_dict_by_key(hap_std_dict)
+        
+        genotype_file = file_path + "genotype_NA10847_" + chr_name + ".txt"
+        geno_dict = load_raw_data(genotype_file)[1]
+        seed_homo_dict, seed_hetero_dict = group_seed(hap_std_dict, geno_dict)
+
+        seed_hetero_list = sort_dict_by_key(seed_hetero_dict)
+
+        selected_seed_dict = {}
+        
+        if add_range == "begining":
+            # add seed from begining
+            for i in range(seed_number-1):
+                selected_seed_dict[seed_hetero_list[i][0]] = seed_hetero_list[i][1]
+        elif add_range == "middle": 
+            # add seed in the middle
+            hetero_total = len(seed_hetero_list)
+            middle_point = hetero_total/2
+            for i in range(seed_number-1):
+                selected_seed_dict[seed_hetero_list[middle_point+i][0]] = seed_hetero_list[middle_point+i][1]
+        elif add_range == "end":   
+            # add seed from end
+            seed_hetero_list.reverse()
+            for i in range(1, seed_number):
+                selected_seed_dict[seed_hetero_list[i][0]] = seed_hetero_list[i][1]
+        elif add_range == "random": 
+            # randomly adding seed
+            i = 0
+            while i < seed_number-1:
+                random_index = random.randrange(0,(len(seed_hetero_list)-1))
+                while seed_hetero_list[random_index][0] in selected_seed_dict or seed_hetero_list[random_index][1].allele_new == "N" \
+                or seed_hetero_list[random_index][1].allele_new == "X":
+                #while seed_hetero_list[random_index][0] in selected_seed_dict:
+                    random_index = random.randrange(0,(len(seed_hetero_list)-1))
+                selected_seed_dict[seed_hetero_list[random_index][0]] = seed_hetero_list[random_index][1]
+                i += 1
+        
+        # always add the last snp into seed, hifi requirement
+        selected_seed_dict[hap_std_list[-1][0]] = hap_std_list[-1][1]
+
+        file_name = "haplotype_std.txt"
+        output_revised_seed(file_name, selected_seed_dict)
+        seed_std_compare(file_name, chr_name)
+        refMerger(file_name, chr_name, 0)
+        file_name = "haplotype.txt"
+        hifi_run(file_name, chr_name)
+        hifiAccuCheck("imputed_"+file_name, chr_name)
 
 
 if __name__=='__main__':
@@ -76,7 +139,10 @@ if __name__=='__main__':
     #hifi_result_file = options.hifiResult
     #hifiAccuCheck(hifi_result_file, chr_name)
     #simulation_run()
-    depth_cutoff()
+    #depth_cutoff()
+    add_range = "middle"
+    #add_range = "random"
+    generate_std_seed_run(2500, add_range)
 
 
 

@@ -1,7 +1,5 @@
 #!/usr/bin/python
 
-# location /home/guoxing/tool/morehouse
-
 import os, glob, subprocess, random, operator, time
 from optparse import OptionParser
 

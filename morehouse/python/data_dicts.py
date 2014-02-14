@@ -395,9 +395,23 @@ def compare_geno_ref():
     print "std_not_in_ref_dict: ", len(std_not_in_ref_dict)
     print "ref_homo", ref_homo
 
+def output_revised_seed(filename, selected_seed_dict):
+    seed_new_file = open(currentPath + filename, "w")
+    print >> seed_new_file, "rsID    position    NA10847-F       NA10847-M"
+    selected_seed_sorted_list = sort_dict_by_key(selected_seed_dict)     # need to sort the snps by position
+    for snp in selected_seed_sorted_list:
+        seed = snp[1]
+        line = seed.rsID + "\t" + str(seed.position) + "\t" + seed.allele_new
+        print >> seed_new_file, line
+    seed_new_file.close()
+
 def generate_std_seed(seed_number):
-        hap_std_dict = load_seed_data(file_path+"ASW_chr9_child_hap_refed.txt")[1]
+        chr_name = "chr1"
+        hap_std_dict = load_seed_data(file_path+"ASW_"+chr_name+"_child_hap_refed.txt")[1]
         hap_std_list = sort_dict_by_key(hap_std_dict)
+        
+        genotype_file = file_path + "genotype_NA10847_" + chr_name + ".txt"
+        geno_dict = load_raw_data(genotype_file)[1]
         seed_homo_dict, seed_hetero_dict = group_seed(hap_std_dict, geno_dict)
 
         seed_hetero_list = sort_dict_by_key(seed_hetero_dict)
@@ -406,15 +420,17 @@ def generate_std_seed(seed_number):
         i = 0
         while i < seed_number-1:
             random_index = random.randrange(0,(len(seed_hetero_list)-1))
-            while revised_seed_list[random_index][0] in selected_seed_dict:
+            while seed_hetero_list[random_index][0] in selected_seed_dict:
                 random_index = random.randrange(0,(len(seed_hetero_list)-1))
             selected_seed_dict[seed_hetero_list[random_index][0]] = seed_hetero_list[random_index][1]
             i += 1
+        # always add the last snp into seed, hifi requirement
         selected_seed_dict[hap_std_list[-1][0]] = hap_std_list[-1][1]
 
-        file_name = "haplotype_std.txt"
+        file_name = "haplotype.txt"
         output_revised_seed(file_name, selected_seed_dict)
         seed_std_compare(file_name, chr_name)
+        refMerger(file_name, chr_name, 0)
         hifi_run(file_name, chr_name)
         hifiAccuCheck("imputed_"+file_name, chr_name)
 

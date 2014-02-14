@@ -60,6 +60,7 @@ def seed_std_compare(seed_input_file, chr_name):
 			if seed_A == std_A :
 				if seed_A == std_B:
 					seed_same_to_AB += 1
+					#print position, seed_A, std_A, std_B
 				elif std_B != "N":
 					seed_same_to_A += 1	
 					same_to_A_dict[position] = elements_seed		
