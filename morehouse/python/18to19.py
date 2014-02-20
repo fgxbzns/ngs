@@ -64,8 +64,8 @@ def combine_files(hg18_name, hg19_name, del_name):
 	
 def get_args():
 	desc="./18to19.py -e hg18 -n hg19 -d delete"
-	usage = "" 
-	parser = OptionParser(usage = usage, description=desc) 
+	usage = ""
+	parser = OptionParser(usage = usage, description=desc)
 	parser.add_option("-e", "--eight", type="string", dest="hg18_name",help = "Input file name", default="null")
 	parser.add_option("-n", "--nine", type="string", dest="hg19_name",help = "Input file name", default="null")
 	parser.add_option("-d", "--del", type="string", dest="del_name",help = "Input file name", default="null")
