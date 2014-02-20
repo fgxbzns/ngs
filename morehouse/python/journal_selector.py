@@ -1,12 +1,70 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 #######################################################################################
 # Guoxing Fu Feb 17, 2014
 # 
 #######################################################################################
 
-import os, glob, subprocess, random, operator, time, sys, copy
+import os, glob, subprocess, random, operator, time, sys, copy, string
 from optparse import OptionParser
+
+import unicodedata as ud
+
 from tools import *
+#print type('β')
+
+#print ud.normalize('NFC', u'\xce\xA9')
+
+greek_alphabet = {
+u'\u0391': 'Alpha',
+u'\u0392': 'Beta',
+u'\u0393': 'Gamma',
+u'\u0394': 'Delta',
+u'\u0395': 'Epsilon',
+u'\u0396': 'Zeta',
+u'\u0397': 'Eta',
+u'\u0398': 'Theta',
+u'\u0399': 'Iota',
+u'\u039A': 'Kappa',
+u'\u039B': 'Lamda',
+u'\u039C': 'Mu',
+u'\u039D': 'Nu',
+u'\u039E': 'Xi',
+u'\u039F': 'Omicron',
+u'\u03A0': 'Pi',
+u'\u03A1': 'Rho',
+u'\u03A3': 'Sigma',
+u'\u03A4': 'Tau',
+u'\u03A5': 'Upsilon',
+u'\u03A6': 'Phi',
+u'\u03A7': 'Chi',
+u'\u03A8': 'Psi',
+u'\u03A9': 'Omega',
+u'\u03B1': 'alpha',
+u'\u03B2': 'beta',
+u'\u03B3': 'gamma',
+u'\u03B4': 'delta',
+u'\u03B5': 'epsilon',
+u'\u03B6': 'zeta',
+u'\u03B7': 'eta',
+u'\u03B8': 'theta',
+u'\u03B9': 'iota',
+u'\u03BA': 'kappa',
+u'\u03BB': 'lamda',
+u'\u03BC': 'mu',
+u'\u03BD': 'nu',
+u'\u03BE': 'xi',
+u'\u03BF': 'omicron',
+u'\u03C0': 'pi',
+u'\u03C1': 'rho',
+u'\u03C3': 'sigma',
+u'\u03C4': 'tau',
+u'\u03C5': 'upsilon',
+u'\u03C6': 'phi',
+u'\u03C7': 'chi',
+u'\u03C8': 'psi',
+u'\u03C9': 'omega',
+}
 
 class data_class():
 	def __init__(self):
@@ -14,19 +72,33 @@ class data_class():
 		self.pre_keywords_dict = {}
 		self.non_keywords_dict = {}
 		self.symbol_dict = {}
+		self.new_symbol_dict = {}
+		self.new_symbol_list = []
 
 		self.article_file_name = ""
 		self.pre_keywords_file_name = "pre_keywords_list.txt"
 		self.non_keywords_file_name = "non_keywords_list.txt"
 		self.symbol_file_name = "symbol.txt"
+		self.new_symbol_file_name = "new_symbol.txt"
+
+		self.new_symbol_file = open(self.new_symbol_file_name, 'w')
+
+		self.letter_digit = dict.fromkeys(string.ascii_lowercase, 0)
+		for i in range(10):
+			self.letter_digit[str(i)] = 0
+		#print self.letter_digit
+
+		#self.english_dict = enchant.Dict("en_US")
+
 
 def update_keywords_dict(keyword, keywords_dict):
 	if keyword not in data.non_keywords_dict and \
 					keyword not in data.pre_keywords_dict and keyword not in data.symbol_dict:
 		if keyword in keywords_dict:
-			keywords_dict[keyword] = keywords_dict[keyword] + 1
+			keywords_dict[keyword] += 1
 		else:
 			keywords_dict[keyword] = 1
+
 
 def load_keywords(input_filename):
 	dict = {}
@@ -35,29 +107,53 @@ def load_keywords(input_filename):
 			dict[line.strip().split()[0]] = ""
 	return dict
 
+
 def output_keywords(file_name, keywords_dict):
 	with open(file_name, "w") as output_file:
 		for keyword, number in keywords_dict.iteritems():
 			print >> output_file, keyword, number
 
+
 def keyword_process(keyword):
 	keyword = keyword.lower()
+	'''
+	# replace alpha with a
+	for greek_letter in greek_alphabet:
+		if greek_letter in keyword:
+			keyword = keyword.replace(greek_letter, greek_alphabet[greek_letter])
+			print "replaced", greek_letter, "from", keyword
+	'''
+	# remove keyword with symbol
 	for symbol in data.symbol_dict.keys():
 		if symbol in keyword:
 			return "remove_keyword"
-			#keyword = keyword.replace(symbol, "")
-			#print "removed", symbol, "from", keyword
+		#keyword = keyword.replace(symbol, "")
+		#print "removed", symbol, "from", keyword
 	# remove number
 	try:
 		keyword = int(keyword)
 		return "remove_keyword"
 	except:
 		try:
+			# first letter non digit
 			first_letter = int(keyword[0])
 			return "remove_keyword"
 		except:
+			for letter in keyword:
+				if letter not in data.letter_digit:
+
+						data.new_symbol_list.append(keyword)
+						'''
+						if keyword not in data.new_symbol_dict:
+							data.non_keywords_dict[keyword] = 1
+						else:
+							data.non_keywords_dict[keyword] += 1
+						'''
+						print keyword, "is not english"
+						print >> data.new_symbol_file, keyword
+						return "remove_keyword"
 			return keyword
-	# first letter non digit
+
 
 
 def load_data(input_filename):
@@ -78,7 +174,7 @@ def load_data(input_filename):
 				journal_line += line + " "
 				line = input_file.readline().strip()
 			#print journal_line
-			"""
+			'''
 			old methodnew_keywords_dict.txt
 			#print line
 			journal_elements = journal_line.split()
@@ -92,7 +188,7 @@ def load_data(input_filename):
 			
 			journal_name = " "with open(input_filename, "r") as input_file:.join(journal_elements[1:year_index])
 			#print journal_name
-			"""
+			'''
 			dot_index = journal_line.find(".")
 			year_index = journal_line.find("201")
 			journal_name = journal_line[dot_index + 2:year_index - 1]
@@ -179,13 +275,20 @@ def load_data(input_filename):
 							update_keywords_dict(keyword, keywords_dict)
 
 	keywords_sorted_list = sort_dict_by_value(keywords_dict)
+	"""
 	for data in keywords_sorted_list:
-		if data[1] > 1:
+		if data[1] > 2:
 			print data[0], data[1]
+	"""
 	#for i in range(50):
 	#	print keywords_sorted_list[i][0], keywords_sorted_list[i][1]
 
 	print "article_total_number", article_total_number
+	#print data.new_symbol_dict
+	for item in data.new_symbol_list:
+		#print item.encode('utf-8')
+		print item
+	print data.new_symbol_list
 
 
 def get_args():
@@ -205,7 +308,6 @@ def get_args():
 	"""
 	return options
 
-
 if __name__ == '__main__':
 	options = get_args()
 	input_filename = options.input_filename
@@ -224,6 +326,7 @@ if __name__ == '__main__':
 	output_keywords("new_keywords_dict.txt", new_dict)
 	"""
 	load_data(input_filename)
+	data.new_symbol_file.close()
 	print "run time is: ", round((time.time() - start_time), 3), "s"
 	
 	
