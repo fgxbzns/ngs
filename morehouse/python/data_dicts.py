@@ -104,7 +104,7 @@ class data_dicts:
             n_alleles = len(unique_alleles)
             major_allele = ""
             if n_alleles == 0 or n_alleles > 2:
-                print "maf error in ref: ", position
+                print "maf error in ref: ", pos
                 sys.exit(1)
             else:
                 maf_temp_list = []
@@ -116,7 +116,7 @@ class data_dicts:
             else:
                 print "duplicated pos", pos
                 pass
-            maf_dict[maf_num].append(pos)
+            #maf_dict[maf_num].append(pos)
 
         print len(maf_dict)
         self.hap_ref_major_allele_dict = maf_dict
@@ -130,7 +130,7 @@ class data_dicts:
             n_alleles = len(unique_alleles)
             major_allele = ""
             if n_alleles == 0 or n_alleles > 2:
-                print "maf error in ref: ", position, unique_alleles
+                print "maf error in ref: ", pos, unique_alleles
                 sys.exit(1)
             else:      
                 maf_temp_list = []

@@ -99,7 +99,8 @@ def seed_std_compare(seed_input_file, chr_name):
 	compare_output_file.close()
 	
 	#print same_to_B_dict
-	hetero_seed_dict = dict_add(same_to_A_dict, same_to_B_dict)
+	hetero_seed_dict = same_to_A_dict.copy()
+	hetero_seed_dict = dict_add(hetero_seed_dict, same_to_B_dict)
 	hetero_seed_sorted_list = sort_dict_by_key(hetero_seed_dict)
 	
 	distribution = 0

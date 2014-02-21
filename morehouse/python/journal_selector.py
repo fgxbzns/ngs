@@ -276,9 +276,9 @@ def load_data(input_filename):
 
 	keywords_sorted_list = sort_dict_by_value(keywords_dict)
 
-	#for data in keywords_sorted_list:
-	#	if data[1] > 2:
-	#		print data[0], data[1]
+	for data in keywords_sorted_list:
+		if data[1] > 2:
+			print data[0], data[1]
 	"""
 	#for i in range(50):
 	#	print keywords_sorted_list[i][0], keywords_sorted_list[i][1]
@@ -312,6 +312,8 @@ def get_args():
 if __name__ == '__main__':
 	options = get_args()
 	input_filename = options.input_filename
+	path = "/home/guoxing/node1/disk2/ncbi_download/"
+	os.chdir(path)
 
 	start_time = time.time()
 	global data
@@ -326,6 +328,8 @@ if __name__ == '__main__':
 	print len(new_dict)
 	output_keywords("new_keywords_dict.txt", new_dict)
 	"""
+
+	input_filename = "2014[year]_ncbi_output_5000.txt"
 	load_data(input_filename)
 	data.new_symbol_file.close()
 	print "run time is: ", round((time.time() - start_time), 3), "s"

@@ -6,7 +6,6 @@ from __future__ import division
 import os, glob, subprocess, random, operator, time, sys, math
 from optparse import OptionParser
 from ctypes import *
-#from hifiAccuCheck_v2 import hifiAccuCheck
 
 
 
