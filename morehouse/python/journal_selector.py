@@ -142,14 +142,15 @@ def keyword_process(keyword):
 			for letter in keyword:
 				if letter not in data.letter_digit:
 
-						data.new_symbol_list.append(keyword)
+						#data.new_symbol_list.append(keyword)
 						'''
 						if keyword not in data.new_symbol_dict:
 							data.non_keywords_dict[keyword] = 1
 						else:
 							data.non_keywords_dict[keyword] += 1
 						'''
-						print keyword, "is not english"
+						print keyword
+						#print keyword, "is not english"
 						print >> data.new_symbol_file, keyword
 						return "remove_keyword"
 			return keyword
@@ -158,7 +159,6 @@ def keyword_process(keyword):
 
 def load_data(input_filename):
 	keywords_dict = {}
-	exclusive_list = {}
 	article_total_number = 0
 
 	with open(input_filename, "r") as input_file:
@@ -275,21 +275,22 @@ def load_data(input_filename):
 							update_keywords_dict(keyword, keywords_dict)
 
 	keywords_sorted_list = sort_dict_by_value(keywords_dict)
-	"""
-	for data in keywords_sorted_list:
-		if data[1] > 2:
-			print data[0], data[1]
+
+	#for data in keywords_sorted_list:
+	#	if data[1] > 2:
+	#		print data[0], data[1]
 	"""
 	#for i in range(50):
 	#	print keywords_sorted_list[i][0], keywords_sorted_list[i][1]
 
-	print "article_total_number", article_total_number
+
 	#print data.new_symbol_dict
 	for item in data.new_symbol_list:
 		#print item.encode('utf-8')
 		print item
 	print data.new_symbol_list
-
+	"""
+	print "article_total_number", article_total_number
 
 def get_args():
 	desc = ""
