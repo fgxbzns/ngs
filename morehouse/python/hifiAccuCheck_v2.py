@@ -129,7 +129,7 @@ def hifiAccuCheck(hifi_result_file, chr_name):
 
 	print "hap_std_total_number", hap_std_total_number
 	print "hifi_result_total_number", hifi_result_total_number
-
+	'''
 	compare_tuple = compare_std_result(hifi_result_dict, hifi_std_dict)
 	same_to_A_dict = compare_tuple[0]
 	#print len(same_to_A_dict)
@@ -139,6 +139,9 @@ def hifiAccuCheck(hifi_result_file, chr_name):
 	same_position_dict = compare_tuple[4]
 	different_position_dict = compare_tuple[5]
 	AT_GC_dict = compare_tuple[6]
+	'''
+	same_to_A_dict, same_to_B_dict, same_to_AB_dict, not_same_to_AB_dict, same_position_dict, different_position_dict,\
+	AT_GC_dict = compare_std_result(hifi_result_dict, hifi_std_dict)
 
 	"""
 	output_dict("same_to_A_dict.txt", same_to_A_dict, hifi_std_dict)

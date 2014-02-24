@@ -21,17 +21,22 @@ class data_class():
 
 		self.hap_std_dict = {}
 
-		self.hap_std_file_name = file_path + "ASW_" + self.chr_name + "_child_hap_refed.txt"  # 454,solid NA10847
+		self.hap_std_file_name = ""
 
-	#self.hap_std_file_name = file_path + "NA12878_hap_new_refed.txt"	# simulation data hg18 chr6
+		#self.hap_std_file_name = file_path + "ASW_" + self.chr_name + "_child_hap_refed.txt"  # 454,solid NA10847
+
+		#self.hap_std_file_name = file_path + "NA12878_hap_new_refed.txt"	# simulation data hg18 chr6
 
 
 def seed_distribution():
-	data.chr_name = "chr5"
-	data.seed_file_name = "song_1_prem_chr5_sorted_rmsk_indel_1_called_seed.txt"
+	#data.chr_name = "chr5"
+	#data.seed_file_name = "song_1_prem_chr5_sorted_rmsk_indel_1_called_seed.txt"
+
+	#data.seed_file_name = "NA12878_hg18ch6_A_0.5x_0.04er_indel_0_called_seed.txt"
 	data.hifi_result_file = "imputed_haplotype.txt"
 
 	data.hap_std_file_name = file_path + "ASW_" + data.chr_name + "_child_hap_refed.txt"
+	#data.hap_std_file_name = file_path + "NA12878_hap_new_refed.txt"
 
 	data.seed_dict = load_raw_data(data.seed_file_name)[1]
 	data.hifi_result_dict = load_raw_data(data.hifi_result_file)[1]
@@ -193,9 +198,11 @@ if __name__ == '__main__':
 	start_time = time.time()
 	global data
 	data = data_class()
-	'''
 	data.chr_name = options.chrName
 	data.seed_file_name = options.hifiSeed
+	'''
+
+
 	data.hifi_result_file = options.hifiResult
 	'''
 	seed_distribution()
