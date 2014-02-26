@@ -697,6 +697,74 @@ def seed_recover_extract_ref_1():
 
 	return revised_seed_dict
 
+def remove_single_refID():
+	refID_dict = {}
+
+	refID_A_count_dict = {}
+	refID_B_count_dict = {}
+
+	refID_list = data_dict.ref_title_info.strip().split()[2:]
+	print len(refID_list)
+	#print refID_list
+
+	hifi_dict = {}
+	#hifi_dict = load_hifi_result("imputed_" + data_dict.seed_file, hifi_dict)
+	hifi_dict = load_raw_data("imputed_" + data_dict.seed_file)[1]
+	print len(hifi_dict)
+
+	window_info_dict = load_raw_data("window_" + data_dict.seed_file)[1]
+	print len(window_info_dict)
+
+	for pos, elements in window_info_dict.iteritems():
+		window_info = elements[9:]
+		match_to_A_index_list = range(2, len(refID_list))
+		match_to_B_index_list = range(2, len(refID_list))
+		hifi_seq_A = ""
+		hifi_seq_B = ""
+		for window_pos in window_info:
+			window_pos = int(window_pos)
+			hifi_seq_A += hifi_dict[window_pos][2]
+			hifi_seq_B += hifi_dict[window_pos][3]
+
+			match_to_A_index_list = [index for index in match_to_A_index_list if data_dict.hap_ref_dict[window_pos][index] == hifi_dict[window_pos][2]]
+			match_to_B_index_list = [index for index in match_to_B_index_list if data_dict.hap_ref_dict[window_pos][index] == hifi_dict[window_pos][3]]
+		match_to_A_refID = [refID_list[index] for index in match_to_A_index_list]
+		match_to_B_refID = [refID_list[index] for index in match_to_B_index_list]
+		for refID in match_to_A_refID:
+			refID_A_count_dict[refID] = 0 if refID not in refID_A_count_dict else (refID_A_count_dict[refID] + 1)
+		for refID in match_to_B_refID:
+			refID_B_count_dict[refID] = 0 if refID not in refID_B_count_dict else (refID_B_count_dict[refID] + 1)
+		match_to_A_seq = ""
+		match_to_B_seq = ""
+
+		for window_pos in window_info:
+			window_pos = int(window_pos)
+			if len(match_to_A_index_list) > 0:
+				match_to_A_seq += data_dict.hap_ref_dict[window_pos][match_to_A_index_list[0]]
+			if len(match_to_B_index_list) > 0:
+				match_to_B_seq += data_dict.hap_ref_dict[window_pos][match_to_B_index_list[0]]
+		#for index in match_to_A_index_list:
+
+		#refID_dict[pos] = (hifi_seq_A, hifi_seq_B, list_to_line(match_to_A_refID), match_to_A_seq, list_to_line(match_to_B_refID), match_to_B_seq)
+		refID_dict[pos] = (hifi_seq_A, hifi_seq_B, match_to_A_refID, match_to_A_seq, match_to_B_refID, match_to_B_seq)
+
+	#same_to_B_dict = seed_std_compare("imputed_" + data_dict.seed_file, data_dict.chr_name)[0]
+
+	# output hifi results filtered by number of refID
+	hifi_new_output = open("non_one.txt", 'w')
+	print >> hifi_new_output, data_dict.seed_title_info
+	seed_dict_from_hifi = {}
+	for pos in hifi_dict.keys():
+		#if (pos in refID_dict and len(refID_dict[pos][2]) <= 50) or (pos in refID_dict and len(refID_dict[pos][4]) <= 50):
+		if (pos in refID_dict and len(refID_dict[pos][2]) <= 2) or (pos in refID_dict and len(refID_dict[pos][4]) <= 2):
+			pass
+			#a = hifi_dict[pos]
+			#print >> hifi_new_output, a[0], a[1], a[3], a[2],
+		else:
+			print >> hifi_new_output, list_to_line(hifi_dict[pos])
+			seed_dict_from_hifi[pos] = hifi_dict[pos]
+			#print >> hifi_new_output, hifi_dict[pos][0], hifi_dict[pos][1], hifi_dict[pos][2]
+	hifi_new_output.close()
 
 def get_refID():
 		
@@ -2936,6 +3004,11 @@ def overall_process(seed_file, chr_name, mode):
 def seed_correction(seed_file, chr_name, mode):
 	
 	global number_of_subfile
+
+	global data_dict
+	data_dict = data_dicts()
+	data_dict.seed_file = seed_file
+	data_dict.chr_name = chr_name
 	
 	#load_data_dicts(seed_file, chr_name)
 	#global data_dict
@@ -3099,6 +3172,8 @@ def seed_correction(seed_file, chr_name, mode):
 	
 	elif mode == "refid":
 		get_refID()
+	elif mode == "filterbyrefid":
+		remove_single_refID()
 	elif mode == "linkage":
 		add_seed_by_linkage()
 			
@@ -3189,11 +3264,12 @@ if __name__=='__main__':
 	seed_file = options.seedFile
 	chr_name = options.chrName
 	mode = options.mode	
-	
+	"""
 	global data_dict
 	data_dict = data_dicts()
 	data_dict.seed_file = seed_file
 	data_dict.chr_name = chr_name
+	"""
 	#data_dict.load_data_dicts()
 	
 	start_time = time.time()

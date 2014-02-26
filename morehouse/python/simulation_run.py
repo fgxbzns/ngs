@@ -4,7 +4,7 @@
 
 """July 24 2013, do not count At, CG snps  """
 
-import os, glob, subprocess, random, operator, time
+import os, glob, subprocess, random, operator, time, sys
 from optparse import OptionParser
 from tools import *
 import data_dicts as data_dicts
@@ -14,6 +14,7 @@ from refMerger_v5 import refMerger
 from hifiAccuCheck_v2 import hifiAccuCheck, compare_std_result, seperate_homo_hetero
 from snpPick_solid import snpPick
 from seed_std_compare import seed_std_compare
+from seed_correction_v4 import seed_correction
 
 
 simulation_path = "/home/guoxing/disk2/simulation_data/"
@@ -23,15 +24,20 @@ dept_list = ['4.0']
 #dept_list = ['0.5', '1.0', '2.0', '4.0', '8.0']
 error_rate_list = ['0.005', '0.01', '0.02', '0.04']
 #error_rate_list = ['0.005']
-chr_name = "chr6"
+chr_name = "chr9"
 
+
+def hifi_test(hap_subfile_name="haplotype.txt", geno_subfile_name="genotype.txt", ref_subfile_name="refHaplos.txt", maf_step=0.1):
+	hifi = program_path + "hifi_fu_revise " + hap_subfile_name + " " + geno_subfile_name + " " + ref_subfile_name + " " + str(maf_step) + ""    # make sure the other hifi processes are finished
+	#hifi = program_path + "hifi_fu_revise " + seed_input_file
+	hifi_process = subprocess.Popen(hifi, shell=True)
+	hifi_process.wait()
 
 def hifi_test(seed_input_file):
 	#hifi = program_path + "hifi_fu_revise " + hap_subfile_name + " " + geno_subfile_name + " " + ref_subfile_name + " " + str(maf_step) + ""    # make sure the other hifi processes are finished
 	hifi = program_path + "hifi_fu_revise " + seed_input_file
 	hifi_process = subprocess.Popen(hifi, shell=True)
 	hifi_process.wait()
-
 
 def simulation_run():
 	for depth in dept_list:
@@ -140,7 +146,7 @@ def generate_std_seed_run(seed_number, add_range):
 
 
 def rareSNP_error_rate():
-	data = data_dicts()
+
 	#data.update_ref_dict()
 	#data.update_hap_ref_allele_frequence_dict()
 	#data.output_hap_ref_allele_frequence_dict()
@@ -148,8 +154,8 @@ def rareSNP_error_rate():
 	print len(data.hap_ref_allele_frequence_dict)
 
 	maf_result_pos_dict = {}
-	maf_range_high = 0.60
-	maf_range_low = 0.50
+	maf_range_high = 1.00
+	maf_range_low = 0.99
 	for pos, list in data.hap_ref_allele_frequence_dict.iteritems():
 		if list[0][1] >= maf_range_low and list[0][1] < maf_range_high:
 			maf_result_pos_dict[pos] = ""
@@ -172,7 +178,7 @@ def rareSNP_error_rate():
 	print len(geno_dict)
 	maf_result_homo_dict, maf_result_hetero_dict = group_seed(maf_result_dict, geno_dict)
 
-	print "maf hetero %", float(len(maf_result_hetero_dict))/maf_result_total_number
+	print "maf hetero %", round(float(len(maf_result_hetero_dict))/maf_result_total_number*100,3)
 
 	hap_std_file_name = file_path + "ASW_" + chr_name + "_child_hap_refed.txt"
 	#data.hap_std_file_name = file_path + "NA12878_hap_new_refed.txt"
@@ -224,10 +230,52 @@ def rareSNP_error_rate():
 	print "hetero_accuracy", hetero_accuracy
 	print "homo_accuracy", homo_accuracy
 
-	pass
+def output_files(file_name, title_info, dict):
+	outpuf_file = open(currentPath + file_name, "w")	# for hifi
+	print >> outpuf_file, title_info
+	sorted_list = sort_dict_by_key(dict)
+	for element in sorted_list:
+		print >> outpuf_file, element[1][0], element[1][1], element[1][2]
+	outpuf_file.close()
+
+def genotype_missing(remPercent):
+
+	ori_genotype_file_name = "genotype_ori.txt"
+	geno_title_info, geno_dict = load_raw_data(ori_genotype_file_name)
+	ori_geno_total = len(geno_dict)
+	print "ori_geno_total", ori_geno_total
+
+	geno_sorted_list = sort_dict_by_key(geno_dict)
+	if remPercent > 0:
+		print "remPercent is", remPercent
+		for i in range(int(remPercent*ori_geno_total)):
+			if len(geno_sorted_list) > 1:
+				random_index = random.randrange(0, (len(geno_sorted_list)-1))
+				position = geno_sorted_list[random_index][0]
+				if position in geno_dict:
+					del geno_dict[int(position)]
+					del geno_sorted_list[random_index]
+
+			geno_sorted_list = sort_dict_by_key(geno_dict)
+
+	print "new geno total", len(geno_dict)
+	output_files("genotype.txt", geno_title_info, geno_dict)
+	os.system("cp genotype.txt genotype_" + str(remPercent) + ".txt")
+	chr_name = "chr9"
+
+	file_name = "haplotype.txt"
+	hifi_run(file_name, chr_name)
+	mode = "filterbyrefid"
+	seed_correction(file_name, chr_name, mode)
+	hifiAccuCheck("imputed_" + file_name, chr_name)
+	print "filterbyrefid accuracy"
+	hifiAccuCheck("non_one.txt", chr_name)
 
 if __name__ == '__main__':
+	start_time = time.time()
 	#options = get_args()
+	global data
+	data = data_dicts()
 	#chr_name = options.chrName
 	#hifi_result_file = options.hifiResult
 	#hifiAccuCheck(hifi_result_file, chr_name)
@@ -236,7 +284,8 @@ if __name__ == '__main__':
 	add_range = "middle"
 	#add_range = "random"
 	#generate_std_seed_run(2500, add_range)
-	rareSNP_error_rate()
+	#rareSNP_error_rate()
+	for i in (0.8, 0.9):
+		genotype_missing(i)
 
-
-
+	print "run time is: ", round((time.time() - start_time), 3), "s"
