@@ -7,8 +7,6 @@
 import os, glob, subprocess, random, operator, time
 from optparse import OptionParser
 
-#rmsk_path = "/home/guoxing/disk2/repeatMasker/"
-#file_path = "/home/guoxing/disk2/UCSC_hg18_index_lm/"
 file_path = "/home/guoxing/disk2/solid/common_files/"
 
 
@@ -40,22 +38,19 @@ parser.add_option("-s", "--sam", type="string", dest="samFile",help = "Input sam
 rmsk_file = options.rmskFile
 sam_file = options.samFile
 
-#if haplotype_file == "null":
-	#print "Please input the haplotype file name"
 
-rmsk_file = "hg18_rmsk.txt"
+#rmsk_file = "hg18_rmsk.txt"
 
 
-if sam_file == "null":
-	print "Please input the sam file name"
-	#sam_file = ".sam"
+repeat_name = rmsk_file[10:(len(rmsk_file)-4)]
+print repeat_name
 
 sam_file_name = sam_file[:(len(sam_file)-4)]
 
-print "rmsk file: ", rmsk_file
+#print "rmsk file: ", rmsk_file
 print "sam file: ", sam_file_name
 
-inputFile_rmsk = open(file_path + rmsk_file, "r")
+inputFile_rmsk = open(currentPath + rmsk_file, "r")
 inputFile_sam = open(currentPath + sam_file, "r")
 
 
