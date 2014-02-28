@@ -329,9 +329,9 @@ def seed_expand_qs(seed_file):
 	print "qscore_dict: ", len(qscore_dict)
 	a = 0
 	for position, seed in hifi_dict.iteritems():
-		if float(qscore_dict[position][3]) == 1.0 and position in geno_dict and seed.allele_new in geno_dict[position][2]:
+		if float(qscore_dict[position][3]) == 1.0 and position in data_dict.geno_dict and seed.allele_new in data_dict.geno_dict[position][2]:
 			expanded_seed_dict[position] = seed
-		elif float(qscore_dict[position][3]) >= 0.6 and position in geno_dict and seed.allele_new in geno_dict[position][2]:
+		elif float(qscore_dict[position][3]) >= 0.9 and position in data_dict.geno_dict and seed.allele_new in data_dict.geno_dict[position][2]:
 			a += 1
 			expanded_seed_dict[position] = seed
 		
@@ -339,8 +339,8 @@ def seed_expand_qs(seed_file):
 	revised_seed_dict = dict_add(revised_seed_dict, expanded_seed_dict)
 	
 	print "new seed total number", len(expanded_seed_dict)
-	output_revised_seed("haplotype_expanded.txt", expanded_seed_dict)
-	output_revised_seed("haplotype_t.txt", revised_seed_dict)
+	output_revised_seed("haplotype_expanded_only.txt", expanded_seed_dict)
+	output_revised_seed("haplotype_expanded.txt", revised_seed_dict)
 	return revised_seed_dict
 
 def seed_expand_ref_hetero():
@@ -756,7 +756,7 @@ def remove_single_refID():
 	seed_dict_from_hifi = {}
 	for pos in hifi_dict.keys():
 		#if (pos in refID_dict and len(refID_dict[pos][2]) <= 50) or (pos in refID_dict and len(refID_dict[pos][4]) <= 50):
-		if (pos in refID_dict and len(refID_dict[pos][2]) <= 2) or (pos in refID_dict and len(refID_dict[pos][4]) <= 2):
+		if (pos in refID_dict and len(refID_dict[pos][2]) <= 3) or (pos in refID_dict and len(refID_dict[pos][4]) <= 3):
 			pass
 			#a = hifi_dict[pos]
 			#print >> hifi_new_output, a[0], a[1], a[3], a[2],
@@ -765,6 +765,7 @@ def remove_single_refID():
 			seed_dict_from_hifi[pos] = hifi_dict[pos]
 			#print >> hifi_new_output, hifi_dict[pos][0], hifi_dict[pos][1], hifi_dict[pos][2]
 	hifi_new_output.close()
+	hifiAccuCheck("non_one.txt", chr_name)
 
 def get_refID():
 		
@@ -3033,11 +3034,20 @@ def seed_correction(seed_file, chr_name, mode):
 		seed_std_compare(seed_file, chr_name)
 		seed_error_remove()
 		seed_error_remove_extract()
-		seed_std_compare("haplotype_error_removed.txt", chr_name)
+		same_to_A_dict, same_to_B_dict = seed_std_compare("haplotype_error_removed.txt", chr_name)
+		os.system("cp haplotype_error_removed.txt " + "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict)))
+
 	elif mode == "reme":
 		seed_error_remove_extract()
 		seed_std_compare("haplotype_error_removed.txt", chr_name)
 	elif mode == "recover":
+		revised_seed_dict = load_seed_data("haplotype_error_removed.txt")[1]
+		seed_recover(data_dict.seed_dict, revised_seed_dict)
+		seed_recover_extract(data_dict.seed_hetero_dict, revised_seed_dict)
+		same_to_A_dict, same_to_B_dict = seed_std_compare("haplotype_expanded.txt", chr_name)
+		os.system("cp haplotype_expanded.txt " + "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict)))
+
+		"""
 		same_to_B = 1
 		while same_to_B > 0:
 			revised_seed_dict = load_seed_data("haplotype_revised.txt")[1]
@@ -3046,14 +3056,19 @@ def seed_correction(seed_file, chr_name, mode):
 			same_to_A_dict, same_to_B_dict = seed_std_compare("haplotype_expanded.txt", chr_name)
 			same_to_B = len(same_to_B_dict)
 			os.system("cp haplotype.txt_1002_12 haplotype.txt")
-			
+		"""
 	elif mode == "recovere":
 		revised_seed_dict = load_seed_data("haplotype_ori.txt")[1]
 		seed_recover_extract(data_dict.seed_hetero_dict, revised_seed_dict)
 		seed_std_compare("haplotype_expanded.txt", chr_name)
 	elif mode == "expand":
+		file_name = "haplotype.txt"
+		#hifi_run(file_name, chr_name)
+		hifiAccuCheck("imputed_"+file_name, chr_name)
 		seed_std_compare("haplotype.txt", chr_name)
-		seed_expand(seed_file)
+		seed_expand_qs(seed_file)   # ????
+		seed_std_compare("haplotype_expanded.txt", chr_name)
+		"""
 		same_to_A_dict = seed_std_compare("haplotype_t.txt", chr_name)
 		same_to_A_dict = load_seed_data_from_dict(same_to_A_dict)
 		same_to_A_dict = dict_add(same_to_A_dict, seed_homo_dict)
@@ -3062,13 +3077,13 @@ def seed_correction(seed_file, chr_name, mode):
 		file_name = "haplotype_expanded.txt"
 		hifi_run(file_name, chr_name)
 		hifiAccuCheck("imputed_"+file_name, chr_name)
-
+		"""
 	elif mode == "ref":
 		file_name = "haplotype_expanded.txt"
 		seed_expand_ref_hetero()
 		#seed_expand_ref_all()
 		seed_recover_extract_ref()
-		#seed_std_compare(file_name, chr_name)
+		seed_std_compare(file_name, chr_name)
 		#hifi_run(file_name, chr_name)
 		#hifiAccuCheck("imputed_"+file_name, chr_name)
 	elif mode == "refe":

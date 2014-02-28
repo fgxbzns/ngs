@@ -200,7 +200,7 @@ def filter_by_chr():
 			
 			# process all chr or one particular chr
 			check_chr_name = chrName_first.startswith("chr") if (parameter.chr_name == "chr") else (parameter.chr_name == chrName_first)
-			if check_chr_name and (insert_size_first > parameter.insert_size_lower_bond) and (insert_size_first <= parameter.insert_size_upper_bond):					# only keep the reads mapped to chr 
+			if check_chr_name and (insert_size_first >= parameter.insert_size_lower_bond) and (insert_size_first <= parameter.insert_size_upper_bond):					# only keep the reads mapped to chr
 				reads_after_process_total_number += 1
 				print >> output_file, sam_line_first.strip()
 									
@@ -302,6 +302,40 @@ def filter_match_pairend():
 	print "total_reads_num: ", total_reads_num
 	print "reads_after_process_total_number paired: ", reads_after_process_total_number
 	print "reads_after_process_total_number left: ", len(reads_dict)
+
+def single_end_xa():
+	""" remove mutiple mapped reads in single end file.
+	Assume the file is already processed by chr, insert size"""
+
+	print "filter_match_pairend: ", parameter.sam_file_name
+
+	total_reads_num = 0
+	reads_after_process_total_number = 0
+	xa_total = 0
+
+	with open(currentPath + parameter.sam_file, "r") as inputfile_sam:
+		with open(parameter.sam_file_name + "_XA.sam", "w") as output_file:
+			sam_line_first = inputfile_sam.readline() # the first read line in a pair
+			while sam_line_first != '':
+				if not sam_line_first.startswith("@"):
+					total_reads_num += 1
+					elements_first = sam_line_first.strip().split()
+					try:
+						first_is_XA, first_XA_info = is_multiple_maping(elements_first)
+					except:
+						print "error in first read:", sam_line_first
+
+					if not first_is_XA:
+						print >> output_file, sam_line_first.strip()
+						reads_after_process_total_number += 1
+					else:
+						xa_total += 1
+				sam_line_first = inputfile_sam.readline()
+
+	print "total_reads_num: ", total_reads_num
+	print "xa_total: ", xa_total
+	print "reads_after_process_total_number: ", reads_after_process_total_number
+	#return total_reads_num
 
 def filter_by_XA():
 	"""
@@ -685,6 +719,8 @@ def filter_by_repeat(repeat_cnv_file):
 				if not sam_line_first.startswith("@"):
 					total_reads_num += 1
 					elements_first = sam_line_first.strip().split()
+					chrName_first = elements_first[2].strip()
+					insert_size_first = abs(int(elements_first[8].strip()))
 					try:
 						read_ID_first = elements_first[0].strip()
 						#chrName_first = elements_first[2].strip()
@@ -726,6 +762,8 @@ def sam_process(sam_file, chr_name, mode):
 		filter_by_XA()
 	elif mode == "indel":		
 		indel_process(sam_file)
+	elif mode == "single_xa":
+		single_end_xa()
 
 def get_args():
 	desc="variation call"

@@ -107,18 +107,18 @@ def seed_std_compare(seed_input_file, chr_name):
 	hetero_seed_sorted_list.reverse()
 	for i in range(len(hetero_seed_sorted_list)-1):
 		distribution = hetero_seed_sorted_list[i][0] - hetero_seed_sorted_list[i+1][0]
-	print "hetero distribution", distribution
-	print "hetero distribution mean", round(float(distribution)/len(hetero_seed_sorted_list), 3)
-	print "hetero distribution mean over chr", round(float(distribution)/len(hetero_seed_sorted_list)/chr_length_dict[chr_name], 10)
+	#print "hetero distribution", distribution
+	#print "hetero distribution mean", round(float(distribution)/len(hetero_seed_sorted_list), 3)
+	#print "hetero distribution mean over chr", round(float(distribution)/len(hetero_seed_sorted_list)/chr_length_dict[chr_name], 10)
 		
 	distribution = 0
 	snp_hap_seed_dict_sorted_list.reverse()
 	for i in range(len(snp_hap_seed_dict_sorted_list)-1):
 		distribution = snp_hap_seed_dict_sorted_list[i][0] - snp_hap_seed_dict_sorted_list[i+1][0] 
 	
-	print "distribution", distribution
-	print "distribution mean", round(float(distribution)/len(snp_hap_seed_dict_sorted_list), 3)
-	print "distribution mean over chr", round(float(distribution)/len(snp_hap_seed_dict_sorted_list)/float(chr_length_dict[chr_name]), 10)
+	#print "distribution", distribution
+	#print "distribution mean", round(float(distribution)/len(snp_hap_seed_dict_sorted_list), 3)
+	#print "distribution mean over chr", round(float(distribution)/len(snp_hap_seed_dict_sorted_list)/float(chr_length_dict[chr_name]), 10)
 	#file_name = "refHaplos.txt"
 	#for pos, snp in same_to_B_dict.iteritems():
 	#	pass

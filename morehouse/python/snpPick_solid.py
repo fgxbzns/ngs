@@ -104,7 +104,7 @@ def variant_call_single_end(sam_file, hap_std_dict, chr_name):
 	hap_std_sorted_list = sort_dict_by_key(hap_std_dict)
 	return (total_reads_num, covered_snp_total_number, hap_std_sorted_list)
 
-def is_multiple_maping(elements):
+def is_multiple_maping(elements_first):
 	multiple_maping = False
 	try:
 		XA = elements_first[21].strip()
@@ -502,7 +502,7 @@ def snpPick(sam_file, depth_threshold, chr_name):
 	data_record_file.write("run time is: " + run_time + "s \n")
 	data_record_file.close()
 	
-	#seed_std_compare(called_seed_file_name, chr_name)
+	seed_std_compare(called_seed_file_name, chr_name)
 	#seed_std_compare(combined_seed_file_name, chr_name)
 	"""
 	refMerger(combined_seed_file_name, chr_name)

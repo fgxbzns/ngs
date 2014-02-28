@@ -30,8 +30,8 @@ solid_chr = {1: "chr5", 2: "chrX", 3: "chr9", 4: "chr1", 5: "chr11", 6: "chr7", 
 
 file_path = "/home/guoxing/disk2/solid/common_files/"
 program_path = "/home/guoxing/disk2/ngs/morehouse/python/"
-#bash_path = "/home/guoxing/disk2/ngs/bash/"
-bash_path = "/nfs/ngs/bash/"
+bash_path = "/home/guoxing/disk2/ngs/bash/"
+#bash_path = "/nfs/ngs/bash/"
 data_record_path = "/home/guoxing/disk2/solid/common_files/data_record/"
 currentPath = os.getcwd() + '/'
 

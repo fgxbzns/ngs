@@ -5,7 +5,7 @@
 import os, glob, subprocess, random, operator, time
 from optparse import OptionParser
 from tools import *
-
+from snpPick_solid import snpPick
 
 class parameters:
 	def __init__(self):
@@ -13,16 +13,14 @@ class parameters:
 		self.repeat_rmsk_file = ""
 
 		self.sam_file = ""
-
 		self.record_file_name = ""
+		#self.output_sam_file_name = ""
 
 	def update(self):
 		self.repeat_rmsk_file_name = self.repeat_rmsk_file[:(len(self.repeat_rmsk_file) - 4)]
 		self.sam_file_name = self.sam_file[:(len(self.sam_file) - 4)]
-
-
-	#outputFile_record = open(currentPath + self.sam_file + "_record.txt", "w")
-
+		self.output_record = open(currentPath + self.sam_file_name + "_record.txt", "w")
+		self.output_sam_file_name = self.sam_file_name + "_" + self.repeat_rmsk_file_name + ".sam"
 
 def get_repeat_type(ori_rmsk_file):
 	repeat_type_dict = {}
@@ -38,9 +36,8 @@ def get_repeat_type(ori_rmsk_file):
 	print "repeat type:", len(repeat_type_dict)
 	return repeat_type_dict
 
-
 def output_repeat_file(ori_rmsk_file, output_repeat):
-	output_repeat_name = "hg18_rmsk_" + output_repeat + ".txt"
+	output_repeat_name = output_repeat + ".txt"
 	print "rmsk file: ", output_repeat_name
 	ori_rmsk_total_number = 0
 	processed_rmsk_total_number = 0
@@ -48,12 +45,11 @@ def output_repeat_file(ori_rmsk_file, output_repeat):
 		with open(file_path + ori_rmsk_file, "r") as ori_rmsk:
 			for line in ori_rmsk:
 				ori_rmsk_total_number += 1
-				if output_repeat in line:
+				if "chr9" in line and output_repeat in line:
 					processed_rmsk_total_number += 1
 					print >> output_rmsk, line.strip()
 	print "ori_rmsk_total_number: ", ori_rmsk_total_number
 	print "processed_rmsk_total_number: ", processed_rmsk_total_number
-
 
 def repeatRemove_sorted():
 	sam_file = parameter.sam_file
@@ -66,10 +62,10 @@ def repeatRemove_sorted():
 	inputFile_rmsk = open(currentPath + rmsk_file, "r")
 	inputFile_sam = open(currentPath + sam_file, "r")
 
-	outputFile_mulmap = open(currentPath + sam_file_name + "_mulmap.sam", "w")
-	outputFile_sam = open(currentPath + sam_file_name + "_rmsk.sam", "w")
+	#outputFile_mulmap = open(currentPath + sam_file_name + "_mulmap.sam", "w")
+	outputFile_sam = open(currentPath + parameter.output_sam_file_name, "w")
 	#outputFile_removed = open(currentPath + sam_file_name + "_removed.sam", "w")
-	outputFile_record = open(currentPath + sam_file_name + "_record.txt", "w")
+	#outputFile_record = open(currentPath + sam_file_name + "_record.txt", "w")
 
 	total_reads_number = 0
 	multiple_mapping_number = 0
@@ -92,10 +88,11 @@ def repeatRemove_sorted():
 
 		# remove reads with mulitple mapping
 		try:
-			XA = read_elements[19].strip()
+			XA = read_elements[-1].strip()
 			#print XA
-			multiple_mapping_number += 1
-			multiple_maping = True
+			if XA.startswith('XA'):
+				multiple_maping = True
+				multiple_mapping_number += 1
 		except:
 			multiple_maping = False
 
@@ -148,7 +145,7 @@ def repeatRemove_sorted():
 				total_reads_number += 1
 				kept_reads_nmuber += 1
 		else:
-			outputFile_mulmap.write(read_line.strip() + "\n")
+			#outputFile_mulmap.write(read_line.strip() + "\n")
 			multiple_maping = False
 			read_line = inputFile_sam.readline()
 			total_reads_number += 1
@@ -160,11 +157,8 @@ def repeatRemove_sorted():
 
 	outputFile_sam.close()
 	#outputFile_removed.close()
-	outputFile_record.close()
-	outputFile_mulmap.close()
-
-	pass
-
+	#outputFile_record.close()
+	#outputFile_mulmap.close()
 
 def get_args():
 	desc = ""
@@ -172,6 +166,8 @@ def get_args():
 	parser = OptionParser(usage=usage, description=desc)
 	parser.add_option("-i", "--rmsk", type="string", dest="rmskFile", help="Input rmsk File Name", default="null")
 	parser.add_option("-s", "--sam", type="string", dest="samFile", help="Input sam File Name", default="null")
+	parser.add_option("-m", "--mode", type="string", dest="mode", help="input mode", default="null")
+
 	(options, args) = parser.parse_args()
 	if options.rmskFile == "rmskFile":
 		print "parameters missing..."
@@ -179,30 +175,32 @@ def get_args():
 		sys.exit(1)
 	return options
 
-
 if __name__ == '__main__':
 	start_time = time.time()
 	global parameter
 	parameter = parameters()
-	"""
-	# for split repeat types
-	ori_rmsk_file = "hg18_rmsk.txt_original"
-	repeat_type_dict = get_repeat_type(ori_rmsk_file)
-	for repeat in repeat_type_dict.keys():
-		output_repeat_file(ori_rmsk_file, repeat)
-	"""
 	options = get_args()
+	mode = options.mode
+	if mode == "preprocess":
+		# for split repeat types
+		ori_rmsk_file = "hg18_rmsk.txt_original"
+		repeat_type_dict = get_repeat_type(ori_rmsk_file)
+		for repeat in repeat_type_dict.keys():
+			output_repeat_file(ori_rmsk_file, repeat)
+	elif mode == "remove":
+		parameter.repeat_rmsk_file = options.rmskFile
+		parameter.sam_file = options.samFile
+		parameter.update()
+		#print parameter.repeat_rmsk_file_name, parameter.sam_file_name
+		#print parameter.sam_file
+		repeatRemove_sorted()
+		snpPick(parameter.output_sam_file_name, 1, "chr9")
+		#seed_std_compare(called_seed_file_name, chr_name)
 
-	parameter.repeat_rmsk_file = options.rmskFile
-	parameter.sam_file = options.samFile
-	parameter.update()
-	print parameter.repeat_rmsk_file_name, parameter.sam_file_name
-	print parameter.sam_file
 
-	a = parameter.sam_file
-	a = 0
-	print parameter.sam_file
-
+	else:
+		print "wrong mode"
+	parameter.output_record.close()
 	print "run time is: ", round((time.time() - start_time), 3), "s"
 
 

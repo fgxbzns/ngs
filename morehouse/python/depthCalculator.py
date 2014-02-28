@@ -11,7 +11,7 @@ file_path = "/home/guoxing/disk2/solid/common_files/"
 # Reading options
 usage = "usage: %prog [options] arg1" 
 parser = OptionParser(usage = usage) 
-parser.add_option("-i", "--aFile", type="string", dest="samFile",help = "Input File Name", default="null")
+parser.add_option("-s", "--aFile", type="string", dest="samFile",help = "Input File Name", default="null")
 parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="chr11")
 
 chr_length_dict = {"chr1":247249719, "chr2":242951149, "chr3":199501827, "chr4":191273063, "chr5":180857866, "chr6":170899992, "chr7":158821424, 
