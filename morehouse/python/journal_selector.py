@@ -66,6 +66,11 @@ u'\u03C8': 'psi',
 u'\u03C9': 'omega',
 }
 
+class keywords_class():
+	def __init__(self):
+		self.number = 0
+		self.journal_name_dict = {}
+
 class data_class():
 	def __init__(self):
 		self.keywords_dict = {}
@@ -92,6 +97,7 @@ class data_class():
 
 
 def update_keywords_dict(keyword, keywords_dict):
+	# update keywords from all papers.
 	if keyword not in data.non_keywords_dict and \
 					keyword not in data.pre_keywords_dict and keyword not in data.symbol_dict:
 		if keyword in keywords_dict:
@@ -99,6 +105,20 @@ def update_keywords_dict(keyword, keywords_dict):
 		else:
 			keywords_dict[keyword] = 1
 
+def update_journal_keywords_dict(keyword, journal_name, keywords_dict):
+	# update keywords in all papers and in different journals.
+	if keyword not in data.non_keywords_dict and \
+					keyword not in data.pre_keywords_dict and keyword not in data.symbol_dict:
+		if keyword in keywords_dict:
+			keywords_dict[keyword][0] += 1
+			if journal_name in keywords_dict[keyword][1]:
+				keywords_dict[keyword][1][journal_name] += 1
+			else:
+				keywords_dict[keyword][1][journal_name] = 1
+		else:
+			journal_name_dict = {}
+			keywords_dict[keyword] = [1, journal_name_dict]
+			keywords_dict[keyword][1][journal_name] = 1
 
 def load_keywords(input_filename):
 	dict = {}
@@ -106,7 +126,6 @@ def load_keywords(input_filename):
 		for line in input_file:
 			dict[line.strip().split()[0]] = ""
 	return dict
-
 
 def output_keywords(file_name, keywords_dict):
 	with open(file_name, "w") as output_file:
@@ -149,7 +168,7 @@ def keyword_process(keyword):
 						else:
 							data.non_keywords_dict[keyword] += 1
 						'''
-						print keyword
+						#print keyword
 						#print keyword, "is not english"
 						print >> data.new_symbol_file, keyword
 						return "remove_keyword"
@@ -272,13 +291,14 @@ def load_data(input_filename):
 					for keyword in abstract.strip().split():
 						keyword = keyword_process(keyword)
 						if len(keyword) > 1 and keyword != "remove_keyword":
-							update_keywords_dict(keyword, keywords_dict)
+							#update_keywords_dict(keyword, keywords_dict)
+							update_journal_keywords_dict(keyword, journal_name, keywords_dict)
 
 	keywords_sorted_list = sort_dict_by_value(keywords_dict)
 
 	for data in keywords_sorted_list:
-		if data[1] > 2:
-			print data[0], data[1]
+		if data[1][0] > 2:
+			print data[0], data[1][0], data[1][1]
 	"""
 	#for i in range(50):
 	#	print keywords_sorted_list[i][0], keywords_sorted_list[i][1]
@@ -312,8 +332,8 @@ def get_args():
 if __name__ == '__main__':
 	options = get_args()
 	input_filename = options.input_filename
-	path = "/home/guoxing/node1/disk2/ncbi_download/"
-	os.chdir(path)
+	#path = "/home/guoxing/node1/disk2/ncbi_download/"
+	#os.chdir(path)
 
 	start_time = time.time()
 	global data
@@ -329,7 +349,7 @@ if __name__ == '__main__':
 	output_keywords("new_keywords_dict.txt", new_dict)
 	"""
 
-	input_filename = "2014[year]_ncbi_output_5000.txt"
+	#input_filename = "2014[year]_ncbi_output_5000.txt"
 	load_data(input_filename)
 	data.new_symbol_file.close()
 	print "run time is: ", round((time.time() - start_time), 3), "s"

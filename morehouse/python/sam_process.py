@@ -223,7 +223,8 @@ def match_pairend():
 		with open(parameter.sam_file_name + "_pairend.sam", "w") as output_file:
 			sam_line_first = inputfile_sam.readline() # the first read line in a pair
 			while sam_line_first != '':
-				if not sam_line_first.startswith("@"):
+				#if not sam_line_first.startswith("@"):  # mali data
+				if sam_line_first.startswith("@ILLUMINA"):  # wli data
 					total_reads_num += 1
 					elements_first = sam_line_first.strip().split()
 					try:

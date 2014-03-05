@@ -6,10 +6,10 @@
 import os, glob, subprocess, random, operator, time, sys
 from optparse import OptionParser
 
-def primer_remove():
-	output_file = open(input_file_name[:input_file_name.find('.')] + "_priRem.fastq",'w')
+def primer_remove_single_end():
+	output_file = open(input_file_name[:input_file_name.find('.')] + "_priRem.fastq", 'w')
 
-	data_tag = "@ILLUMINA"
+	data_tag = "@ILLUMINA"          #wli data
 	#data_tag = "@song"
 	total_reads_number = 0
 	
@@ -24,13 +24,44 @@ def primer_remove():
 				qual_line = input_file.readline().strip()
 				
 				read_seq, qual_line = process_seq(read_seq, qual_line)
-				if read_seq != "" and qual_line != "" and len(read_seq) >= 25:
+				#if read_seq != "" and qual_line != "" and len(read_seq) >= 25:
+				if read_seq != "" and qual_line != "":      # for wli
 					output_file.write(title + "\n")
 					output_file.write(read_seq + "\n")
 					output_file.write("+" + "\n")
 					output_file.write(qual_line + "\n")
 			line = input_file.readline().strip()
 	
+	print "total_reads_number", total_reads_number
+	output_file.close()
+
+def primer_remove_pair_end():
+	output_file = open(input_file_name[:input_file_name.find('.')] + "_priRem.fastq", 'w')
+
+	data_tag = "@ILLUMINA"          #wli data
+	total_reads_number = 0
+
+	with open(input_file_name,'r') as input_file:
+		line = input_file.readline()
+		while line != "":
+			if line.startswith(data_tag):
+				total_reads_number += 1
+				first_title = line.strip()
+				first_read_seq = input_file.readline().strip()
+				plus_symbol = input_file.readline().strip()
+				first_qual_line = input_file.readline().strip()
+
+				first_read_seq, first_qual_line = process_seq(first_read_seq, first_qual_line)
+				if first_read_seq != "" and first_qual_line != "" and len(first_read_seq) >= 25:
+					second_line = input_file.readline().strip()
+
+
+					output_file.write(first_title + "\n")
+					output_file.write(first_read_seq + "\n")
+					output_file.write("+" + "\n")
+					output_file.write(first_qual_line + "\n")
+			line = input_file.readline().strip()
+
 	print "total_reads_number", total_reads_number
 	output_file.close()
 
@@ -82,7 +113,7 @@ if __name__ == '__main__':
 	input_file_name = options.inputFile
 	
 	start_time = time.time()
-	primer_remove()
+	primer_remove_single_end()
 	elapse_time = time.time() - start_time
 	print "run time is: ", round((time.time() - start_time), 3), "s"
 

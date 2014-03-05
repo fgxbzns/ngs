@@ -33,13 +33,15 @@ class data_dicts:
         self.hap_ref_dict = {}
         self.hap_ref_major_allele_dict = {}
         self.hap_ref_allele_frequence_dict = {}
+
+        self.record_file_name = "seed_correction_record.txt"
         
         self.hap_std_dict = {}
         self.ref_cluster_dict = {}
         self.cluster_pos_dict = {}
           
         self.number_of_subfile = 10
-        self.cycle_number = 5
+        self.cycle_number = 3
         
         self.maf_upper_bound = 0.5
         self.maf_lower_bound = 0.3
@@ -50,13 +52,13 @@ class data_dicts:
         #self.ref_position_distance = 500000
        # self.ref_expand_range = 5
         self.ref_position_distance = 500000
-        self.ref_expand_range = 5
+        self.ref_expand_range = 30
         self.remPercent = 0.6
         self.allele_new_percentage = 0.80
-        self.qscore_threshold = 0.80
+        self.qscore_threshold = 0.70
         
         # parameters for seed group
-        self.seed_group_window_size= 20
+        self.seed_group_window_size = 20
         self.existing_seed_percentage = 0.95
 
     def update_seed_dict(self):
