@@ -25,7 +25,8 @@ def primer_remove_single_end():
 				
 				read_seq, qual_line = process_seq(read_seq, qual_line)
 				#if read_seq != "" and qual_line != "" and len(read_seq) >= 25:
-				if read_seq != "" and qual_line != "":      # for wli
+				#if read_seq != "" and qual_line != "":      # for wli
+				if True:
 					output_file.write(title + "\n")
 					output_file.write(read_seq + "\n")
 					output_file.write("+" + "\n")

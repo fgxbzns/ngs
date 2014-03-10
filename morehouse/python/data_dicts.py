@@ -52,7 +52,7 @@ class data_dicts:
         #self.ref_position_distance = 500000
        # self.ref_expand_range = 5
         self.ref_position_distance = 500000
-        self.ref_expand_range = 30
+        self.ref_expand_range = 10
         self.remPercent = 0.6
         self.allele_new_percentage = 0.80
         self.qscore_threshold = 0.70
@@ -103,11 +103,13 @@ class data_dicts:
         for pos, snp in self.hap_ref_dict.iteritems():
             alleles = snp[2:]
             unique_alleles = set(alleles)
+            if '-' in unique_alleles:
+	            unique_alleles.remove('-')
             n_alleles = len(unique_alleles)
             major_allele = ""
             if n_alleles == 0 or n_alleles > 2:
-                print "maf error in ref: ", pos
-                sys.exit(1)
+                print "maf error in ref: ", pos, unique_alleles
+                #sys.exit(1)
             else:
                 maf_temp_list = []
                 for ref_allele in unique_alleles:
@@ -129,6 +131,8 @@ class data_dicts:
             alleles = snp[2:]
             number_of_alleles = len(alleles)
             unique_alleles = set(alleles)
+            if '-' in unique_alleles:
+	            unique_alleles.remove('-')
             n_alleles = len(unique_alleles)
             major_allele = ""
             if n_alleles == 0 or n_alleles > 2:
@@ -159,7 +163,7 @@ class data_dicts:
                     else:
                         print >> output_file, pos, allele_frequence_list[1][0], allele_frequence_list[1][1], allele_frequence_list[0][0], allele_frequence_list[0][1] 
                 except:
-                    print pos, allele_frequence_list
+                    print "output_hap_ref_allele_frequence_dict", pos, allele_frequence_list
     
     def read_hap_ref_allele_frequence_dict(self):
         maf_dict = {}

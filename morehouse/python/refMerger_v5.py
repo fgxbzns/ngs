@@ -23,7 +23,7 @@ def output_dict(filename, title_info, dict):
 	dict_sorted_list = sort_dict_by_key(dict)
 	for snp in dict_sorted_list:
 		line = snp[1]
-		print >> seed_new_file, line
+		print >> output_file, line
 	output_file.close()
 
 def compare_geno_ref(geno_dict, hap_ref_dict):
