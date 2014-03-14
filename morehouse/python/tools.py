@@ -42,6 +42,9 @@ hap_std_file_name = file_path + "NA12878_hap_new_refed.txt"  # simulation data h
 #hap_std_file_name = file_path + "ASW_"+chr_name+"_child_hap_refed.txt"	
 
 
+#genotype_file = file_path + "genotype_NA12878_chr6.txt"	# for simulation data
+#genotype_file = file_path + "genotype_NA10847_"+chr_name+".txt"	# for all
+
 
 raw_data_format = "list"
 

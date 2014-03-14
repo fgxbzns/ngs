@@ -116,8 +116,8 @@ def seperate_homo_hetero(same_to_AB_dict):
 
 
 def hifiAccuCheck(hifi_result_file, chr_name):
-	hap_std_file_name = file_path + "ASW_" + chr_name + "_child_hap_refed.txt"  # 454,solid NA10847
-	#hap_std_file_name = file_path + "NA12878_hap_new_refed.txt"	# simulation data hg18 chr6
+	#hap_std_file_name = file_path + "ASW_" + chr_name + "_child_hap_refed.txt"  # 454,solid NA10847
+	hap_std_file_name = file_path + "NA12878_hap_new_refed.txt"	# simulation data hg18 chr6
 
 	hifi_std_dict = load_raw_data(hap_std_file_name, raw_data_format)[1]
 
@@ -140,7 +140,7 @@ def hifiAccuCheck(hifi_result_file, chr_name):
 	different_position_dict = compare_tuple[5]
 	AT_GC_dict = compare_tuple[6]
 	'''
-	same_to_A_dict, same_to_B_dict, same_to_AB_dict, not_same_to_AB_dict, same_position_dict, different_position_dict,\
+	same_to_A_dict, same_to_B_dict, same_to_AB_dict, not_same_to_AB_dict, same_position_dict, different_position_dict, \
 	AT_GC_dict = compare_std_result(hifi_result_dict, hifi_std_dict)
 
 	"""
@@ -160,9 +160,9 @@ def hifiAccuCheck(hifi_result_file, chr_name):
 	pencentage_in_common = format(float(same_position_total_number) / float(hifi_result_total_number) * 100, "0.3f")
 	accuracy = round(float(same_A_total_number + same_B_total_number + same_AB_total_number) / float(
 		same_position_total_number - AT_GC_dict_number) * 100, 3)
-	#accuracy = round(float(same_A_total_number + same_B_total_number + same_AB_total_number)/float(same_position_total_number)*100, 3)	
-
-
+	#accuracy = round(float(same_A_total_number + same_B_total_number + same_AB_total_number)/float(hifi_result_total_number - AT_GC_dict_number)*100, 3)
+	#error_rate = round(float(not_same_AB_total_number)/(hifi_result_total_number - AT_GC_dict_number)*100, 3)
+	#accuracy = round(100-error_rate, 3)
 	same_AB_homo, same_AB_hetero = seperate_homo_hetero(same_to_AB_dict)
 	not_same_AB_homo, not_same_AB_hetero = seperate_homo_hetero(not_same_to_AB_dict)
 	different_AB_homo, different_AB_hetero = seperate_homo_hetero(different_position_dict)
@@ -187,12 +187,13 @@ def hifiAccuCheck(hifi_result_file, chr_name):
 	print "AT_GC_dict_number", AT_GC_dict_number
 	print "not_same_AB_total_number", not_same_AB_total_number
 	print "pencentage in common", pencentage_in_common
-	print "accuracy", accuracy
+
 	#print "len(same_AB_hetero)", len(same_AB_hetero)
 	#print "len(same_position_hetero)", len(same_position_hetero)
 	#print "len(AT_GC_hetero)", len(AT_GC_hetero)
 	print "hetero_accuracy", hetero_accuracy
 	print "homo_accuracy", homo_accuracy
+	print "accuracy", accuracy
 
 	accuracy_output_file_name = "hifi_accuracy.txt"
 	accuracy_output_file = open(currentPath + accuracy_output_file_name, "w")
