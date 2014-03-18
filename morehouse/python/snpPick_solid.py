@@ -357,7 +357,12 @@ def compare_with_std_hap():
 	output_ABX_files(file_name, title_info, not_in_genotype_dict)
 	"""
 
-def coverage_distribution():	
+def coverage_distribution():
+	A_dict = {}
+	B_dict = {}
+	X_dict = {}
+	not_ABX_dict = {}
+
 	""" caulculate the coverage distribution for each snp """
 	coverage_distribution_file = open(currentPath + sam_file_name + "_coverage_distribution.txt", "w")
 	coverage_distribution_file.write("coverage depth \t A \t B \t X \t not_ABX \t percentage \n")
@@ -538,7 +543,7 @@ if __name__=='__main__':
 	seed_std_compare(sam_file_name + "_combined_seed.txt", chr_name)
 	
 	elapsed_time = time.time() - start_time
-	print "Elapsed time is: " + str(format(elapsed_time, "0.3f")) + "s"
+	print "Elapsed time is: ", round(elapsed_time, 3), "s"
 	#compare_with_std_hap()
 
 # compare with ori hap file			

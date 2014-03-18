@@ -49,8 +49,8 @@ def load_hap_std(file_name):
 
 def analyze_data():
 	
-	#hap_std_file = file_path + "ASW_"+chr_name+"_child_hap_refed.txt" 
-	hap_std_file = "NA12878_hap_new_refed.txt"	# simulation data hg18 chr6
+	hap_std_file = file_path + "ASW_"+chr_name+"_child_hap_refed.txt"
+	#hap_std_file = "NA12878_hap_new_refed.txt"	# simulation data hg18 chr6
 	
 	hap_std_dict = load_hap_std(hap_std_file)
 	

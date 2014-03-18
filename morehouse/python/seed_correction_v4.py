@@ -2901,9 +2901,9 @@ def overall_process_3(seed_file, chr_name, mode):
 	os.system("cp haplotype.txt haplotype_ori.txt")
 	
 	same_to_A = 1
-	error_threshold = 30
+	error_threshold = 60
 	i = 0
-	while same_to_A < 6000:
+	while same_to_A < 8000:
 			
 		remPercent = float(random.randrange(40, 80))/(100.0)
 		print "remPercent", remPercent

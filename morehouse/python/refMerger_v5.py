@@ -97,8 +97,8 @@ def compare_geno_ref(geno_dict, hap_ref_dict):
 def load_hap_ref_data(chr_name):
 	ref_title_info = ""
 	hap_ref_dict = {}
-	#for infile in glob.glob(os.path.join(file_path,"*"+chr_name+"_???.phased")):	# add * for chrX
-	for infile in glob.glob(os.path.join(file_path,"*"+chr_name+"_???.phased_12878FM_remd")):	# simulation data NA12878 FM removed add * for chrX
+	for infile in glob.glob(os.path.join(file_path,"*"+chr_name+"_???.phased")):	# add * for chrX
+	#for infile in glob.glob(os.path.join(file_path,"*"+chr_name+"_???.phased_12878FM_remd")):	# simulation data NA12878 FM removed add * for chrX
 		ref_file_name = file_path + infile[(infile.find("hapmap3")):].strip()
 		print ref_file_name
 		if ref_title_info == "" and len(hap_ref_dict) == 0:
@@ -205,8 +205,8 @@ def refMerger(haplotype_file, chr_name, remPercent):
 	#total_person_number = len(ref_title_info.strip().split())
 	#print "total_person_number", total_element_number/2
 	
-	genotype_file = file_path + "genotype_NA12878_chr6.txt"	# for simulation data
-	#genotype_file = file_path + "genotype_NA10847_"+chr_name+".txt"	# for all
+	#genotype_file = file_path + "genotype_NA12878_chr6.txt"	# for simulation data
+	genotype_file = file_path + "genotype_NA10847_"+chr_name+".txt"	# for all
 	geno_title_info, geno_dict = load_raw_data(genotype_file, raw_data_format_ref)
 	print "genotype_file", genotype_file 
 	print "total_geno_number: ", len(geno_dict)

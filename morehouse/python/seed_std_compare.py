@@ -19,8 +19,8 @@ def output_seed(file_name, seed_title_info, snp_hap_seed_dict, output_seed_dict)
 	seed_new_file.close()
 
 def seed_std_compare(seed_input_file, chr_name):
-	#std_file_name = "ASW_"+chr_name+"_child_hap_refed.txt"	# for solid data
-	std_file_name = "NA12878_hap_new_refed.txt"	# simulation data hg18 chr6
+	std_file_name = "ASW_"+chr_name+"_child_hap_refed.txt"	# for solid data
+	#std_file_name = "NA12878_hap_new_refed.txt"	# simulation data hg18 chr6
 
 	std_input_file = file_path + std_file_name
 	snp_hap_std_dict = load_raw_data(std_input_file, raw_data_format)[1]

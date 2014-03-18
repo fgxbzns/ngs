@@ -116,8 +116,8 @@ def seperate_homo_hetero(same_to_AB_dict):
 
 
 def hifiAccuCheck(hifi_result_file, chr_name):
-	#hap_std_file_name = file_path + "ASW_" + chr_name + "_child_hap_refed.txt"  # 454,solid NA10847
-	hap_std_file_name = file_path + "NA12878_hap_new_refed.txt"	# simulation data hg18 chr6
+	hap_std_file_name = file_path + "ASW_" + chr_name + "_child_hap_refed.txt"  # 454,solid NA10847
+	#hap_std_file_name = file_path + "NA12878_hap_new_refed.txt"	# simulation data hg18 chr6
 
 	hifi_std_dict = load_raw_data(hap_std_file_name, raw_data_format)[1]
 
@@ -158,11 +158,11 @@ def hifiAccuCheck(hifi_result_file, chr_name):
 	AT_GC_dict_number = len(AT_GC_dict)
 
 	pencentage_in_common = format(float(same_position_total_number) / float(hifi_result_total_number) * 100, "0.3f")
-	accuracy = round(float(same_A_total_number + same_B_total_number + same_AB_total_number) / float(
-		same_position_total_number - AT_GC_dict_number) * 100, 3)
+	#accuracy = round(float(same_A_total_number + same_B_total_number + same_AB_total_number) / float(
+	#	same_position_total_number - AT_GC_dict_number) * 100, 3)
 	#accuracy = round(float(same_A_total_number + same_B_total_number + same_AB_total_number)/float(hifi_result_total_number - AT_GC_dict_number)*100, 3)
-	#error_rate = round(float(not_same_AB_total_number)/(hifi_result_total_number - AT_GC_dict_number)*100, 3)
-	#accuracy = round(100-error_rate, 3)
+	error_rate = round(float(not_same_AB_total_number)/(hifi_result_total_number - AT_GC_dict_number)*100, 3)
+	accuracy = round(100-error_rate, 3)
 	same_AB_homo, same_AB_hetero = seperate_homo_hetero(same_to_AB_dict)
 	not_same_AB_homo, not_same_AB_hetero = seperate_homo_hetero(not_same_to_AB_dict)
 	different_AB_homo, different_AB_hetero = seperate_homo_hetero(different_position_dict)
