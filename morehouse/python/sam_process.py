@@ -165,7 +165,7 @@ def single_end_indel(sam_file, chr_name):
 			
 			# process all chr or one particular chr
 			check_chr_name = chrName_first.startswith("chr") if (chr_name == "chr") else (chr_name == chrName_first)
-			if check_chr_name and (insert_size_first > parameter.insert_size_lower_bond) and (insert_size_first <= parameter.insert_size_upper_bond):					# only keep the reads mapped to chr 
+			if check_chr_name:					# only keep the reads mapped to chr
 				reads_after_process_total_number += 1
 				read_qual_first = indel_correction(read_seq_first, qual_line_first, indel_info_first)
 				sam_line_first = sam_line_first.replace(read_seq_first, read_qual_first[0])
