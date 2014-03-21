@@ -77,7 +77,7 @@ def pair_end_filter(sam_file, chr_name):
 def pair_end_indel(sam_file, chr_name):
 	""" process the reads by both pair_end and indel, does not process XA info here"""
 	print "pair_end_indel: ", parameter.sam_file_name
-	output_file = open(parameter.sam_file_name + "_pairend_indel.sam", "w")
+	output_file = open(parameter.sam_file_name + "_indel.sam", "w")
 	inputfile_sam = open(currentPath + sam_file, "r")
 	sam_line_first = inputfile_sam.readline() # the first read line in a pair
 	total_reads_num = 0
@@ -296,7 +296,7 @@ def filter_match_pairend():
 						print "current line number : ", total_reads_num				
 				sam_line_first = inputfile_sam.readline()
 	
-	with open(parameter.sam_file_name + "_pairend_leftover.sam", "w") as output_file_lefover:
+	with open(parameter.sam_file_name + "_pairend_removed.sam", "w") as output_file_lefover:
 		for key in reads_dict.keys():
 			print >> output_file_lefover, reads_dict[key]
 	
@@ -417,7 +417,89 @@ def filter_by_XA():
 	print "total_reads_num: ", total_reads_num
 	print "reads_after_process_total_number: ", reads_after_process_total_number
 	#return total_reads_num
-	
+
+def filter_by_XA_mimi():
+	"""
+	The file is already processed by filter_match_pairend, if both the read in a pair have XA
+	ane they belong to the same chr in XA, check if the start position distance are within
+	the insert size range > 0 and <= 1000 at this moment
+	This is for mimi project. the indel is not processed for sorting purpose
+	"""
+	print "filter_match_pairend: ", parameter.sam_file_name
+
+	total_reads_num = 0
+	reads_after_process_total_number = 0
+
+	with open(currentPath + parameter.sam_file, "r") as inputfile_sam:
+		with open(parameter.sam_file_name + "_XA.sam", "w") as output_file:
+			sam_line_first = inputfile_sam.readline() # the first read line in a pair
+			while sam_line_first != '':
+				if not sam_line_first.startswith("@"):
+					total_reads_num += 1
+					elements_first = sam_line_first.strip().split()
+					try:
+						read_ID_first = elements_first[0].strip()
+						chrName_first = elements_first[2].strip()
+						insert_size_first = abs(int(elements_first[8].strip()))			#  insert_size for one of the read is negative
+						indel_info_first = elements_first[5].strip()
+						read_seq_first = elements_first[9].strip()
+						qual_line_first = elements_first[10].strip()
+						first_is_XA, first_XA_info = is_multiple_maping(elements_first)
+					except:
+						print "error in first read:", sam_line_first
+
+					# process all chr or one particular chr, keep these steps for other files that do not need pair match
+					check_chr_name = chrName_first.startswith("chr") if (parameter.chr_name == "chr") else (parameter.chr_name == chrName_first)
+					if check_chr_name and (insert_size_first > parameter.insert_size_lower_bond) and (insert_size_first <= parameter.insert_size_upper_bond):					# only keep the reads mapped to chr
+						# if the first read is within insert size limit, check the second read
+						# the insert_size for a pair is the same. If the first read is passed, the second will be passed, too.
+						sam_line_second = inputfile_sam.readline()
+						total_reads_num += 1
+
+						elements_second = sam_line_second.strip().split()
+						try:
+							read_ID_second = elements_second[0].strip()
+							chrName_second = elements_second[2].strip()
+							insert_size_second = abs(int(elements_second[8].strip()))		#  insert_size for one of the read is negative
+							indel_info_second = elements_second[5].strip()
+							read_seq_second = elements_second[9].strip()
+							qual_line_second = elements_second[10].strip()
+							second_is_XA, second_XA_info = is_multiple_maping(elements_second)
+						except:
+							print "error in second read:", sam_line_second
+						if read_ID_first == read_ID_second:		# check if the two reads belong to the same pair
+							""" check if the reads from the same pair are mapped to the same chr	"""
+							if (chrName_first == chrName_second):
+								keep_this_pair = True
+								"""only check XA when both of the reads have XA"""
+								if first_is_XA and second_is_XA:
+									keep_this_pair = check_XA(first_XA_info, second_XA_info)
+
+								if keep_this_pair:
+									reads_after_process_total_number += 2
+
+									#read_qual_first = indel_correction(read_seq_first, qual_line_first, indel_info_first)
+									#sam_line_first = sam_line_first.replace(read_seq_first, read_qual_first[0])
+									#sam_line_first = sam_line_first.replace(qual_line_first, read_qual_first[1])
+									#print sam_line_first
+									print >> output_file, sam_line_first.strip()
+
+									#read_qual_second = indel_correction(read_seq_second, qual_line_second, indel_info_second)
+									#sam_line_second = sam_line_second.replace(read_seq_second, read_qual_second[0])
+									#sam_line_second= sam_line_second.replace(qual_line_second, read_qual_second[1])
+									#print sam_line_second
+									print >> output_file, sam_line_second.strip()
+							else:
+								print "first and second read mapped to different chr", read_ID_first, chrName_first, read_ID_second, chrName_second
+						else:
+							print "first and second read ID do not match", read_ID_first, read_ID_second
+				sam_line_first = inputfile_sam.readline()
+
+	print "total_reads_num: ", total_reads_num
+	print "reads_after_process_total_number: ", reads_after_process_total_number
+	#return total_reads_num
+
+
 def check_XA(first_XA_info, second_XA_info):
 	# eg: XA:Z:chrY,+10113,101M,1; first to remove "XA:Z:"
 	#XA:Z:chrY,+10113,101M,1;
@@ -741,11 +823,49 @@ def filter_by_repeat(repeat_cnv_file):
 						# the insert_size for a pair is the same. If the first read is passed, the second will be passed, too.
 						sam_line_second = inputfile_sam.readline()
 						total_reads_num += 1
-	
+
+def add_header(sam_file):
+	# for samtools sort
+	head_path = "/home/guoxing/disk2/lima/hg_header/"
+	hg18_header = "headerhg18.txt"
+	hg19_header = "headerhg19.txt"
+
+	cat = "cat " + head_path + hg19_header + " " + sam_file + " > " + sam_file + "_wheader"
+	grep_Process = subprocess.Popen(cat, shell=True)
+	grep_Process.wait()
+
+	os.system("mv " + sam_file + "_wheader " + sam_file)
+
+def samtools_sort(sam_file):
+	other_path = "/home/guoxing/disk2/ngs/morehouse/other/"
+	samtools_path = other_path + "samtools-0.1.18/"
+
+	# sort the sam file
+	print "sort runing"
+
+	sort_input = sam_file[:len(sam_file)-4]
+	sam2bam = samtools_path + "samtools view -bS " + sam_file + " > " + sort_input + ".bam"
+	print sam2bam
+	sam2bam_Process = subprocess.Popen(sam2bam, shell=True)
+	sam2bam_Process.wait()
+
+	sortbam = samtools_path + "samtools sort " + sort_input + ".bam " + sort_input + "_sorted"
+	print sortbam
+	sortbam_Process = subprocess.Popen(sortbam, shell=True)
+	sortbam_Process.wait()
+
+	bam2sam = samtools_path + "samtools view " + sort_input + "_sorted.bam > " + sort_input + "_sorted.sam"
+	print bam2sam
+	bam2sam_Process = subprocess.Popen(bam2sam, shell=True)
+	bam2sam_Process.wait()
+
+	os.system("rm " + sort_input + ".bam")
+	os.system("rm " + sort_input + "_sorted.bam")
+
 def sam_process(sam_file, chr_name, mode):
 	if mode == "single":
 		single_end_indel(sam_file, chr_name)
-	elif mode == "pair_single":
+	elif mode == "pair_indel":
 		pair_end_indel(sam_file, chr_name)
 	elif mode == "pair_mutiple":
 		pair_end_indel_multiple()
@@ -761,10 +881,15 @@ def sam_process(sam_file, chr_name, mode):
 		filter_match_pairend()
 	elif mode == "xa":		
 		filter_by_XA()
+	elif mode == "xamimi":
+		filter_by_XA_mimi()
 	elif mode == "indel":		
 		indel_process(sam_file)
 	elif mode == "single_xa":
 		single_end_xa()
+	elif mode == "sort":
+		add_header(sam_file)
+		samtools_sort(sam_file)
 
 def get_args():
 	desc="variation call"

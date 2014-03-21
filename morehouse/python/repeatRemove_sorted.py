@@ -150,8 +150,8 @@ def repeat_remove(rmsk_file, sam_file):
 
 	output_files(sam_file_name + "_rmsk.sam", rmsk_list)
 	output_files(sam_file_name + "_mulmap.sam", multmap_list)
-	output_files(sam_file_name + "_removed.sam", removed_list)
-	output_files(sam_file_name + "_record.txt", record_list)
+	output_files(sam_file_name + "_rmsk_removed.sam", removed_list)
+	output_files(sam_file_name + "_rmsk_record.txt", record_list)
 
 def repeat_remove_mimi(rmsk_file, sam_file):
 	# For removing repeat for solid data
@@ -168,8 +168,12 @@ def repeat_remove_mimi(rmsk_file, sam_file):
 	print "rmsk file: ", rmsk_file
 	print "sam file: ", sam_file_name
 
+	#outputFile_mulmap = open(currentPath + sam_file_name + "_mulmap.sam", "w")
+	outputFile_sam = open(currentPath + sam_file_name + "_rmsk.sam", "w")
+	outputFile_removed = open(currentPath + sam_file_name + "_rmsk_removed.sam", "w")
+
 	#inputFile_rmsk = open(file_path + rmsk_file, "r")  # solid data
-	inputFile_rmsk = open(currentPath + rmsk_file, "r")  # mimi data lima
+	inputFile_rmsk = open(rmsk_file, "r")  # mimi data lima
 	inputFile_sam = open(currentPath + sam_file, "r")
 
 	total_reads_number = 0
@@ -192,18 +196,31 @@ def repeat_remove_mimi(rmsk_file, sam_file):
 		read_elements = read_line.split()
 		read_chr = read_elements[2].strip()
 
-		# remove reads with mulitple mapping
+		# remove reads with multiple mapping
 		multiple_maping = is_multiple_maping(read_elements)
-
-		if not multiple_maping:
+		# multiple mapping is already checked with sam_process XA
+		if True:
 			if repeat_chr == "chrX":
 				repeat_chr = "chr23"
 			if repeat_chr == "chrY":
 				repeat_chr = "chr24"
+			if repeat_chr == "chrM":
+				repeat_chr = "chr25"
 			if read_chr == "chrX":
 				read_chr = "chr23"
 			if read_chr == "chrY":
 				read_chr = "chr24"
+			if read_chr == "chrM":
+				read_chr = "chr25"
+			if read_chr == "*":         # chrM is converted to * by samtools sort
+				read_chr = "chr25"
+
+			try:
+				repeat_chr_int = int(repeat_chr[3:])
+				read_chr_int = int(read_chr[3:])
+			except:
+				print repeat_chr, repeat_line
+				print read_line, read_chr
 
 			if repeat_chr == read_chr:
 
@@ -219,16 +236,22 @@ def repeat_remove_mimi(rmsk_file, sam_file):
 				read_end = read_start + read_length
 
 				if read_end <= (repeat_start+overlap):
-					#outputFile_sam.write(read_line.strip() + "\n")
-					rmsk_list.append(read_line)
+					outputFile_sam.write(read_line.strip() + "\n")
+					#rmsk_list.append(read_line)
 					read_line = inputFile_sam.readline()
 					total_reads_number += 1
 					kept_reads_nmuber += 1
 					#print "kept", repeat_start
 				elif read_end > (repeat_start+overlap) and read_end <= (repeat_end+read_length-overlap) and (repeat_end-repeat_start) >= overlap: # need to consider length of repeat
 					#print "removed", repeat_start
-					removed_line = read_chr + "\t" + str(repeat_start) + "\t" + str(repeat_end) + "\t" + repeat_class + "\t" + read_line.strip()
-					removed_list.append(removed_line)
+					# old output, include repeat info
+					#removed_line = read_chr + "\t" + str(repeat_start) + "\t" + str(repeat_end) + "\t" + repeat_class + "\t" + read_line.strip()
+					#outputFile_removed.write(removed_line + "\n")
+					#removed_list.append(removed_line)
+
+					# to recover read pair with only one ready overlaps with repeat.
+					outputFile_removed.write(read_line.strip() + "\n")
+
 					read_line = inputFile_sam.readline()
 					total_reads_number += 1
 					removed_reads_number += 1
@@ -238,13 +261,14 @@ def repeat_remove_mimi(rmsk_file, sam_file):
 				#print repeat_chr[3:], int(read_chr[3:])
 				repeat_line = inputFile_rmsk.readline()
 			else: # repeat is finished, more reads left. Keep them all
-				#outputFile_sam.write(read_line.strip() + "\n")
-				rmsk_list.append(read_line)
+				outputFile_sam.write(read_line.strip() + "\n")
+				#rmsk_list.append(read_line)
 				read_line = inputFile_sam.readline()
 				total_reads_number += 1
 				kept_reads_nmuber += 1
 		else:
-			multmap_list.append(read_line)
+			#multmap_list.append(read_line)
+			#outputFile_mulmap.write(read_line.strip() + "\n")
 			multiple_mapping_number += 1
 			read_line = inputFile_sam.readline()
 			total_reads_number += 1
@@ -252,8 +276,9 @@ def repeat_remove_mimi(rmsk_file, sam_file):
 
 	print "total_reads_number", total_reads_number
 	print "multiple_mapping_number", multiple_mapping_number
-	print "kept_reads_nmuber", kept_reads_nmuber
 	print "removed_reads_number", removed_reads_number
+	print "kept_reads_nmuber", kept_reads_nmuber
+	print "percentage", float(kept_reads_nmuber)/total_reads_number
 
 	end = time.time()
 	run_time = str(end - start)
@@ -266,15 +291,51 @@ def repeat_remove_mimi(rmsk_file, sam_file):
 	record_list.append("removed_reads_number: " + str(removed_reads_number))
 	record_list.append("run time is: " + str(run_time))
 
-	output_files(sam_file_name + "_rmsk.sam", rmsk_list)
-	output_files(sam_file_name + "_mulmap.sam", multmap_list)
-	output_files(sam_file_name + "_removed.sam", removed_list)
+	# takes time if the file is big
+	#output_files(sam_file_name + "_rmsk.sam", rmsk_list)
+	#output_files(sam_file_name + "_mulmap.sam", multmap_list)
+	#output_files(sam_file_name + "_removed.sam", removed_list)
 	output_files(sam_file_name + "_record.txt", record_list)
+
+	outputFile_sam.close()
+	outputFile_removed.close()
+	#outputFile_mulmap.close()
+
+def extract_single_overlapped_read(sam_file):
+
+	sam_file_name = sam_file[:(len(sam_file) - 4)]
+	rmsk_file_name = sam_file_name + "_rmsk.sam"
+	rmsk_pairend_file_name = sam_file_name + "_rmsk_pairend.sam"
+	rmsk_removed = sam_file_name + "_rmsk_removed.sam"
+	rmsk_pairend_removed = sam_file_name + "_rmsk_pairend_removed.sam"
+	recoverd_overl_read_name = sam_file_name + "_recoverd_overl_read.sam"
+
+	rmsk_pairend_rm_dict = {}
+	with open(rmsk_pairend_removed, "r") as rmsk_pairend_rm_file:
+		for read in rmsk_pairend_rm_file:
+			rmsk_pairend_rm_dict[read.strip().split()[0]] = read.strip()
+	print "rmsk_removed_pairend_removed size", len(rmsk_pairend_rm_dict)
+
+	with open(recoverd_overl_read_name, "w") as recovered_file:
+		with open(rmsk_removed, "r") as rmsk_removed_file:
+			for read in rmsk_removed_file:
+				read_id = read.strip().split()[0]
+				if len(rmsk_pairend_rm_dict) > 0:
+					if read_id in rmsk_pairend_rm_dict:
+						print >> recovered_file, read.strip()
+						print >> recovered_file, rmsk_pairend_rm_dict[read_id]
+						del rmsk_pairend_rm_dict[read_id]
+				else:
+					break
+
+	combined_file_name = sam_file_name + "_rmsk_combined.sam"
+	cmd = "cat " + recoverd_overl_read_name + " " + rmsk_pairend_file_name + " > " + combined_file_name
+	os.system(cmd)
 
 def get_args():
 	desc = "Compare seed and std hap, to check purity of seed"
 
-	usage = "seed_std_compare -i seed_file -c chr#"
+	usage = "repeatRemove_sorted -s sam_file -r repeat_file"
 	parser = OptionParser(usage=usage, description=desc)
 	parser.add_option("-r", "--rmsk", type="string", dest="rmskFile", help="Input rmsk File Name", default="null")
 	parser.add_option("-s", "--sam", type="string", dest="samFile", help="Input sam File Name", default="null")
@@ -295,7 +356,10 @@ if __name__ == '__main__':
 	#rmsk_file = "hg18_rmsk.txt"
 
 	#repeat_remove(rmsk_file, sam_file)
+
+	rmsk_file = "/home/guoxing/disk2/lima/RepeatMa_chrX_MultSNPs_chrX_SegDups_chrX.txt"
 	repeat_remove_mimi(rmsk_file, sam_file)
+	extract_single_overlapped_read(sam_file)
 
 
 

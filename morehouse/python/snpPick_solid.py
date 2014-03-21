@@ -56,8 +56,9 @@ def load_hap_std(file_name):
 				snp = snps()
 				snp.rsID = elements[0]
 				snp.position = int(position)
-				snp.A = elements[2].strip()
-				snp.B = elements[3].strip()
+				# for wli nea data, for solid data. remove the comments
+				#snp.A = elements[2].strip()
+				#snp.B = elements[3].strip()
 				hap_std_dict[position] = snp
 			except ValueError:
 				print "error in ", file_name, position
@@ -293,10 +294,8 @@ def output_coverage_info(hap_std_sorted_list):
 	outputFile_reads.close()
 	outputfile_allele.close()
 
-
 def update_max_allele_number(max_allele_number, dict):
 	dict[max_allele_number] = 1 if max_allele_number not in dict else (dict[max_allele_number] + 1)
-
 
 def output_ABX_files(file_name, title_info, data_dict):
 	file = open(file_name, "w")
@@ -306,7 +305,6 @@ def output_ABX_files(file_name, title_info, data_dict):
 		for reads in snp.covered_reads_list:
 			print >> file, reads.qName, reads.flag, reads.chrName, reads.start_position, reads.covered_snp, reads.read_sequence, reads.quality_score_sequence
 	file.close()
-
 
 def output_seed_file(file_name, title_info, data_dict):
 	file = open(file_name, "w")
@@ -673,6 +671,8 @@ def snpPick_neandertal(sam_file, chr_name):
 	print >> data_record_file, "called_seed_dict: ", called_seed_total
 
 	data_record_file.close()
+
+	output_coverage_info(hap_std_sorted_list)
 
 def get_args():
 	desc = "variation call"

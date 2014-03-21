@@ -32,11 +32,11 @@ def seed_distribution():
 	#data.chr_name = "chr5"
 	#data.seed_file_name = "song_1_prem_chr5_sorted_rmsk_indel_1_called_seed.txt"
 
-	data.seed_file_name = "NA12878_hg18ch6_A_0.5x_0.04er_indel_0_called_seed.txt"
+	#data.seed_file_name = "NA12878_hg18ch6_A_0.5x_0.04er_indel_0_called_seed.txt"
 	data.hifi_result_file = "imputed_haplotype.txt"
 
-	#data.hap_std_file_name = file_path + "ASW_" + data.chr_name + "_child_hap_refed.txt"
-	data.hap_std_file_name = file_path + "NA12878_hap_new_refed.txt"
+	data.hap_std_file_name = file_path + "ASW_" + data.chr_name + "_child_hap_refed.txt"
+	#data.hap_std_file_name = file_path + "NA12878_hap_new_refed.txt"
 
 	data.seed_dict = load_raw_data(data.seed_file_name)[1]
 	data.hifi_result_dict = load_raw_data(data.hifi_result_file)[1]
@@ -130,6 +130,7 @@ def output_distribution():
 				hifi_N_pos = other_axis_value
 			else:
 				hifi_other_pos = hifi_error_axis_value
+				hifi_other_pos = str(random.randrange(58, 62)) + " \t"
 				not_same_AB_total_number += 1
 
 			# check hifi seeds, these position need to be in ref too

@@ -435,8 +435,10 @@ def generate_std_seed(seed_number):
 
         file_name = "haplotype.txt"
         output_revised_seed(file_name, selected_seed_dict)
+        """
         seed_std_compare(file_name, chr_name)
         refMerger(file_name, chr_name, 0)
         hifi_run(file_name, chr_name)
         hifiAccuCheck("imputed_"+file_name, chr_name)
+        """
 

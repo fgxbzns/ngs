@@ -753,7 +753,7 @@ def remove_single_refID():
 	seed_dict_from_hifi = {}
 	for pos in hifi_dict.keys():
 		#if (pos in refID_dict and len(refID_dict[pos][2]) <= 50) or (pos in refID_dict and len(refID_dict[pos][4]) <= 50):
-		refID_cutoff = 5
+		refID_cutoff = 2
 		if (pos in refID_dict and len(refID_dict[pos][2]) <= refID_cutoff) or (pos in refID_dict and len(refID_dict[pos][4]) <= refID_cutoff):
 			pass
 			#a = hifi_dict[pos]
@@ -3341,7 +3341,7 @@ def seed_correction(seed_file, chr_name, mode):
 	elif mode == "compare":
 		#compare_std_hap_ref()
 		#compare_geno_ref()
-		#generate_std_seed(8000)
+		generate_std_seed(700)
 		pass
 	elif mode == "sgroup":
 		#get_seed_group()
