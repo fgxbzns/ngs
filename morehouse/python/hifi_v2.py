@@ -181,7 +181,7 @@ class hifi:
 			unique_alleles = set(alleles)
 			n_alleles = len(unique_alleles)
 			if n_alleles == 0 or n_alleles > 2:
-				print "maf error in ref: ", position
+				print "maf error in ref: ", pos
 				sys.exit(1)
 			else:
 				maf_temp_list = []

@@ -278,7 +278,7 @@ def repeat_remove_mimi(rmsk_file, sam_file):
 	print "multiple_mapping_number", multiple_mapping_number
 	print "removed_reads_number", removed_reads_number
 	print "kept_reads_nmuber", kept_reads_nmuber
-	print "percentage", float(kept_reads_nmuber)/total_reads_number
+	print "percentage", round(float(kept_reads_nmuber)/total_reads_number, 3)
 
 	end = time.time()
 	run_time = str(end - start)
@@ -304,11 +304,11 @@ def repeat_remove_mimi(rmsk_file, sam_file):
 def extract_single_overlapped_read(sam_file):
 
 	sam_file_name = sam_file[:(len(sam_file) - 4)]
-	rmsk_file_name = sam_file_name + "_rmsk.sam"
-	rmsk_pairend_file_name = sam_file_name + "_rmsk_pairend.sam"
-	rmsk_removed = sam_file_name + "_rmsk_removed.sam"
-	rmsk_pairend_removed = sam_file_name + "_rmsk_pairend_removed.sam"
-	recoverd_overl_read_name = sam_file_name + "_recoverd_overl_read.sam"
+	rmsk_file_name = sam_file
+	rmsk_pairend_file_name = sam_file_name + "_pairend.sam"
+	rmsk_removed = sam_file_name + "_removed.sam"
+	rmsk_pairend_removed = sam_file_name + "_pairend_removed.sam"
+	recoverd_overl_read_name = sam_file_name + "_recovered_overlap_read.sam"
 
 	rmsk_pairend_rm_dict = {}
 	with open(rmsk_pairend_removed, "r") as rmsk_pairend_rm_file:
@@ -328,7 +328,7 @@ def extract_single_overlapped_read(sam_file):
 				else:
 					break
 
-	combined_file_name = sam_file_name + "_rmsk_combined.sam"
+	combined_file_name = sam_file_name + "_combined.sam"
 	cmd = "cat " + recoverd_overl_read_name + " " + rmsk_pairend_file_name + " > " + combined_file_name
 	os.system(cmd)
 

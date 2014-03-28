@@ -6,6 +6,7 @@
 import os, glob, subprocess, random, operator, time, sys, math
 from optparse import OptionParser
 from tools import *
+from repeatRemove_sorted import *
 
 class parameters:
 	def __init__(self):
@@ -182,7 +183,7 @@ def single_end_indel(sam_file, chr_name):
 def filter_by_chr():
 	""" filter the reads by chr name and insert size """
 	print "filter_by_chr: ", parameter.sam_file_name
-	output_file = open(parameter.sam_file_name + "_prefiltered.sam", "w")
+	output_file = open(parameter.sam_file_name + "_" + parameter.chr_name + ".sam", "w")
 	inputfile_sam = open(currentPath + parameter.sam_file, "r")
 	sam_line_first = inputfile_sam.readline() # the first read line in a pair
 	total_reads_num = 0
@@ -841,7 +842,7 @@ def samtools_sort(sam_file):
 	samtools_path = other_path + "samtools-0.1.18/"
 
 	# sort the sam file
-	print "sort runing"
+	print "sorting running"
 
 	sort_input = sam_file[:len(sam_file)-4]
 	sam2bam = samtools_path + "samtools view -bS " + sam_file + " > " + sort_input + ".bam"
@@ -873,7 +874,7 @@ def sam_process(sam_file, chr_name, mode):
 		seperate_by_chr()
 	elif mode == "combine":
 		combine_files()
-	elif mode == "prefilter":
+	elif mode == "chr":
 		filter_by_chr()
 	elif mode == "match":	
 		match_pairend()
@@ -890,17 +891,73 @@ def sam_process(sam_file, chr_name, mode):
 	elif mode == "sort":
 		add_header(sam_file)
 		samtools_sort(sam_file)
+	elif mode == "mimi":
+		ori_sam_file_name = parameter.sam_file_name
+
+		print "1. filter chr and find pairend",  parameter.sam_file
+		filter_match_pairend()
+
+
+		parameter.sam_file_name = parameter.sam_file_name + "_pairend"
+		parameter.sam_file = parameter.sam_file_name + ".sam"
+		print "2. filter by XA",  parameter.sam_file
+		filter_by_XA_mimi()
+
+		parameter.sam_file_name = parameter.sam_file_name + "_XA"
+		parameter.sam_file = parameter.sam_file_name + ".sam"
+		print "3. sorting",  parameter.sam_file
+		add_header(parameter.sam_file)
+		samtools_sort(parameter.sam_file)
+
+		parameter.sam_file_name = parameter.sam_file_name + "_sorted"
+		parameter.sam_file = parameter.sam_file_name + ".sam"
+		print "4. repeat remove",  parameter.sam_file
+		rmsk_file = "/home/guoxing/disk2/lima/RepeatMa_chrX_MultSNPs_chrX_SegDups_chrX.txt"
+		repeat_remove_mimi(rmsk_file, parameter.sam_file)
+
+		parameter.sam_file_name = parameter.sam_file_name + "_rmsk"
+		parameter.sam_file = parameter.sam_file_name + ".sam"
+		print "5. find matched pairend after repeat remove",  parameter.sam_file
+		filter_match_pairend()
+
+		#parameter.sam_file_name = parameter.sam_file_name[:len(parameter.sam_file_name)-5]
+		#parameter.sam_file = parameter.sam_file_name + ".sam"
+		print "6. extract_single_overlapped_read",  parameter.sam_file
+		extract_single_overlapped_read(parameter.sam_file)
+
+		parameter.sam_file_name = parameter.sam_file_name + "_combined"
+		parameter.sam_file = parameter.sam_file_name + ".sam"
+		print "7. find matched pairend from combined file and process indel",  parameter.sam_file
+		pair_end_indel(parameter.sam_file, parameter.chr_name)
+
+		#snpPick_mimi -s NA12893_S1_ChrXnew_pairend_XA_sorted_rmsk_combined_indel.sam -c chrX -m update -d NA12893_S1_chrX
+
+
+		print "8. clean up"
+		# keep the pairend_XA_sorted.sam and pairend_XA_sorted_rmsk.sam
+		os.system("rm " + ori_sam_file_name + ".sam")
+		os.system("rm " + ori_sam_file_name + "_pairend.sam")
+		os.system("rm " + ori_sam_file_name + "_pairend_removed.sam")
+		os.system("rm " + ori_sam_file_name + "_pairend_XA.sam")
+		os.system("rm " + ori_sam_file_name + "_pairend_XA_sorted_record.txt")
+		sorted_rmsk_name = ori_sam_file_name + "_pairend_XA_sorted_rmsk"
+		os.system("rm " + sorted_rmsk_name + "_pairend*.sam")
+		os.system("rm " + sorted_rmsk_name + "_recovered*.sam")
+		os.system("rm " + sorted_rmsk_name + "_removed.sam")
+		os.system("rm " + sorted_rmsk_name + "_combined.sam")
+
+
 
 def get_args():
 	desc="variation call"
-	usage = "snpPick_fish -s sam_file -c chr -m mode" 
+	usage = "sam_process"
 	parser = OptionParser(usage = usage)
-	parser.add_option("-s", "--sam", type="string", dest="samFile",help = "Input File Name", default="null")
-	parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="chr")
-	parser.add_option("-m", "--mode", type="string", dest="mode",help = "", default="null")
+	parser.add_option("-s", "--sam", type="string", dest="samFile", help="Input File Name", default="null")
+	parser.add_option("-c", "--chr", type="string", dest="chrName", help="Input chr Name", default="chr")
+	parser.add_option("-m", "--mode", type="string", dest="mode", help="", default="null")
 	
-	parser.add_option("-a", "--repeat", type="string", dest="repeatFile",help = "", default="null")
-	parser.add_option("-b", "--combined", type="string", dest="combinedFile",help = "", default="null")
+	parser.add_option("-a", "--repeat", type="string", dest="repeatFile", help="", default="null")
+	parser.add_option("-b", "--combined", type="string", dest="combinedFile", help="", default="null")
 	(options, args) = parser.parse_args()
 	if options.mode == "null":
 		print "parameters missing..."

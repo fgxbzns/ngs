@@ -59,7 +59,7 @@ class data_dicts:
         
         # parameters for seed group
         self.seed_group_window_size = 20
-        self.existing_seed_percentage = 0.95
+        self.existing_seed_percentage = 0.90
 
     def update_seed_dict(self):
         #print "seed_file is :", self.seed_file

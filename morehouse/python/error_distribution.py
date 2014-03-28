@@ -130,7 +130,7 @@ def output_distribution():
 				hifi_N_pos = other_axis_value
 			else:
 				hifi_other_pos = hifi_error_axis_value
-				hifi_other_pos = str(random.randrange(58, 62)) + " \t"
+				hifi_other_pos = str(random.randrange(60, 75)) + " \t"
 				not_same_AB_total_number += 1
 
 			# check hifi seeds, these position need to be in ref too
@@ -151,7 +151,7 @@ def output_distribution():
 						seed_same_to_A += 1
 						#seed_A_pos = seed_correct_axis_value
 						#seed_AB_pos = seed_correct_axis_value  # include homo seed in correct seed
-						seed_A_pos = str(random.randrange(48, 52)) + " \t"
+						seed_A_pos = str(random.randrange(30, 40)) + " \t"
 						seed_AB_pos = str(random.randrange(48, 52)) + " \t"  # include homo seed in correct seed
 				elif seed_A == ref_B:
 					seed_same_to_B += 1

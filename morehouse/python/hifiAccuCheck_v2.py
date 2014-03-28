@@ -177,7 +177,7 @@ def hifiAccuCheck(hifi_result_file, chr_name):
 	hetero_accuracy = round(
 		float(same_A_total_number + same_B_total_number + len(same_AB_hetero)) / float(len(same_position_hetero) \
 		                                                                               - AT_GC_dict_number) * 100, 3)
-	homo_accuracy = round(float(len(same_AB_homo)) / float(len(same_position_homo)) * 100, 3)
+	#homo_accuracy = round(float(len(same_AB_homo)) / float(len(same_position_homo)) * 100, 3)
 
 	print "same_position_total_number", same_position_total_number
 	print "different_position_total_number", different_position_total_number
@@ -192,7 +192,7 @@ def hifiAccuCheck(hifi_result_file, chr_name):
 	#print "len(same_position_hetero)", len(same_position_hetero)
 	#print "len(AT_GC_hetero)", len(AT_GC_hetero)
 	print "hetero_accuracy", hetero_accuracy
-	print "homo_accuracy", homo_accuracy
+	#print "homo_accuracy", homo_accuracy
 	print "accuracy", accuracy
 
 	accuracy_output_file_name = "hifi_accuracy.txt"

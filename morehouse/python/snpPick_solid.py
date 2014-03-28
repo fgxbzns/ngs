@@ -93,17 +93,20 @@ def variant_call_single_end(sam_file, hap_std_dict, chr_name):
 					current_base_position = start_position_first + i
 					if current_base_position in hap_std_dict:
 						covered_snp = read_sequence_first[i]  # ith position is the covered snp
-						quality_score_symbol = quality_score_sequence_first[i]
-						if (not covered_snp == 'N') and (
-							(ord(quality_score_symbol) - 33) > quality_score_threshold):  # check quality_score
-							covered_snp_total_number += 1
-							hap_std_dict[current_base_position].covered_reads_list.append(
-								read(qName_first, flag_first, chrName_first, \
-								     start_position_first, read_sequence_first, quality_score_sequence_first,
-								     read_length_first, covered_snp))
-							for base, value in hap_std_dict[current_base_position].allele_dict.iteritems():
-								if base == covered_snp:
-									hap_std_dict[current_base_position].allele_dict[base] += 1
+						try:
+							quality_score_symbol = quality_score_sequence_first[i]
+							if (not covered_snp == 'N') and (
+								(ord(quality_score_symbol) - 33) > quality_score_threshold):  # check quality_score
+								covered_snp_total_number += 1
+								hap_std_dict[current_base_position].covered_reads_list.append(
+									read(qName_first, flag_first, chrName_first, \
+									     start_position_first, read_sequence_first, quality_score_sequence_first,
+									     read_length_first, covered_snp))
+								for base, value in hap_std_dict[current_base_position].allele_dict.iteritems():
+									if base == covered_snp:
+										hap_std_dict[current_base_position].allele_dict[base] += 1
+						except:
+							print "different length of read and quality score", sam_line_first
 
 		sam_line_first = inputfile_sam.readline()
 	inputfile_sam.close()
@@ -504,7 +507,7 @@ def combine_called_seed_geno(called_seed_dict, geno_homo_dict):
 			called_seed_dict[position] = snp
 
 
-def snpPick(sam_file, depth_threshold, chr_name):
+def snpPick_solid(sam_file, depth_threshold, chr_name):
 	# for solid data
 	#global chr_name
 	global quality_score_threshold
@@ -527,7 +530,8 @@ def snpPick(sam_file, depth_threshold, chr_name):
 	parameter.chr_name = chr_name
 	parameter.depth_threshold = depth_threshold
 
-	quality_score_threshold = 13
+	quality_score_threshold = 13    # solid data
+	#quality_score_threshold = 30    # neand data
 	max_allele_percentage_threshold = 0.8
 
 	haplotype_file = "ASW_" + chr_name + "_child_hap_refed.txt"  # for solid and 454 NA10847
@@ -634,7 +638,8 @@ def snpPick_neandertal(sam_file, chr_name):
 	parameter.chr_name = chr_name
 	parameter.depth_threshold = 0
 
-	quality_score_threshold = 13
+	#quality_score_threshold = 13  # solid data
+	quality_score_threshold = 30   # neand wli data
 	max_allele_percentage_threshold = 0.8
 
 	haplotype_file = "ASW_" + chr_name + "_child_hap_refed.txt"  # for solid and 454 NA10847
@@ -702,7 +707,7 @@ if __name__ == '__main__':
 	start_time = time.time()
 	if mode == "solid":
 
-		snpPick(sam_file, depth_threshold, chr_name)
+		snpPick_solid(sam_file, depth_threshold, chr_name)
 		seed_std_compare(sam_file_name + "_combined_seed.txt", chr_name)
 	elif mode == "nea":
 		#haplotype_file = options.hstd
