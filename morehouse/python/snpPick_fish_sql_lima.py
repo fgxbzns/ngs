@@ -312,6 +312,57 @@ def output_filtered_data(start_line, end_line):
 			for data in data_list:
 				print >> output_file, " ".join(str(x) for x in data)
 
+def load_mimi_data(file_name):
+	data = {}
+	with open(file_name, "r") as fp:
+		for line in fp:
+			elements = line.strip().split()
+			try:
+				data[int(elements[0])] = elements[:7]
+			except:
+				#print "error in ", line, file_name
+				pass
+	return data
+
+def mimi_combine_files():
+	file_number_dict = {}
+	for infile in glob.glob(os.path.join("NA128??_S1_chrX_0_158375978_filtered.txt")):
+		mimi_file_number = int(infile[2:7].strip())
+		#print mimi_file_number
+		file_number_dict[mimi_file_number] = {}
+
+	title_line = "pos \t"
+	second_line = "pos \t"
+	all_snp_dict = {}
+	for mimi_file_number in file_number_dict.keys():
+		file_name = "NA" + str(mimi_file_number) + "_S1_chrX_0_158375978_filtered.txt"
+		file_number_dict[mimi_file_number] = load_mimi_data(file_name)
+		print "NA" + str(mimi_file_number), len(file_number_dict[mimi_file_number])
+		title_line += "NA" + str(mimi_file_number) + "\t\t\t\t"
+		second_line += "A \t T \t C \t G \t"
+		for pos in file_number_dict[mimi_file_number]:
+			if pos not in all_snp_dict:
+				all_snp_dict[pos] = ""
+	print "total pos number: ", len(all_snp_dict)
+	#print title_line
+
+	for pos in all_snp_dict.keys():
+		for pos_data in file_number_dict.values():
+			if pos in pos_data:
+				#print pos, pos_data[pos]
+				all_snp_dict[pos] = all_snp_dict[pos] + list_to_line(pos_data[pos][3:]) + "\t"
+			else:
+				all_snp_dict[pos] += "\t\t\t\t"
+				#pass
+	#print all_snp_dict[3343118]
+
+	with open("combined_mimi.txt", "w") as fp:
+		print >> fp, title_line
+		print >> fp, second_line
+		for pos, data in all_snp_dict.iteritems():
+			print >> fp, str(pos) + "\t" + data
+
+
 def get_args():
 	desc = "variation call"
 	usage = "snpPick_fish -s sam_file -c chr -m update -d db_name -q qscore \n" \
@@ -403,6 +454,10 @@ if __name__ == '__main__':
 	elif (mode == "pos_list"):
 		posList = options.posList
 		output_single_pos_data(posList)
+	elif (mode == "mimi_com"):
+		mimi_combine_files()
+
+
 
 	elapse_time = time.time() - start_time
 	print "run time: ", round(elapse_time, 3), "s"

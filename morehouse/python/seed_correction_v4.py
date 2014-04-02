@@ -754,7 +754,7 @@ def remove_single_refID():
 	seed_dict_from_hifi = {}
 	for pos in hifi_dict.keys():
 		#if (pos in refID_dict and len(refID_dict[pos][2]) <= 50) or (pos in refID_dict and len(refID_dict[pos][4]) <= 50):
-		refID_cutoff = 2
+		refID_cutoff = 3
 		if (pos in refID_dict and len(refID_dict[pos][2]) <= refID_cutoff) or (pos in refID_dict and len(refID_dict[pos][4]) <= refID_cutoff):
 			pass
 			#a = hifi_dict[pos]
@@ -1018,7 +1018,9 @@ def add_seed_by_linkage_longestLD():
 					match_to_A_index_list = [index for index in match_to_A_index_list if data_dict.hap_ref_dict[window_pos][index] == hifi_dict[window_pos][2]]
 					match_to_B_index_list = [index for index in match_to_B_index_list if data_dict.hap_ref_dict[window_pos][index] == hifi_dict[window_pos][3]]
 				except:
+					pass
 					print window_info
+					sys.exit(1)
 			match_to_A_refID = [refID_list[index] for index in match_to_A_index_list]
 			match_to_B_refID = [refID_list[index] for index in match_to_B_index_list]
 
@@ -2990,9 +2992,9 @@ def overall_process_2_refrem(seed_file, chr_name, mode):
 
 	record_file = open(data_dict.record_file_name, "w")
 	print >> record_file, "id", "total hetero", "A", "B", "B%"
-	i = 20
+	i = 1
 	#for i in range(2):
-	while i <= 50:
+	while i <= 100:
 		haplotype_file = "haplotype.txt"
 		if i <= 20:
 			# first 20 rounds, us LD only
@@ -3058,21 +3060,20 @@ def overall_process_2_city(seed_file, chr_name, mode):
 
 	record_file = open(data_dict.record_file_name, "w")
 	print >> record_file, "id", "total hetero", "A", "B", "B%"
-	i = 0
+	i = 31
 	#for i in range(2):
-	while i <= 20:
+	while i <= 110:
 
-		for j in range(5):
+		for j in range(10):
 
-			remPercent = 0 if i == 0 else float(random.randrange(40, 80))/(100.0)
+			remPercent = 0 if i == 0 else float(random.randrange(40, 60))/(100.0)
 			print "remPercent", remPercent
 			haplotype_file = "haplotype.txt"
 			refMerger(haplotype_file, chr_name, remPercent)
 
-
 			hifi_run(haplotype_file, data_dict.chr_name)
 			mode = "linkage"
-			print "########### linkage expand #########", j
+			print "########### linkage expand #########", i
 			seed_correction(seed_file, chr_name, mode)
 
 			same_to_A_dict, same_to_B_dict = seed_std_compare(haplotype_file, data_dict.chr_name)
@@ -3080,12 +3081,15 @@ def overall_process_2_city(seed_file, chr_name, mode):
 			seed_same_to_B = len(same_to_B_dict)
 			B_in_hetero = round((float(seed_same_to_B)/float(seed_same_to_A + seed_same_to_B))*100, 2)
 			print >> record_file, "LD", i, seed_same_to_A+seed_same_to_B, seed_same_to_A, seed_same_to_B, B_in_hetero
+			hap_bkup = "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict))
+			os.system("cp haplotype.txt " + hap_bkup)
+			os.system("mv " + hap_bkup + " seed_file")
 			i += 1
 
 
-		refMerger(haplotype_file, chr_name, remPercent)
+		#refMerger(haplotype_file, chr_name, 0)
 
-		mode = "sgroup"
+		mode = "remove"
 		print "########### error remove #########", i
 
 		seed_correction(seed_file, chr_name, mode)
@@ -3096,9 +3100,8 @@ def overall_process_2_city(seed_file, chr_name, mode):
 		seed_same_to_A = len(same_to_A_dict)
 		seed_same_to_B = len(same_to_B_dict)
 		B_in_hetero = round((float(seed_same_to_B)/float(seed_same_to_A + seed_same_to_B))*100, 2)
-		print >> record_file, "sgroup", i, seed_same_to_A+seed_same_to_B, seed_same_to_A, seed_same_to_B, B_in_hetero
+		print >> record_file, "remove", i, seed_same_to_A+seed_same_to_B, seed_same_to_A, seed_same_to_B, B_in_hetero
 		i += 1
-
 
 	record_file.close()
 

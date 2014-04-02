@@ -64,7 +64,6 @@ def load_hap_std(file_name):
 				print "error in ", file_name, position
 	return title_haplotype, hap_std_dict
 
-
 def variant_call_single_end(sam_file, hap_std_dict, chr_name):
 	inputfile_sam = open(sam_file, "r")
 	sam_line_first = inputfile_sam.readline()  # the first read line in a pair
@@ -275,9 +274,9 @@ def variant_call_pair_end(sam_file, hap_std_dict):
 	return (total_reads_num, covered_snp_total_number, hap_std_sorted_list)
 
 def output_coverage_info(hap_std_sorted_list):
-	outputFile_reads = open(currentPath + sam_file_name + "_reads.txt", "w")
+	outputFile_reads = open(currentPath + sam_file_name + "_" + chr_name + "_reads.txt", "w")
 	outputFile_reads.write("SNP position \t Depth \n")
-	outputfile_allele = open(currentPath + sam_file_name + "_allele.txt", "w")
+	outputfile_allele = open(currentPath + sam_file_name + "_" + chr_name + "_allele.txt", "w")
 	outputfile_allele.write("Chromosome \t position \t Total Depth \t A_depth \t T_depth \t C_depth \t G_depth \n")
 	for snp_data in hap_std_sorted_list:
 		snp = snp_data[1]
@@ -701,6 +700,7 @@ if __name__ == '__main__':
 	options = get_args()
 	sam_file = options.samFile
 	depth_threshold = int(options.threshold)
+	global chr_name
 	chr_name = options.chrName
 	mode = options.mode
 

@@ -120,9 +120,10 @@ def hifiAccuCheck(hifi_result_file, chr_name):
 	#hap_std_file_name = file_path + "NA12878_hap_new_refed.txt"	# simulation data hg18 chr6
 
 	hifi_std_dict = load_raw_data(hap_std_file_name, raw_data_format)[1]
+	hap_std_total_number = len(hifi_std_dict)
 
 	hifi_std_dict = removeN(hifi_std_dict)
-	hap_std_total_number = len(hifi_std_dict)
+
 
 	hifi_result_dict = load_raw_data(hifi_result_file, raw_data_format)[1]
 	hifi_result_total_number = len(hifi_result_dict)
@@ -157,7 +158,7 @@ def hifiAccuCheck(hifi_result_file, chr_name):
 	different_position_total_number = len(different_position_dict)
 	AT_GC_dict_number = len(AT_GC_dict)
 
-	pencentage_in_common = format(float(same_position_total_number) / float(hifi_result_total_number) * 100, "0.3f")
+	pencentage_in_common = round(float(same_position_total_number) / hifi_result_total_number * 100, 3)
 	#accuracy = round(float(same_A_total_number + same_B_total_number + same_AB_total_number) / float(
 	#	same_position_total_number - AT_GC_dict_number) * 100, 3)
 	#accuracy = round(float(same_A_total_number + same_B_total_number + same_AB_total_number)/float(hifi_result_total_number - AT_GC_dict_number)*100, 3)
@@ -179,6 +180,8 @@ def hifiAccuCheck(hifi_result_file, chr_name):
 		                                                                               - AT_GC_dict_number) * 100, 3)
 	#homo_accuracy = round(float(len(same_AB_homo)) / float(len(same_position_homo)) * 100, 3)
 
+	coverage = round(float(same_position_total_number)/(hap_std_total_number-different_position_total_number)*100, 3)
+
 	print "same_position_total_number", same_position_total_number
 	print "different_position_total_number", different_position_total_number
 	print "same_AB_total_number", same_AB_total_number
@@ -187,6 +190,7 @@ def hifiAccuCheck(hifi_result_file, chr_name):
 	print "AT_GC_dict_number", AT_GC_dict_number
 	print "not_same_AB_total_number", not_same_AB_total_number
 	print "pencentage in common", pencentage_in_common
+	print "coverage", coverage
 
 	#print "len(same_AB_hetero)", len(same_AB_hetero)
 	#print "len(same_position_hetero)", len(same_position_hetero)

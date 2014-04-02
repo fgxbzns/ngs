@@ -863,6 +863,7 @@ def samtools_sort(sam_file):
 	os.system("rm " + sort_input + ".bam")
 	os.system("rm " + sort_input + "_sorted.bam")
 
+
 def sam_process(sam_file, chr_name, mode):
 	if mode == "single":
 		single_end_indel(sam_file, chr_name)
@@ -932,7 +933,6 @@ def sam_process(sam_file, chr_name, mode):
 
 		#snpPick_mimi -s NA12893_S1_ChrXnew_pairend_XA_sorted_rmsk_combined_indel.sam -c chrX -m update -d NA12893_S1_chrX
 
-
 		print "8. clean up"
 		# keep the pairend_XA_sorted.sam and pairend_XA_sorted_rmsk.sam
 		os.system("rm " + ori_sam_file_name + ".sam")
@@ -965,7 +965,7 @@ def get_args():
 		sys.exit(1)
 	return options
 
-if __name__=='__main__':
+if __name__ == '__main__':
 	
 	start_time = time.time()
 	global parameter
@@ -974,6 +974,8 @@ if __name__=='__main__':
 	options = get_args()
 	parameter.mode = options.mode
 	if parameter.mode == "com_repeat":
+		# combine repeat files.
+		# sam_process -a repeat_file -b already_combined_file
 		repeat_cnv_file = options.repeatFile
 		combined_file = options.combinedFile
 		combine_cnv_repeat(repeat_cnv_file, combined_file)
