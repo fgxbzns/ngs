@@ -86,7 +86,7 @@ def repeat_remove(rmsk_file, sam_file):
 			if read_chr == "chrY":
 				read_chr = "chr24"
 
-			if repeat_chr == read_chr :
+			if repeat_chr == read_chr:
 
 				repeat_start = int(repeat_elements[6].strip())
 				repeat_end = int(repeat_elements[7].strip())
@@ -154,7 +154,9 @@ def repeat_remove(rmsk_file, sam_file):
 	output_files(sam_file_name + "_rmsk_record.txt", record_list)
 
 def repeat_remove_mimi(rmsk_file, sam_file):
-	# For removing repeat for solid data
+	# For removing repeat for mimi data
+	# there might be a glitch here. If the last chr in repeat is finished first, will the
+	# remaining reads be kept?
 
 	start = time.time()
 	rmsk_list = []
@@ -301,6 +303,138 @@ def repeat_remove_mimi(rmsk_file, sam_file):
 	outputFile_removed.close()
 	#outputFile_mulmap.close()
 
+def map_position_repeat(rmsk_file, pos_file):
+	# use -s samfile to input pos_file
+	# this is used to map the pos to the combined repeat file.
+	pos_list = []
+	with open(pos_file, "r") as pos_fp:
+		for line in pos_fp:
+			try:
+				pos = int(line.strip().split()[0])
+				pos_list.append(pos)
+			except:
+				print "error in map_position_repeat", pos
+	pos_list_ori_prder = list(pos_list)
+	pos_list.sort()
+	pos_dict = {pos: "" for pos in pos_list}
+
+	inputFile_rmsk = open(rmsk_file, "r")  # mimi data lima
+
+	mapped_to_repeat_nmuber = 0
+	not_mapped_to_repeat_nmuber = 0
+
+	repeat_line = inputFile_rmsk.readline() # skip title line
+	repeat_line = inputFile_rmsk.readline()
+
+	i = 0
+	while repeat_line != '' and i < len(pos_list):
+		# only if the snp pos is mapped to a repeat, the repeat info will be added
+		# if the repeat finish earlier, the remaining pos will be output as unmapped.
+		repeat_elements = repeat_line.strip().split()
+		repeat_chr = repeat_elements[2].strip()
+
+		snp_pos = pos_list[i]
+
+		# chr is not checked here. Each time check only one chr
+		repeat_start = int(repeat_elements[0].strip())
+		repeat_end = int(repeat_elements[1].strip())
+		repeat_class = repeat_elements[3].strip()
+
+		if snp_pos < repeat_start:
+			i += 1
+			not_mapped_to_repeat_nmuber += 1
+		elif snp_pos >= repeat_start and snp_pos <= repeat_end:
+			mapped_to_repeat_nmuber += 1
+			pos_dict[snp_pos] = str(repeat_start) + "\t" + str(repeat_end) + "\t" + repeat_class
+			i += 1
+			print snp_pos, pos_dict[snp_pos]
+		elif snp_pos > repeat_end:
+			repeat_line = inputFile_rmsk.readline()
+
+	print "len(pos_list)", len(pos_list)
+	print "mapped_to_repeat_nmuber", mapped_to_repeat_nmuber
+	print "not_mapped_to_repeat_nmuber", not_mapped_to_repeat_nmuber
+	print "percentage", round(float(mapped_to_repeat_nmuber)/len(pos_list), 3)
+
+	with open("mimi_pos_mapped.txt", "w") as output_file:
+		for pos in pos_list_ori_prder:
+			print >> output_file, pos, pos_dict[pos]
+
+	with open("mimi_pos_mapped_ordered.txt", "w") as output_file:
+		for pos in pos_list:
+			print >> output_file, pos, pos_dict[pos]
+
+	end = time.time()
+	run_time = str(end - start)
+	run_time = run_time[:(run_time.find('.') + 3)]
+	print "run time is: " + run_time + "s"
+
+def map_position_repeat(rmsk_file, pos_file):
+	# use -s samfile to input pos_file
+	# this is used to map the pos to the rmsk_chrX_hg19.txt.
+	pos_list = []
+	with open(pos_file, "r") as pos_fp:
+		for line in pos_fp:
+			try:
+				pos = int(line.strip().split()[0])
+				pos_list.append(pos)
+			except:
+				print "error in map_position_repeat", pos
+	pos_list_ori_prder = list(pos_list)
+	pos_list.sort()
+	pos_dict = {pos: "" for pos in pos_list}
+
+	inputFile_rmsk = open(rmsk_file, "r")  # mimi data lima
+
+	mapped_to_repeat_nmuber = 0
+	not_mapped_to_repeat_nmuber = 0
+
+	repeat_line = inputFile_rmsk.readline() # skip title line
+	repeat_line = inputFile_rmsk.readline()
+
+	i = 0
+	while repeat_line != '' and i < len(pos_list):
+		# only if the snp pos is mapped to a repeat, the repeat info will be added
+		# if the repeat finish earlier, the remaining pos will be output as unmapped.
+		repeat_elements = repeat_line.strip().split()
+		repeat_chr = repeat_elements[2].strip()
+
+		snp_pos = pos_list[i]
+
+		# chr is not checked here. Each time check only one chr
+		repeat_start = int(repeat_elements[6].strip())
+		repeat_end = int(repeat_elements[7].strip())
+		repeat_class = repeat_elements[10].strip() + "\t" + repeat_elements[11].strip() + "\t" + repeat_elements[12].strip()
+
+		if snp_pos < repeat_start:
+			i += 1
+			not_mapped_to_repeat_nmuber += 1
+		elif snp_pos >= repeat_start and snp_pos <= repeat_end:
+			mapped_to_repeat_nmuber += 1
+			pos_dict[snp_pos] = str(repeat_start) + "\t" + str(repeat_end) + "\t" + repeat_class
+			i += 1
+			print snp_pos, pos_dict[snp_pos]
+		elif snp_pos > repeat_end:
+			repeat_line = inputFile_rmsk.readline()
+
+	print "len(pos_list)", len(pos_list)
+	print "mapped_to_repeat_nmuber", mapped_to_repeat_nmuber
+	print "not_mapped_to_repeat_nmuber", not_mapped_to_repeat_nmuber
+	print "percentage", round(float(mapped_to_repeat_nmuber)/len(pos_list), 3)
+
+	with open("mimi_pos_mapped_rmsk.txt", "w") as output_file:
+		for pos in pos_list_ori_prder:
+			print >> output_file, pos, pos_dict[pos]
+
+	with open("mimi_pos_mapped_ordered_rmsk.txt", "w") as output_file:
+		for pos in pos_list:
+			print >> output_file, pos, pos_dict[pos]
+
+	end = time.time()
+	run_time = str(end - start)
+	run_time = run_time[:(run_time.find('.') + 3)]
+	print "run time is: " + run_time + "s"
+
 def extract_single_overlapped_read(sam_file):
 
 	sam_file_name = sam_file[:(len(sam_file) - 4)]
@@ -358,8 +492,11 @@ if __name__ == '__main__':
 	#repeat_remove(rmsk_file, sam_file)
 
 	rmsk_file = "/home/guoxing/disk2/lima/RepeatMa_chrX_MultSNPs_chrX_SegDups_chrX.txt"
-	repeat_remove_mimi(rmsk_file, sam_file)
-	extract_single_overlapped_read(sam_file)
+	#repeat_remove_mimi(rmsk_file, sam_file)
+	#extract_single_overlapped_read(sam_file)
+
+	rmsk_file = "/home/guoxing/disk2/lima/repeat_chrx/rmsk_chrX_hg19.txt"
+	map_position_repeat(rmsk_file, sam_file)
 
 
 

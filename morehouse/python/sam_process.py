@@ -672,20 +672,23 @@ def combine_repeat_list(repeat_list_1, repeat_list_2):
 	end_pos_1 = 0
 	start_pos_2 = 0
 	end_pos_2 = 0
-	"""
-	start_pos_1 = repeat_list_1[0][0]
-	end_pos_1 = repeat_list_1[0][1]
-	start_pos_2 = repeat_list_2[0][0]
-	end_pos_2 = repeat_list_2[0][1]
-	"""
+
 	while i < len(repeat_list_1) or j < len(repeat_list_2):
 		
-		if i == len(repeat_list_1) - 1 and j < len(repeat_list_2):
+		if i == len(repeat_list_1) - 1 and j < len(repeat_list_2) - 1:
 			repeat_list.append(repeat_list_2[j])
 			j += 1
-		elif j == len(repeat_list_2) - 1 and i < len(repeat_list_1):
+		elif j == len(repeat_list_2) - 1 and i < len(repeat_list_1) - 1:
+			#print "here"
 			repeat_list.append(repeat_list_1[i])
 			i += 1
+		elif j == len(repeat_list_2) - 1 and i == len(repeat_list_1) - 1:
+			if j >= i:
+				repeat_list.append(repeat_list_2[j])
+			else:
+				repeat_list.append(repeat_list_1[i])
+			i += 1
+			j += 1
 		else:
 			if i < len(repeat_list_1):
 				start_pos_1 = repeat_list_1[i][0]
@@ -714,11 +717,15 @@ def combine_repeat_list(repeat_list_1, repeat_list_2):
 						repeat_list.append(repeat_list_2[j])
 						j += 1
 				elif start_pos_1 >= end_pos_2:
-					repeat_list.append(repeat_list_2[j])
-					j += 1
+					try:
+						repeat_list.append(repeat_list_2[j])
+						j += 1
+					except:
+						print start_pos_1, end_pos_2, i, j-1
+						sys.exit(1)
 					
 			else:
-				print "error in", start_pos_1, end_pos_1, start_pos_2, end_pos_2
+				print "combine_repeat_list error in", start_pos_1, end_pos_1, start_pos_2, end_pos_2
 			#print len(repeat_list), start_pos_1, end_pos_1, start_pos_2, end_pos_2
 	return repeat_list		
 
@@ -734,7 +741,7 @@ def combine_cnv_repeat(file_1, file_2):
 	end_pos_index = 3
 	repeat_list_1 = load_repeat(file_1, chr_index, start_pos_index, end_pos_index)
 	"""
-	#RepeatMa_chrX
+	#rmsk_chrX_hg19
 	chr_index = 5
 	start_pos_index = 6
 	end_pos_index = 7
@@ -751,6 +758,7 @@ def combine_cnv_repeat(file_1, file_2):
 	start_pos_index = 0
 	end_pos_index = 1
 	repeat_list_2 = load_repeat(file_2, chr_index, start_pos_index, end_pos_index)
+
 	
 	if len(repeat_list_1) > 0 and len(repeat_list_2) > 0:
 		repeat_list = combine_repeat_list(repeat_list_1, repeat_list_2)
@@ -773,10 +781,16 @@ def cleanup_repeat_list(ori_repeat_list):
 	current_repeat = [0, 0]
 	for repeat in ori_repeat_list:
 		if repeat[0] >= current_repeat[0] and repeat[1] <= current_repeat[1]:
+			# if the next repeat is covered by the previous repeat, skip it.
 			pass
+		elif repeat[0] <= current_repeat[0] and repeat[1] >= current_repeat[1]:
+			# if the next repeat covers the previous repeat, remove the previous repeat, keept the current.
+			del new_repeat_list[-1]
+			new_repeat_list.append(repeat)
+			current_repeat = list(repeat)
 		else:
 			new_repeat_list.append(repeat)
-			current_repeat = repeat
+			current_repeat = list(repeat)
 	return new_repeat_list
 		
 def filter_by_repeat(repeat_cnv_file):	

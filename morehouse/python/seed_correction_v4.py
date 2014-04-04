@@ -3060,16 +3060,16 @@ def overall_process_2_city(seed_file, chr_name, mode):
 
 	record_file = open(data_dict.record_file_name, "w")
 	print >> record_file, "id", "total hetero", "A", "B", "B%"
-	i = 31
+	i = 1
 	#for i in range(2):
 	while i <= 110:
 
 		for j in range(10):
 
-			remPercent = 0 if i == 0 else float(random.randrange(40, 60))/(100.0)
-			print "remPercent", remPercent
+			#remPercent = 0 if i == 0 else float(random.randrange(10, 40))/(100.0)
+			#print "remPercent", remPercent
 			haplotype_file = "haplotype.txt"
-			refMerger(haplotype_file, chr_name, remPercent)
+			#refMerger(haplotype_file, chr_name, remPercent)
 
 			hifi_run(haplotype_file, data_dict.chr_name)
 			mode = "linkage"
@@ -3085,9 +3085,8 @@ def overall_process_2_city(seed_file, chr_name, mode):
 			os.system("cp haplotype.txt " + hap_bkup)
 			os.system("mv " + hap_bkup + " seed_file")
 			i += 1
-
-
-		#refMerger(haplotype_file, chr_name, 0)
+		"""
+		refMerger(haplotype_file, chr_name, 0)
 
 		mode = "remove"
 		print "########### error remove #########", i
@@ -3102,6 +3101,7 @@ def overall_process_2_city(seed_file, chr_name, mode):
 		B_in_hetero = round((float(seed_same_to_B)/float(seed_same_to_A + seed_same_to_B))*100, 2)
 		print >> record_file, "remove", i, seed_same_to_A+seed_same_to_B, seed_same_to_A, seed_same_to_B, B_in_hetero
 		i += 1
+		"""
 
 	record_file.close()
 
