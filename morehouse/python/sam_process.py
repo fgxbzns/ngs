@@ -643,7 +643,8 @@ def seperate_by_chr():
 def load_repeat(repeat_cnv_file, chr_index, start_pos_index, end_pos_index):
 	print "combine_cnv_repeat: ", repeat_cnv_file
 	repeat_list = []
-	read_length = 101
+	#read_length = 101
+	repeat_length_cutoff = 15       # a cutoff for the repeat, the overlap range for repeat and read
 	repeat_cnv_file_name = repeat_cnv_file[:(len(repeat_cnv_file)-4)]
 		
 	with open(currentPath + repeat_cnv_file, "r") as inputfile_repeat:
@@ -659,7 +660,8 @@ def load_repeat(repeat_cnv_file, chr_index, start_pos_index, end_pos_index):
 					chr = elements[chr_index].strip()
 				except:
 					print "error in line:", line
-				if end_pos - start_pos >= read_length:
+				#if end_pos - start_pos >= read_length:
+				if end_pos - start_pos >= repeat_length_cutoff:
 					repeat_list.append((start_pos, end_pos, chr, repeat_cnv_file_name))
 	print "list size:", repeat_cnv_file, len(repeat_list)
 	return repeat_list
@@ -908,10 +910,9 @@ def sam_process(sam_file, chr_name, mode):
 		samtools_sort(sam_file)
 	elif mode == "mimi":
 		ori_sam_file_name = parameter.sam_file_name
-
+		"""
 		print "1. filter chr and find pairend",  parameter.sam_file
 		filter_match_pairend()
-
 
 		parameter.sam_file_name = parameter.sam_file_name + "_pairend"
 		parameter.sam_file = parameter.sam_file_name + ".sam"
@@ -923,11 +924,14 @@ def sam_process(sam_file, chr_name, mode):
 		print "3. sorting",  parameter.sam_file
 		add_header(parameter.sam_file)
 		samtools_sort(parameter.sam_file)
+		"""
+		parameter.sam_file_name = parameter.sam_file_name + "_pairend"
+		parameter.sam_file_name = parameter.sam_file_name + "_XA"
 
 		parameter.sam_file_name = parameter.sam_file_name + "_sorted"
 		parameter.sam_file = parameter.sam_file_name + ".sam"
 		print "4. repeat remove",  parameter.sam_file
-		rmsk_file = "/home/guoxing/disk2/lima/RepeatMa_chrX_MultSNPs_chrX_SegDups_chrX.txt"
+		rmsk_file = "/home/guoxing/disk2/lima/rmsk_chrX_hg19_MultSNPs_chrX_SegDups_chrX.txt"
 		repeat_remove_mimi(rmsk_file, parameter.sam_file)
 
 		parameter.sam_file_name = parameter.sam_file_name + "_rmsk"

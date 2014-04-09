@@ -2227,6 +2227,7 @@ def get_seed_group_index():
 	ref_hetero_total_number = len(ref_hetero_dict)
 	print ref_hetero_total_number
 	#partition_number = 1000
+
 		
 	seed_sorted_pos_list = [pos for pos, seed in data_dict.seed_hetero_dict.iteritems()]
 	seed_sorted_pos_list.sort()
@@ -2234,7 +2235,7 @@ def get_seed_group_index():
 	ref_sorted_pos_list.sort()
 	
 	ref_hetero_in_each_partition = data_dict.seed_group_window_size
-	partition_number = int(math.ceil(float(ref_hetero_total_number)/ref_hetero_in_each_partition)*ref_hetero_in_each_partition)
+	partition_number = int(math.ceil(float(ref_hetero_total_number)/ref_hetero_in_each_partition))
 	print "partition_number: ", partition_number
 	ref_hetero_in_last_subfile = int(math.fmod(ref_hetero_total_number, ref_hetero_in_each_partition))
 	ref_hetero_in_last_subfile = ref_hetero_in_each_partition if ref_hetero_in_last_subfile == 0 else ref_hetero_in_last_subfile
@@ -2348,7 +2349,93 @@ def get_seed_group_index():
 	"""
 	#print len(ref_pos_percentage_dict)
 	
-	
+def calculate_seed_group_accuracy():
+	# divide the pos in ref into partitions. Each partition has its snp pos list,
+	# percentage of seed, accuracy of hifi imputed snps.
+
+	ref_group_list = []
+	temp_group_list = []
+
+	seed_sorted_pos_list = data_dict.seed_dict.keys()
+	seed_sorted_pos_list.sort()
+	ref_sorted_pos_list = data_dict.hap_ref_dict.keys()
+	ref_sorted_pos_list.sort()
+	ref_total_number = len(ref_sorted_pos_list)
+	print "ref_total_number", ref_total_number
+
+	ref_in_each_partition = data_dict.seed_group_window_size
+	partition_number = int(math.ceil(float(ref_total_number)/ref_in_each_partition))
+	print "partition_number: ", partition_number
+	ref_hetero_in_last_subfile = int(math.fmod(ref_total_number, ref_in_each_partition))
+	ref_hetero_in_last_subfile = ref_in_each_partition if ref_hetero_in_last_subfile == 0 else ref_hetero_in_last_subfile
+	print "ref_hetero_in_last_subfile: ", ref_hetero_in_last_subfile
+
+	for p_number in range(partition_number):
+		for i in range(int(ref_in_each_partition)):
+			index = p_number * ref_in_each_partition + i
+			if index < ref_total_number:
+				pos = ref_sorted_pos_list[index]
+				#if pos in data_dict.seed_dict.keys():
+				temp_group_list.append(pos)
+		ref_group_list.append(temp_group_list)
+		temp_group_list = []
+
+	print "ref_group_list", len(ref_group_list)
+	print ref_group_list[0]
+	print ref_group_list[1]
+	print ref_group_list[-2]
+	print ref_group_list[-1]
+
+	hifi_dict = {}
+	hifi_dict = load_hifi_result("imputed_haplotype.txt", hifi_dict)
+
+
+	#same_to_A_dict, same_to_B_dict = seed_std_compare(hifi_file_name, data_dict.chr_name)
+
+	seed_file_name = "haplotype.txt"
+	same_to_A_dict, same_to_B_dict = seed_std_compare(seed_file_name, data_dict.chr_name)
+	hifi_file_name = "imputed_haplotype.txt"
+	same_to_AB_dict, AT_GC_dict = hifiAccuCheck(hifi_file_name, data_dict.chr_name)
+
+	cutoff = 0.9
+	number = 0
+	a_perc = 0
+
+	seed_percentage_dict = {}
+	for ref_group in ref_group_list:
+		#print ref_group
+		if len(ref_group) > 0:
+			snp_from_seed = [pos for pos in ref_group if pos in data_dict.seed_dict]
+			seed_percentage = round(float(len(snp_from_seed))/len(ref_group), 2)
+
+			snp_from_hifi = [pos for pos in ref_group if pos in hifi_dict and pos not in AT_GC_dict and pos not in same_to_B_dict]
+			if len(snp_from_hifi) > 0:
+				snp_in_A = [pos for pos in snp_from_hifi if pos in same_to_AB_dict]
+				snp_in_A_percentage = round(float(len(snp_in_A))/len(snp_from_hifi), 4)
+				#snp_in_B = [pos for pos in snp_from_hifi if pos in same_to_B_dict]
+				if seed_percentage > 0.9 and seed_percentage <= 1:
+					#print seed_percentage, len(snp_in_A), len(snp_from_hifi), snp_in_A_percentage
+					number += 1
+					a_perc += snp_in_A_percentage
+				if seed_percentage in seed_percentage_dict:
+					seed_percentage_dict[seed_percentage].append(snp_in_A_percentage)
+				else:
+					seed_percentage_dict[seed_percentage] = []
+					seed_percentage_dict[seed_percentage].append(snp_in_A_percentage)
+	print number, a_perc, a_perc/number
+	seed_percentage_ordered_list = sort_dict_by_key(seed_percentage_dict)
+	for data in seed_percentage_ordered_list:
+		perc, sna_A_list = data[0], data[1]
+		print perc, sum(sna_A_list)/len(sna_A_list)
+	print ">=0.9", (sum(seed_percentage_dict[0.9]) + sum(seed_percentage_dict[1.0]))/(len(seed_percentage_dict[0.9]) + len(seed_percentage_dict[1.0]))
+
+
+
+
+
+
+
+
 	
 	
 def combine_hifi_seed(input_prefix, ori_seed_file):
@@ -3403,6 +3490,8 @@ def seed_correction(seed_file, chr_name, mode):
 	elif mode == "sgroup":
 		#get_seed_group()
 		get_seed_group_index()
+	elif mode == "city_accu":
+		calculate_seed_group_accuracy()
 	
 
 			

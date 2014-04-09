@@ -225,6 +225,7 @@ def hifiAccuCheck(hifi_result_file, chr_name):
 	#print cmd
 	#os.system(cmd)
 	"""
+	return same_to_AB_dict, AT_GC_dict
 
 
 def get_args():

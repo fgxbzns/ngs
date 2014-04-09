@@ -6,7 +6,7 @@ chrX_length=158375978
 
 #cd $sam_path
 cd $db_path
-for((i=84; i<=92; i++))
+for((i=78; i<=93; i++))
 
 	do
 	#sam_file="NA128"$i"_S1_ChrXnew.sam"
@@ -17,7 +17,6 @@ for((i=84; i<=92; i++))
 	#mkdir $folder_name
 	#mv $sam_file $folder_name
 	#cd $folder_name
-
 
 	# pre-process
 	#$ngs_path"sam_process.py" -s $sam_file -c chrX -m mimi &

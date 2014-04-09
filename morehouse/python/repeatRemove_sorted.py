@@ -303,7 +303,7 @@ def repeat_remove_mimi(rmsk_file, sam_file):
 	outputFile_removed.close()
 	#outputFile_mulmap.close()
 
-def map_position_repeat(rmsk_file, pos_file):
+def map_position_repeat_combined(rmsk_file, pos_file):
 	# use -s samfile to input pos_file
 	# this is used to map the pos to the combined repeat file.
 	pos_list = []
@@ -347,7 +347,7 @@ def map_position_repeat(rmsk_file, pos_file):
 			mapped_to_repeat_nmuber += 1
 			pos_dict[snp_pos] = str(repeat_start) + "\t" + str(repeat_end) + "\t" + repeat_class
 			i += 1
-			print snp_pos, pos_dict[snp_pos]
+			#print snp_pos, pos_dict[snp_pos]
 		elif snp_pos > repeat_end:
 			repeat_line = inputFile_rmsk.readline()
 
@@ -355,23 +355,18 @@ def map_position_repeat(rmsk_file, pos_file):
 	print "mapped_to_repeat_nmuber", mapped_to_repeat_nmuber
 	print "not_mapped_to_repeat_nmuber", not_mapped_to_repeat_nmuber
 	print "percentage", round(float(mapped_to_repeat_nmuber)/len(pos_list), 3)
-
+	"""
 	with open("mimi_pos_mapped.txt", "w") as output_file:
 		for pos in pos_list_ori_prder:
 			print >> output_file, pos, pos_dict[pos]
-
-	with open("mimi_pos_mapped_ordered.txt", "w") as output_file:
+	"""
+	with open("mimi_pos_mapped_ordered_new.txt", "w") as output_file:
 		for pos in pos_list:
 			print >> output_file, pos, pos_dict[pos]
 
-	end = time.time()
-	run_time = str(end - start)
-	run_time = run_time[:(run_time.find('.') + 3)]
-	print "run time is: " + run_time + "s"
-
-def map_position_repeat(rmsk_file, pos_file):
+def map_position_repeat_rmsk(rmsk_file, pos_file):
 	# use -s samfile to input pos_file
-	# this is used to map the pos to the rmsk_chrX_hg19.txt.
+	# this is used to map the pos to the rmsk_chrX_hg19.txt. After snpPick_mimi
 	pos_list = []
 	with open(pos_file, "r") as pos_fp:
 		for line in pos_fp:
@@ -413,7 +408,7 @@ def map_position_repeat(rmsk_file, pos_file):
 			mapped_to_repeat_nmuber += 1
 			pos_dict[snp_pos] = str(repeat_start) + "\t" + str(repeat_end) + "\t" + repeat_class
 			i += 1
-			print snp_pos, pos_dict[snp_pos]
+			#print snp_pos, pos_dict[snp_pos]
 		elif snp_pos > repeat_end:
 			repeat_line = inputFile_rmsk.readline()
 
@@ -429,11 +424,6 @@ def map_position_repeat(rmsk_file, pos_file):
 	with open("mimi_pos_mapped_ordered_rmsk.txt", "w") as output_file:
 		for pos in pos_list:
 			print >> output_file, pos, pos_dict[pos]
-
-	end = time.time()
-	run_time = str(end - start)
-	run_time = run_time[:(run_time.find('.') + 3)]
-	print "run time is: " + run_time + "s"
 
 def extract_single_overlapped_read(sam_file):
 
@@ -482,7 +472,7 @@ def get_args():
 
 
 if __name__ == '__main__':
-	start = time.time()
+	start_time = time.time()
 
 	options = get_args()
 	rmsk_file = options.rmskFile
@@ -491,12 +481,21 @@ if __name__ == '__main__':
 
 	#repeat_remove(rmsk_file, sam_file)
 
-	rmsk_file = "/home/guoxing/disk2/lima/RepeatMa_chrX_MultSNPs_chrX_SegDups_chrX.txt"
-	#repeat_remove_mimi(rmsk_file, sam_file)
-	#extract_single_overlapped_read(sam_file)
+	rmsk_file = "/home/guoxing/disk2/lima/rmsk_chrX_hg19_MultSNPs_chrX_SegDups_chrX.txt"
+	repeat_remove_mimi(rmsk_file, sam_file)
+	extract_single_overlapped_read(sam_file)
 
-	rmsk_file = "/home/guoxing/disk2/lima/repeat_chrx/rmsk_chrX_hg19.txt"
-	map_position_repeat(rmsk_file, sam_file)
+	# map to rmsk_chrX_hg19.txt
+	#rmsk_file = "/home/guoxing/disk2/lima/repeat_chrx/rmsk_chrX_hg19.txt"
+	#map_position_repeat_rmsk(rmsk_file, sam_file)
+
+	# map to combined repeat file
+	#rmsk_file = "/home/guoxing/disk2/lima/rmsk_chrX_hg19_MultSNPs_chrX_SegDups_chrX.txt"
+	#map_position_repeat_combined(rmsk_file, sam_file)
+
+
+	elapse_time = time.time() - start_time
+	print "run time: ", round(elapse_time, 3), "s"
 
 
 
