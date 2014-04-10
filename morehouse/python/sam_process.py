@@ -623,6 +623,7 @@ def pair_end_indel_multiple():
 		os.system(cmd)
 
 def combine_files():
+	# combine sam files
 	cmd = "cat "
 	combined_file = ""
 	file_number = 0
@@ -641,6 +642,7 @@ def seperate_by_chr():
 	os.system(cmd)
 
 def load_repeat(repeat_cnv_file, chr_index, start_pos_index, end_pos_index):
+	# This is used load repeat, cnv from files for combine_cnv_repeat
 	print "combine_cnv_repeat: ", repeat_cnv_file
 	repeat_list = []
 	#read_length = 101

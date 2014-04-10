@@ -5,6 +5,7 @@
 # this is for solid data, to remove reads covered by repeats
 
 import os,sys, glob, subprocess, random, operator, time
+from tools import *
 from optparse import OptionParser
 
 file_path = "/home/guoxing/disk2/solid/common_files/"
@@ -303,6 +304,58 @@ def repeat_remove_mimi(rmsk_file, sam_file):
 	outputFile_removed.close()
 	#outputFile_mulmap.close()
 
+def load_mimi_data(file_name):
+	# used in mimi_combine_files
+	data = {}
+	with open(file_name, "r") as fp:
+		for line in fp:
+			elements = line.strip().split()
+			try:
+				data[int(elements[0])] = elements[:7]
+			except:
+				#print "error in ", line, file_name
+				pass
+	return data
+
+def mimi_combine_files():
+	# combine genotype from variation call
+	file_number_dict = {}
+	for infile in glob.glob(os.path.join("NA128??_S1_chrX_0_158375978_filtered.txt")):
+		mimi_file_number = int(infile[2:7].strip())
+		#print mimi_file_number
+		file_number_dict[mimi_file_number] = {}
+
+	title_line = "pos \t"
+	second_line = "pos \t"
+	all_snp_dict = {}
+	for mimi_file_number in file_number_dict.keys():
+		file_name = "NA" + str(mimi_file_number) + "_S1_chrX_0_158375978_filtered.txt"
+		file_number_dict[mimi_file_number] = load_mimi_data(file_name)
+		print "NA" + str(mimi_file_number), len(file_number_dict[mimi_file_number])
+		title_line += "NA" + str(mimi_file_number) + "\t\t\t\t"
+		second_line += "A \t T \t C \t G \t"
+		for pos in file_number_dict[mimi_file_number]:
+			if pos not in all_snp_dict:
+				all_snp_dict[pos] = ""
+	print "total pos number: ", len(all_snp_dict)
+	#print title_line
+
+	for pos in all_snp_dict.keys():
+		for pos_data in file_number_dict.values():
+			if pos in pos_data:
+				#print pos, pos_data[pos]
+				all_snp_dict[pos] = all_snp_dict[pos] + list_to_line(pos_data[pos][3:]) + "\t"
+			else:
+				all_snp_dict[pos] += "\t\t\t\t"
+				#pass
+	#print all_snp_dict[3343118]
+
+	with open("combined_mimi.txt", "w") as fp:
+		print >> fp, title_line
+		print >> fp, second_line
+		for pos, data in all_snp_dict.iteritems():
+			print >> fp, str(pos) + "\t" + data
+
 def map_position_repeat_combined(rmsk_file, pos_file):
 	# use -s samfile to input pos_file
 	# this is used to map the pos to the combined repeat file.
@@ -360,7 +413,7 @@ def map_position_repeat_combined(rmsk_file, pos_file):
 		for pos in pos_list_ori_prder:
 			print >> output_file, pos, pos_dict[pos]
 	"""
-	with open("mimi_pos_mapped_ordered_new.txt", "w") as output_file:
+	with open(pos_file[:len(pos_file)-4]+"_mapped_combined.txt", "w") as output_file:
 		for pos in pos_list:
 			print >> output_file, pos, pos_dict[pos]
 
@@ -426,6 +479,7 @@ def map_position_repeat_rmsk(rmsk_file, pos_file):
 			print >> output_file, pos, pos_dict[pos]
 
 def extract_single_overlapped_read(sam_file):
+	# to extract_single_overlapped_read from pairend_removed.sam file
 
 	sam_file_name = sam_file[:(len(sam_file) - 4)]
 	rmsk_file_name = sam_file
@@ -463,13 +517,14 @@ def get_args():
 	parser = OptionParser(usage=usage, description=desc)
 	parser.add_option("-r", "--rmsk", type="string", dest="rmskFile", help="Input rmsk File Name", default="null")
 	parser.add_option("-s", "--sam", type="string", dest="samFile", help="Input sam File Name", default="null")
+	parser.add_option("-m", "--mode", type="string", dest="mode", help="", default="null")
+
 	(options, args) = parser.parse_args()
 	if options.samFile == "null":
 		print "parameters missing..."
 		print usage
 		sys.exit(1)
 	return options
-
 
 if __name__ == '__main__':
 	start_time = time.time()
@@ -478,20 +533,24 @@ if __name__ == '__main__':
 	rmsk_file = options.rmskFile
 	sam_file = options.samFile
 	#rmsk_file = "hg18_rmsk.txt"
+	mode = options.mode
 
-	#repeat_remove(rmsk_file, sam_file)
-
-	rmsk_file = "/home/guoxing/disk2/lima/rmsk_chrX_hg19_MultSNPs_chrX_SegDups_chrX.txt"
-	repeat_remove_mimi(rmsk_file, sam_file)
-	extract_single_overlapped_read(sam_file)
-
-	# map to rmsk_chrX_hg19.txt
-	#rmsk_file = "/home/guoxing/disk2/lima/repeat_chrx/rmsk_chrX_hg19.txt"
-	#map_position_repeat_rmsk(rmsk_file, sam_file)
-
-	# map to combined repeat file
-	#rmsk_file = "/home/guoxing/disk2/lima/rmsk_chrX_hg19_MultSNPs_chrX_SegDups_chrX.txt"
-	#map_position_repeat_combined(rmsk_file, sam_file)
+	if mode == "solid":
+		repeat_remove(rmsk_file, sam_file)
+	elif mode == "mimi_remove":
+		rmsk_file = "/home/guoxing/disk2/lima/rmsk_chrX_hg19_MultSNPs_chrX_SegDups_chrX.txt"
+		repeat_remove_mimi(rmsk_file, sam_file)
+		extract_single_overlapped_read(sam_file)
+	elif mode == "mimi_map_rmsk":
+		# map to rmsk_chrX_hg19.txt
+		rmsk_file = "/home/guoxing/disk2/lima/repeat_chrx/rmsk_chrX_hg19.txt"
+		map_position_repeat_rmsk(rmsk_file, sam_file)
+	elif mode == "mimi_map_combined":
+		# map to combined repeat file
+		rmsk_file = "/home/guoxing/disk2/lima/rmsk_chrX_hg19_MultSNPs_chrX_SegDups_chrX.txt"
+		map_position_repeat_combined(rmsk_file, sam_file)
+	elif mode == "mimi_snp_combine":
+		mimi_combine_files()
 
 
 	elapse_time = time.time() - start_time
