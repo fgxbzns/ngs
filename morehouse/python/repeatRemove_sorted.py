@@ -411,11 +411,11 @@ def map_position_repeat_combined(rmsk_file, pos_file):
 	"""
 	with open("mimi_pos_mapped.txt", "w") as output_file:
 		for pos in pos_list_ori_prder:
-			print >> output_file, pos, pos_dict[pos]
+			print >> output_file, pos + "\t" + pos_dict[pos]
 	"""
 	with open(pos_file[:len(pos_file)-4]+"_mapped_combined.txt", "w") as output_file:
 		for pos in pos_list:
-			print >> output_file, pos, pos_dict[pos]
+			print >> output_file, pos + "\t" + pos_dict[pos]
 
 def map_position_repeat_rmsk(rmsk_file, pos_file):
 	# use -s samfile to input pos_file
@@ -470,13 +470,13 @@ def map_position_repeat_rmsk(rmsk_file, pos_file):
 	print "not_mapped_to_repeat_nmuber", not_mapped_to_repeat_nmuber
 	print "percentage", round(float(mapped_to_repeat_nmuber)/len(pos_list), 3)
 
-	with open("mimi_pos_mapped_rmsk.txt", "w") as output_file:
+	with open(pos_file[:len(pos_file)-4]+"_mapped_rmsk.txt", "w") as output_file:
 		for pos in pos_list_ori_prder:
-			print >> output_file, pos, pos_dict[pos]
+			print >> output_file, pos + "\t" + pos_dict[pos]
 
-	with open("mimi_pos_mapped_ordered_rmsk.txt", "w") as output_file:
+	with open(pos_file[:len(pos_file)-4]+"_mapped_ordered_rmsk.txt", "w") as output_file:
 		for pos in pos_list:
-			print >> output_file, pos, pos_dict[pos]
+			print >> output_file, pos + "\t" + pos_dict[pos]
 
 def extract_single_overlapped_read(sam_file):
 	# to extract_single_overlapped_read from pairend_removed.sam file

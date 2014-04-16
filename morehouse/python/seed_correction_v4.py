@@ -754,7 +754,7 @@ def remove_single_refID():
 	seed_dict_from_hifi = {}
 	for pos in hifi_dict.keys():
 		#if (pos in refID_dict and len(refID_dict[pos][2]) <= 50) or (pos in refID_dict and len(refID_dict[pos][4]) <= 50):
-		refID_cutoff = 3
+		refID_cutoff = 2
 		if (pos in refID_dict and len(refID_dict[pos][2]) <= refID_cutoff) or (pos in refID_dict and len(refID_dict[pos][4]) <= refID_cutoff):
 			pass
 			#a = hifi_dict[pos]
@@ -2991,7 +2991,7 @@ def overall_process_3(seed_file, chr_name, mode):
 	same_to_A = 1
 	error_threshold = 60
 	i = 0
-	while same_to_A < 8000:
+	while same_to_A < 3000:
 			
 		remPercent = float(random.randrange(40, 80))/(100.0)
 		print "remPercent", remPercent
@@ -3149,14 +3149,14 @@ def overall_process_2_city(seed_file, chr_name, mode):
 	print >> record_file, "id", "total hetero", "A", "B", "B%"
 	i = 1
 	#for i in range(2):
-	while i <= 110:
+	while i <= 30:
 
-		for j in range(10):
+		for j in range(1):
 
-			#remPercent = 0 if i == 0 else float(random.randrange(10, 40))/(100.0)
+			remPercent = 0 if i == 0 else float(random.randrange(40, 60))/(100.0)
 			#print "remPercent", remPercent
 			haplotype_file = "haplotype.txt"
-			#refMerger(haplotype_file, chr_name, remPercent)
+			refMerger(haplotype_file, chr_name, remPercent)
 
 			hifi_run(haplotype_file, data_dict.chr_name)
 			mode = "linkage"
