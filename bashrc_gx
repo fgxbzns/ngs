@@ -13,6 +13,7 @@ export CDPATH=.:~:/home/guoxing/disk2/
 
 # Alias to multiple ls commands
 alias la='ls -Al'               # show hidden files
+#alias lss='ls'
 alias ls='ls -lh -F --color=always' # add colors and file type extensions
 alias lx='ls -lXB'              # sort by extension
 alias lk='ls -lSr'              # sort by size
@@ -22,6 +23,8 @@ alias lr='ls -lR'               # recursive ls
 alias lt='ls -ltr'              # sort by date
 alias lm='ls -al |more'         # pipe through 'more'
 alias ll='ls -l'
+alias lf='ls -l | egrep -v '^d''
+alias ld='ls -l --color=always | egrep '^d''
 
 # spelling typos - highly personnal and keyboard-dependent :-)
 alias xs='cd'
@@ -217,6 +220,7 @@ alias solid_bash='$bash_path/solid_bash.sh'
 alias grep_position='$bash_path/grep_position.sh'
 alias seperate_sam_by_chr='$bash_path/seperate_sam_by_chr.sh'
 alias mimi='$bash_path/mimi.sh'
+alias solid_mimi='$bash_path/solid_mimi.sh'
 
  #NGS programs
 #export disk2ToolPath=/home/guoxing/disk2/tool

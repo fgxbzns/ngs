@@ -435,7 +435,11 @@ def filter_by_XA_mimi():
 		with open(parameter.sam_file_name + "_XA.sam", "w") as output_file:
 			sam_line_first = inputfile_sam.readline() # the first read line in a pair
 			while sam_line_first != '':
-				if not sam_line_first.startswith("@"):
+				if sam_line_first.startswith("@"):
+					# the @header is needed for samtoos sorting
+					print >> output_file, sam_line_first.strip()
+					sam_line_first = inputfile_sam.readline()
+				elif sam_line_first.startswith("@"):
 					total_reads_num += 1
 					elements_first = sam_line_first.strip().split()
 					try:
@@ -971,17 +975,17 @@ def sam_process(sam_file, chr_name, mode):
 		"""
 		print "1. filter chr and find pairend",  parameter.sam_file
 		filter_match_pairend()
-		"""
+
 		#parameter.sam_file_name = parameter.sam_file_name + "_pairend"
 		parameter.sam_file = parameter.sam_file_name + ".sam"
 		print "2. filter by XA",  parameter.sam_file
 		filter_by_XA_mimi()
 		"""
-		parameter.sam_file_name = parameter.sam_file_name + "_XA"
+		#parameter.sam_file_name = parameter.sam_file_name + "_XA"
 		parameter.sam_file = parameter.sam_file_name + ".sam"
 		print "3. sorting",  parameter.sam_file
 		samtools_sort(parameter.sam_file)
-
+		"""
 		#parameter.sam_file_name = parameter.sam_file_name + "_pairend"
 		#parameter.sam_file_name = parameter.sam_file_name + "_XA"
 
@@ -1021,6 +1025,38 @@ def sam_process(sam_file, chr_name, mode):
 		os.system("rm " + sorted_rmsk_name + "_removed.sam")
 		os.system("rm " + sorted_rmsk_name + "_combined.sam")
 		"""
+	elif mode == "solid_lima":
+		# single end, no XA_filter needed, hg18, already sorted.
+		ori_sam_file_name = parameter.sam_file_name
+
+		"""
+		#parameter.sam_file_name = parameter.sam_file_name + "_pairend"
+		#parameter.sam_file_name = parameter.sam_file_name + "_XA"
+
+		parameter.sam_file_name = parameter.sam_file_name + "_sorted"
+		parameter.sam_file = parameter.sam_file_name + ".sam"
+		print "4. repeat remove",  parameter.sam_file
+		rmsk_file = "/home/guoxing/disk2/lima/rmsk_chrX_hg19_MultSNPs_chrX_SegDups_chrX.txt"
+		repeat_remove_mimi(rmsk_file, parameter.sam_file)
+
+		#snpPick_mimi -s NA12893_S1_ChrXnew_pairend_XA_sorted_rmsk_combined_indel.sam -c chrX -m update -d NA12893_S1_chrX
+
+		print "8. clean up"
+		# keep the pairend_XA_sorted.sam and pairend_XA_sorted_rmsk.sam
+		os.system("rm " + ori_sam_file_name + ".sam")
+		os.system("rm " + ori_sam_file_name + "_pairend.sam")
+		os.system("rm " + ori_sam_file_name + "_pairend_removed.sam")
+		os.system("rm " + ori_sam_file_name + "_pairend_XA.sam")
+		os.system("rm " + ori_sam_file_name + "_pairend_XA_sorted_record.txt")
+		sorted_rmsk_name = ori_sam_file_name + "_pairend_XA_sorted_rmsk"
+		os.system("rm " + sorted_rmsk_name + "_pairend*.sam")
+		os.system("rm " + sorted_rmsk_name + "_recovered*.sam")
+		os.system("rm " + sorted_rmsk_name + "_removed.sam")
+		os.system("rm " + sorted_rmsk_name + "_combined.sam")
+		"""
+
+
+
 def get_args():
 	desc="variation call"
 	usage = "sam_process"

@@ -66,9 +66,9 @@ def get_args():
 	desc="./18to19.py -e hg18 -n hg19 -d delete"
 	usage = ""
 	parser = OptionParser(usage = usage, description=desc)
-	parser.add_option("-e", "--eight", type="string", dest="hg18_name",help = "Input file name", default="null")
-	parser.add_option("-n", "--nine", type="string", dest="hg19_name",help = "Input file name", default="null")
-	parser.add_option("-d", "--del", type="string", dest="del_name",help = "Input file name", default="null")
+	parser.add_option("-e", "--eighty", type="string", dest="hg18_name", help="Input file name", default="null")
+	parser.add_option("-n", "--ninety", type="string", dest="hg19_name", help="Input file name", default="null")
+	parser.add_option("-d", "--del", type="string", dest="del_name", help="Input file name", default="null")
 	(options, args) = parser.parse_args()
 	
 	if options.hg18_name == "null" or options.hg19_name == "null" or options.del_name == "null":
@@ -77,7 +77,7 @@ def get_args():
 		sys.exit(1)
 	return options
 
-if __name__=='__main__':
+if __name__ == '__main__':
 	options = get_args()
 	hg18_name = options.hg18_name
 	hg19_name = options.hg19_name
@@ -86,7 +86,7 @@ if __name__=='__main__':
 	start_time = time.time()
 	combine_files(hg18_name, hg19_name, del_name)
 	elapsed_time = time.time() - start_time
-	print "elapsed_time is: " + str(format(elapsed_time, "0.3f")) + "s"		
+	print "elapsed_time is: " + round(elapsed_time, 2) + "s"
 	
 	
 	

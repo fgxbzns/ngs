@@ -167,4 +167,10 @@ with open(os.path.join(outpath,'count.txt'),'w') as fo:
         fo.write('%s\t%s\t%d\n' % (val[1],key,val[0]))
         val[2].close()
 
-	
+
+"""
+	song_3
+	~/disk2/solid/song_3/prem_rmsk_indel/refM_test/2280/mref$
+    song_5
+    /home/guoxing/disk2/solid/song_5/prem_rmsk_indel/hifi_1/7766_45/7819_48
+"""

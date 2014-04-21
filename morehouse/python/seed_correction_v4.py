@@ -1831,6 +1831,9 @@ def seed_recover_extract_ref_cluster():
 							
 	print "added_by_cluster", added_by_cluster		
 
+def hifi_error_allele_frequence():
+	pass
+
 
 def seed_expand_geno():
 	
@@ -3149,7 +3152,7 @@ def overall_process_2_city(seed_file, chr_name, mode):
 	print >> record_file, "id", "total hetero", "A", "B", "B%"
 	i = 1
 	#for i in range(2):
-	while i <= 30:
+	while i <= 1:
 
 		for j in range(1):
 
@@ -3307,7 +3310,7 @@ def seed_correction(seed_file, chr_name, mode):
 	data_dict.seed_file = seed_file
 	data_dict.load_data_dicts()
 	#data_dict.load_seed_geno_ref()
-	data_dict.load_ref_allele_frequence()
+	#data_dict.load_ref_allele_frequence()
 
 	if mode == "overall":
 		overall_process(seed_file, chr_name, mode)
@@ -3332,7 +3335,11 @@ def seed_correction(seed_file, chr_name, mode):
 
 	elif mode == "ref_f":
 		data_dict.load_ref_allele_frequence()
-	
+	elif mode == "std_perc":
+		# calculate the percentage of hetero snp in std haplotype
+		std_homo, std_hetero = group_seed(data_dict.hap_std_dict, data_dict.geno_dict)
+		print len(std_homo), len(std_hetero)
+		print "hetero_perc", round(float(len(std_hetero))/len(data_dict.hap_std_dict), 2)
 	
 	elif mode == "remove":
 		seed_std_compare(seed_file, chr_name)

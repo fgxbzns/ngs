@@ -87,7 +87,7 @@ def variant_call_pair_end(sam_file):
 				except:
 					print "error in first read:", sam_line_first
 				#print "this is a new read"	
-				if (insert_size_first > insert_size_lower_bond) and (insert_size_first <= insert_size_upper_bond):
+				if (insert_size_first >= insert_size_lower_bond) and (insert_size_first <= insert_size_upper_bond):
 					#if True:
 					if True:
 						if chrName_first.startswith(chr_name):
@@ -157,7 +157,6 @@ def snpPick(sam_file):
 	print "sam file: ", sam_file_name
 	total_reads_num = variant_call_pair_end(sam_file)
 	print "total_reads_num", total_reads_num
-
 
 def get_data(db_name, table_name, start_line, end_line):
 	con = lite.connect(db_name)
@@ -358,12 +357,17 @@ if __name__ == '__main__':
 	mode = options.mode
 
 	# gx
-	db_name = "/home/guoxing/disk2/lima/mimi_snpPick_db/" + db_name + ".db"
-	ref_path = "/home/guoxing/disk2/lima/mimi_snpPick_db/"
-	ref_file = ref_path + "chrX.fa"
-	#ref_path = "/home/guoxing/disk2/zebra_fish/ref_genome/"
-	#ref_file = ref_path + "danRer7_" + chr_name + ".fa"
-	#ref_file = ref_path + "lm_" + chr_name + ".fa"
+	#db_name = "/home/guoxing/disk2/lima/mimi_snpPick_db/" + db_name + ".db"    # for hg19 chrX mimi data
+	db_name = "/home/guoxing/disk2/lima/solid_mimi/solid_snpPick_db/" + db_name + ".db"
+
+	# for hg19 chrX mimi data
+	#ref_path = "/home/guoxing/disk2/lima/mimi_snpPick_db/"
+	#ref_file = ref_path + "chrX.fa"
+
+	# for hg18 chr solid mimi data
+	ref_path = "/home/guoxing/disk2/UCSC_hg18_index_lm/"
+	ref_file = ref_path + "hg18chr_" + chr_name + ".fa"
+	print ref_file
 
 	"""
 	# lm
@@ -379,6 +383,7 @@ if __name__ == '__main__':
 	"""
 	global quality_score_threshold
 	quality_score_threshold = options.qscore
+	quality_score_threshold = 30
 	print "quality_score_threshold: ", quality_score_threshold
 	print "db_base_name: ", db_base_name
 

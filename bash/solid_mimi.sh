@@ -1,13 +1,32 @@
 #!/bin/bash
 ngs_path="/home/guoxing/disk2/ngs/morehouse/python/"
-# for hg19 mimi data
-sam_path="/home/guoxing/disk2/lima/mimi_chrx_sam/"
-db_path="/home/guoxing/disk2/lima/mimi_snpPick_db/"
-chrX_length=158375978
+
+# for hg18 solid mimi data
+sam_path="/home/guoxing/disk2/lima/solid_mimi/mimi_solid_sam/"
+db_path="/home/guoxing/disk2/lima/solid_mimi/mimi_solid_snpPick_db/"
+chr_9_length=140273252
 
 #cd $sam_path
-cd $db_path
-for((i=78; i<=93; i++))
+#cd $db_path
+
+declare -a chr=('5' 'X' '9' '1' '11' '7' '17' '13' 'X' '3' '11');
+: '
+data_path="/home/guoxing/disk2/solid/"
+cd $data_path
+
+for((i=4; i<=11; i++))
+	do
+	folder_name="song_"$i
+	cd $folder_name
+	chr_name="chr${chr[$i-1]}"
+	echo $chr_name
+	file_name="song_"$i"_prem_"$chr_name"_sorted.sam"
+	echo $file_name
+	#cp $file_name $sam_path &
+	cd ..
+	done
+'
+for((i=78; i<=79; i++))
 
 	do
 	#sam_file="NA128"$i"_S1_ChrXnew.sam"
@@ -29,9 +48,9 @@ for((i=78; i<=93; i++))
 
 	# output variation call
 	#snpPick_fish -c chr -m mf -b startLine -e endLine -d db_name
-	$ngs_path"snpPick_fish_sql_lima.py" -c chrX -m mf -b 0 -e $chrX_length -d $db_file &
+	#$ngs_path"snpPick_fish_sql_lima.py" -c chrX -m mf -b 0 -e $chrX_length -d $db_file &
 
 
-	wait
+	#wait
 	#cd ..
 	done
