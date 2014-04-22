@@ -111,6 +111,7 @@ def variant_call_pair_end(sam_file):
 								quality_score_symbol = quality_score_sequence_first[i]
 								if (not covered_snp == 'N') and (
 											(ord(quality_score_symbol) - 33) > quality_score_threshold):  # check quality_score
+									#print ord(quality_score_symbol) - 33
 									if covered_snp == "A":
 										A_depth += 1
 									elif covered_snp == "T":
@@ -154,7 +155,7 @@ def variant_call_pair_end(sam_file):
 def snpPick(sam_file):
 	global sam_file_name
 	sam_file_name = sam_file[:(len(sam_file) - 4)]
-	print "sam file: ", sam_file_name
+	print "sam file: ", sam_file
 	total_reads_num = variant_call_pair_end(sam_file)
 	print "total_reads_num", total_reads_num
 
@@ -228,7 +229,7 @@ def output_single_pos_data(pos_file_name):
 				print >> output_file, pos
 
 def output_data_filter(file_name, start_line, end_line):
-	# output data with small total number
+	# output data with small total number, divide the total number into small pieces
 	total_row_number = int(end_line) - int(start_line)
 	if total_row_number <= 0:
 		print "error in start point and end point"
@@ -261,16 +262,20 @@ def data_filter(start_line, end_line):
 	rows = get_data(db_name, table_name, str(start_line), str(end_line))
 	for item in rows:
 		temp_list = [int(x) for x in item[3:7]]
+
 		if temp_list.count(0) < 3:
+			# Remove the postions with 3 zeros and filter by the second_largest_allele_depth
 			temp_list.sort()
-			current_percent = int(float(total_row_number * percentage_of_total) / 100)
-			if current_row == current_percent:
-				print "current progress: ", percentage_of_total, "current row:", current_row + int(start_line)
-				percentage_of_total += 10
-			current_row += 1
-			data_list.append(list((
-				item[0], item[1], item[2], item[3], item[4], item[5], item[6], temp_list[3], temp_list[2], temp_list[1],
-				temp_list[0])))
+			second_largest_allele_depth = temp_list[2]
+			if second_largest_allele_depth >= second_largest_allele_depth_cutoff:
+				current_percent = int(float(total_row_number * percentage_of_total) / 100)
+				if current_row == current_percent:
+					print "current progress: ", percentage_of_total, "current row:", current_row + int(start_line)
+					percentage_of_total += 10
+				current_row += 1
+				data_list.append(list((
+					item[0], item[1], item[2], item[3], item[4], item[5], item[6], temp_list[3], temp_list[2], temp_list[1],
+					temp_list[0])))
 	elapse_time = time.time() - start_time
 	print "running time: ", round(elapse_time, 3), "s"
 	return data_list
@@ -349,16 +354,18 @@ if __name__ == '__main__':
 	global db_name
 	global db_base_name
 	global ref_file
+	global second_largest_allele_depth_cutoff
 	options = get_args()
 
 	chr_name = options.chrName
 	db_name = options.dbname
 	db_base_name = db_name
 	mode = options.mode
+	second_largest_allele_depth_cutoff = 5
 
 	# gx
 	#db_name = "/home/guoxing/disk2/lima/mimi_snpPick_db/" + db_name + ".db"    # for hg19 chrX mimi data
-	db_name = "/home/guoxing/disk2/lima/solid_mimi/solid_snpPick_db/" + db_name + ".db"
+	db_name = "/home/guoxing/disk2/lima/mimi_solid/mimi_solid_snpPick_db/" + db_name + ".db"
 
 	# for hg19 chrX mimi data
 	#ref_path = "/home/guoxing/disk2/lima/mimi_snpPick_db/"

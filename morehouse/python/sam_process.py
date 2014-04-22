@@ -144,7 +144,7 @@ def pair_end_indel(sam_file, chr_name):
 def single_end_indel(sam_file, chr_name):
 	""" process the reads by both single_end and indel"""
 	print "single_end_indel: ", parameter.sam_file_name
-	output_file = open(parameter.sam_file_name + "_sginle_indel.sam", "w")
+	output_file = open(parameter.sam_file_name + "_single_indel.sam", "w")
 	inputfile_sam = open(currentPath + sam_file, "r")
 	sam_line_first = inputfile_sam.readline() # the first read line in a pair
 	total_reads_num = 0
@@ -885,6 +885,34 @@ def samtools_sort(sam_file):
 	os.system("rm " + sort_input + ".bam")
 	os.system("rm " + sort_input + "_sorted.bam")
 
+def mimi_solid_base_remove(sam_file):
+	# for solid data, to remove 10 bases after the primer, which are not accurate.
+
+	read_length_cutoff = 32
+	total_reads_num = 0
+	reads_after_process_total_number = 0
+
+	with open(currentPath + parameter.sam_file, "r") as inputfile_sam:
+		with open(parameter.sam_file_name + "_base_cleaned.sam", "w") as output_file:
+			sam_line_first = inputfile_sam.readline() # the first read line in a pair
+			while sam_line_first != '':
+				if not sam_line_first.startswith("@"):
+					total_reads_num += 1
+					elements_first = sam_line_first.strip().split()
+					try:
+						read_seq_first = elements_first[9].strip()
+						if len(read_seq_first) > read_length_cutoff:
+							print >> output_file, sam_line_first.strip()
+							reads_after_process_total_number += 1
+					except:
+						print "error in first read:", sam_line_first
+
+				sam_line_first = inputfile_sam.readline()
+
+	print "total_reads_num: ", total_reads_num
+	print "reads_after_process_total_number: ", reads_after_process_total_number
+	print "removed reads: ", total_reads_num-reads_after_process_total_number
+	print "removed percentage: ", round(float(total_reads_num-reads_after_process_total_number)/total_reads_num, 2)
 
 def sam_process(sam_file, chr_name, mode):
 	if mode == "single":
@@ -914,6 +942,8 @@ def sam_process(sam_file, chr_name, mode):
 	elif mode == "sort":
 		add_header(sam_file)
 		samtools_sort(sam_file)
+	elif mode == "base_remove":
+		mimi_solid_base_remove(sam_file)
 	elif mode == "mimi":
 		ori_sam_file_name = parameter.sam_file_name
 		"""
@@ -1026,21 +1056,27 @@ def sam_process(sam_file, chr_name, mode):
 		os.system("rm " + sorted_rmsk_name + "_combined.sam")
 		"""
 	elif mode == "solid_lima":
-		# single end, no XA_filter needed, hg18, already sorted.
+		# solid mimi process, single end, no XA_filter needed, hg18, already sorted.
 		ori_sam_file_name = parameter.sam_file_name
-
 		"""
-		#parameter.sam_file_name = parameter.sam_file_name + "_pairend"
-		#parameter.sam_file_name = parameter.sam_file_name + "_XA"
-
-		parameter.sam_file_name = parameter.sam_file_name + "_sorted"
+		#parameter.sam_file_name = parameter.sam_file_name + "_sorted"
 		parameter.sam_file = parameter.sam_file_name + ".sam"
-		print "4. repeat remove",  parameter.sam_file
-		rmsk_file = "/home/guoxing/disk2/lima/rmsk_chrX_hg19_MultSNPs_chrX_SegDups_chrX.txt"
-		repeat_remove_mimi(rmsk_file, parameter.sam_file)
+		print "1. repeat remove",  parameter.sam_file
+		rmsk_file = "hg18_rmsk.txt_original"
+		#repeat_remove(rmsk_file, parameter.sam_file)
+
+		parameter.sam_file_name = parameter.sam_file_name + "_rmsk"
+		parameter.sam_file = parameter.sam_file_name + ".sam"
+		print "2. process indel",  parameter.sam_file
+		single_end_indel(parameter.sam_file, chr_name)
+		"""
+		parameter.sam_file_name = parameter.sam_file_name + "_rmsk_single_indel"
+		parameter.sam_file = parameter.sam_file_name + ".sam"
+		print "3. remove base after primer",  parameter.sam_file
+		mimi_solid_base_remove(parameter.sam_file)
 
 		#snpPick_mimi -s NA12893_S1_ChrXnew_pairend_XA_sorted_rmsk_combined_indel.sam -c chrX -m update -d NA12893_S1_chrX
-
+		"""
 		print "8. clean up"
 		# keep the pairend_XA_sorted.sam and pairend_XA_sorted_rmsk.sam
 		os.system("rm " + ori_sam_file_name + ".sam")
@@ -1054,8 +1090,6 @@ def sam_process(sam_file, chr_name, mode):
 		os.system("rm " + sorted_rmsk_name + "_removed.sam")
 		os.system("rm " + sorted_rmsk_name + "_combined.sam")
 		"""
-
-
 
 def get_args():
 	desc="variation call"

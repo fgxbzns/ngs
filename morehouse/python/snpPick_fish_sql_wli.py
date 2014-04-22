@@ -245,7 +245,7 @@ def data_filter(start_line, end_line):
 			item[0], item[1], item[2], item[3], item[4], item[5], item[6], temp_list[3], temp_list[2], temp_list[1],
 			temp_list[0])))
 	elapse_time = time.time() - start_time
-	print "time: ", round(elapse_time, 3), s
+	print "time: ", round(elapse_time, 3), "s"
 	return data_list
 
 
