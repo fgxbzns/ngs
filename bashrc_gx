@@ -51,8 +51,8 @@ alias octans='ssh gfu1@octans.gsu.edu'
 alias octanssftp='sshfs gfu1@octans.gsu.edu:/home/iweber/gfu1 ~/remote'
 alias bmcc4='ssh guoxing@bmcc4.cs.gsu.edu'
 alias bmcc4sftp='sshfs guoxing@bmcc4.cs.gsu.edu:/u1/guoxing ~/remote'
-alias node1='ssh -Y guoxing@10.20.1.58'
-alias node1sftp='sshfs guoxing@10.20.1.58:/home/guoxing ~/node1'
+alias node1='ssh -Y guoxing@10.20.1.222'
+alias node1sftp='sshfs guoxing@10.20.1.222:/home/guoxing ~/node1'
 alias node2='ssh guoxing@10.20.1.224 -p 25'
 alias node2sftp='sftp guoxing@10.20.1.224 -p 23'
 alias node3='ssh -l lima -p 26 10.20.1.224'
@@ -221,6 +221,7 @@ alias grep_position='$bash_path/grep_position.sh'
 alias seperate_sam_by_chr='$bash_path/seperate_sam_by_chr.sh'
 alias mimi='$bash_path/mimi.sh'
 alias solid_mimi='$bash_path/solid_mimi.sh'
+alias fish_mimi='$bash_path/fish_mimi.sh'
 
  #NGS programs
 #export disk2ToolPath=/home/guoxing/disk2/tool

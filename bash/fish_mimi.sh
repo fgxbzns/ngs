@@ -2,30 +2,36 @@
 ngs_path="/home/guoxing/disk2/ngs/morehouse/python/"
 
 # for hg18 solid mimi data
+project_path='/home/guoxing/disk2/wli/'
+rmsk_path=$project_path'rmsk'
+
 sam_path="/home/guoxing/disk2/lima/mimi_solid/mimi_solid_sam/"
 db_path="/home/guoxing/disk2/lima/mimi_solid/mimi_solid_snpPick_db/"
 chr_9_length=140273252
 
 #cd $sam_path
-cd $db_path
 
-declare -a chr=('5' 'X' '9' '1' '11' '7' '17' '13' 'X' '3' '11');
-: '
-data_path="/home/guoxing/disk2/solid/"
-cd $data_path
+# to sort chr in rmsk file by starting position
+cd $rmsk_path
 
-for((i=4; i<=11; i++))
+for((i=1; i<=25; i++))
 	do
-	folder_name="song_"$i
-	cd $folder_name
-	chr_name="chr${chr[$i-1]}"
-	echo $chr_name
-	file_name="song_"$i"_prem_"$chr_name"_sorted.sam"
-	echo $file_name
-	#cp $file_name $sam_path &
-	cd ..
+
+	file_name='zebrafish_rmsk_danRer7.txt'
+	chr_name='chr'$i
+	grep_name='rmsk_'$chr_name'.txt'
+	echo 'greping'
+	#grep -w $chr_name $file_name > $grep_name
+	echo 'sorting'
+	sorted_name='rmsk_'$chr_name'_sorted.txt'
+	#sort -k 7 -n $grep_name > $sorted_name
+	echo 'cat '$chr_name
+	cat rmsk_sorted.txt $sorted_name > rmsk_sorted_tmp.txt
+	mv rmsk_sorted_tmp.txt rmsk_sorted.txt
+	#rm $grep_name
 	done
-'
+
+: '
 for((i=3; i<=3; i++))
 
 	do
@@ -54,3 +60,4 @@ for((i=3; i<=3; i++))
 	#wait
 	cd ..
 	done
+'

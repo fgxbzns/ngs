@@ -60,8 +60,8 @@ def repeat_remove(rmsk_file, sam_file):
 	kept_reads_nmuber = 0
 	removed_reads_number = 0
 
-	#overlap = 15
-	overlap = 25
+	overlap = 15
+	#overlap = 25
 
 	repeat_line = inputFile_rmsk.readline()
 
@@ -140,8 +140,6 @@ def repeat_remove(rmsk_file, sam_file):
 	print "removed_reads_number", removed_reads_number
 	print "removed percentage", round(float(removed_reads_number+multiple_mapping_number)/total_reads_number, 3)
 	print "kept reads percentage", round(float(kept_reads_nmuber)/total_reads_number, 3)
-
-
 
 	end = time.time()
 	run_time = str(end - start)
@@ -460,6 +458,141 @@ def repeat_remove_mimi_solid(rmsk_file, sam_file):
 	outputFile_removed.close()
 	#outputFile_mulmap.close()
 
+def repeat_remove_fish_wli(rmsk_file, sam_file):
+	# For removing repeat for fish data, file is too big. overlap = 15
+	# cannot use list to hold data, save to file directly.
+
+	start = time.time()
+	rmsk_list = []
+	multmap_list = []
+	removed_list = []
+	record_list = []
+
+	repeat_name = rmsk_file[10:(len(rmsk_file) - 4)]
+	sam_file_name = sam_file[:(len(sam_file) - 4)]
+
+	print "rmsk file: ", rmsk_file
+	print "sam file: ", sam_file_name
+
+	inputFile_rmsk = open(rmsk_file, "r")
+	inputFile_sam = open(currentPath + sam_file, "r")
+
+	outputFile_sam = open(currentPath + sam_file_name + "_rmsk.sam", "w")
+	outputFile_removed = open(currentPath + sam_file_name + "_rmsk_removed.sam", "w")
+
+	total_reads_number = 0
+	multiple_mapping_number = 0
+	kept_reads_nmuber = 0
+	removed_reads_number = 0
+
+	overlap = 15
+	repeat_line = inputFile_rmsk.readline()
+	if repeat_line.startswith("#bin"):  # skip first line
+		repeat_line = inputFile_rmsk.readline()
+
+	read_line = inputFile_sam.readline()
+
+	while repeat_line != '' and read_line != '':
+		repeat_elements = repeat_line.strip().split()
+		repeat_chr = repeat_elements[5].strip()
+
+		read_line = read_line.strip()
+		read_elements = read_line.split()
+		read_chr = read_elements[2].strip()
+
+		# remove reads with mulitple mapping
+		multiple_maping = is_multiple_maping(read_elements)
+		# multiple mapping is already checked with sam_process XA
+		if True:
+			if repeat_chr == "chrX":
+				repeat_chr = "chr23"
+			if repeat_chr == "chrY":
+				repeat_chr = "chr24"
+			if read_chr == "chrX":
+				read_chr = "chr23"
+			if read_chr == "chrY":
+				read_chr = "chr24"
+			if read_chr == "chrM":
+				read_chr = "chr26"
+			if read_chr == "*":         # chrM is converted to * by samtools sort
+				read_chr = "chr26"
+			try:
+				read_chr_number = int(read_chr[3:]), read_line
+			except:
+				print "read_chr_number", read_chr_number
+				sys.exit(1)
+				#read_chr = "chr26"
+
+			try:
+				repeat_chr_number = int(repeat_chr[3:]), repeat_line
+			except:
+				print "repeat_chr_number", repeat_chr_number
+				sys.exit(1)
+				#repeat_chr = "chr26"
+
+			if repeat_chr == read_chr:
+
+				repeat_start = int(repeat_elements[6].strip())
+				repeat_end = int(repeat_elements[7].strip())
+				matched_repeat = repeat_elements[10].strip()
+				repeat_class = repeat_elements[11].strip()
+				repeat_family = repeat_elements[12].strip()
+
+				read_start = int(read_elements[3].strip())
+				read_seq = read_elements[9].strip()
+				read_length = len(read_seq)
+				read_end = read_start + read_length
+
+				if read_end <= (repeat_start+overlap):
+					outputFile_sam.write(read_line.strip() + "\n")
+					#rmsk_list.append(read_line)
+					read_line = inputFile_sam.readline()
+					total_reads_number += 1
+					kept_reads_nmuber += 1
+					#print "kept", repeat_start
+				elif read_end > (repeat_start+overlap) and read_end <= (repeat_end+read_length-overlap) and (repeat_end-repeat_start) >= overlap: # need to consider length of repeat
+					#print "removed", repeat_start
+					#outputFile_removed.write(read_chr + "\t" + str(repeat_start) + "\t" + str(repeat_end) + "\t" + repeat_class + "\t" + repeat_family + "\t" + read_line.strip() + "\n")
+					outputFile_removed.write(read_line.strip() + "\n")
+					#removed_line = read_chr + "\t" + str(repeat_start) + "\t" + str(repeat_end) + "\t" + repeat_class + "\t" + repeat_family + "\t" + read_line.strip()
+					#removed_list.append(removed_line)
+					read_line = inputFile_sam.readline()
+					total_reads_number += 1
+					removed_reads_number += 1
+				else:
+					repeat_line = inputFile_rmsk.readline()
+			elif int(repeat_chr[3:]) < int(read_chr[3:]): # to match the repeat chr and read chr
+				#print repeat_chr[3:], int(read_chr[3:])
+				repeat_line = inputFile_rmsk.readline()
+			else: # repeat is finished, more reads left. Keep them all
+				outputFile_sam.write(read_line.strip() + "\n")
+				#rmsk_list.append(read_line)
+				read_line = inputFile_sam.readline()
+				total_reads_number += 1
+				kept_reads_nmuber += 1
+
+	print "total_reads_number", total_reads_number
+	print "multiple_mapping_number", multiple_mapping_number
+	print "kept_reads_nmuber", kept_reads_nmuber
+	print "removed_reads_number", removed_reads_number
+	print "removed percentage", round(float(removed_reads_number+multiple_mapping_number)/total_reads_number, 3)
+	print "kept reads percentage", round(float(kept_reads_nmuber)/total_reads_number, 3)
+
+	end = time.time()
+	run_time = str(end - start)
+	run_time = run_time[:(run_time.find('.') + 3)]
+	print "run time is: " + run_time + "s"
+
+	record_list.append("total_reads_number: " + str(total_reads_number))
+	record_list.append("multiple_mapping_number: " + str(multiple_mapping_number))
+	record_list.append("kept_reads_nmuber: " + str(kept_reads_nmuber))
+	record_list.append("removed_reads_number: " + str(removed_reads_number))
+	record_list.append("run time is: " + str(run_time))
+
+	#output_files(sam_file_name + "_rmsk.sam", rmsk_list)
+	#output_files(sam_file_name + "_rmsk_removed.sam", removed_list)
+	output_files(sam_file_name + "_rmsk_record.txt", record_list)
+
 def load_mimi_data(file_name):
 	# used in mimi_combine_files
 	data = {}
@@ -575,13 +708,16 @@ def map_position_repeat_combined(rmsk_file, pos_file):
 
 def map_position_repeat_rmsk(rmsk_file, pos_file):
 	# use -s samfile to input pos_file
-	# this is used to map the pos to the rmsk_chrX_hg19.txt. After snpPick_mimi
+	# this is used to map the pos to the rmsk file. After snpPick_mimi
 	pos_list = []
+	pos_depth_info = {}
 	with open(pos_file, "r") as pos_fp:
 		for line in pos_fp:
 			try:
-				pos = int(line.strip().split()[0])
+				data = line.strip().split()
+				pos = int(data[0])
 				pos_list.append(pos)
+				pos_depth_info[pos] = data[1:]
 			except:
 				print "error in map_position_repeat", pos
 	pos_list_ori_prder = list(pos_list)
@@ -625,24 +761,26 @@ def map_position_repeat_rmsk(rmsk_file, pos_file):
 	print "mapped_to_repeat_nmuber", mapped_to_repeat_nmuber
 	print "not_mapped_to_repeat_nmuber", not_mapped_to_repeat_nmuber
 	print "percentage", round(float(mapped_to_repeat_nmuber)/len(pos_list), 3)
-
+	"""
 	with open(pos_file[:len(pos_file)-4]+"_mapped_rmsk.txt", "w") as output_file:
 		for pos in pos_list_ori_prder:
-			print >> output_file, pos + "\t" + pos_dict[pos]
-
+			print >> output_file, str(pos) + "\t" + pos_dict[pos]
+	"""
 	with open(pos_file[:len(pos_file)-4]+"_mapped_ordered_rmsk.txt", "w") as output_file:
 		for pos in pos_list:
-			print >> output_file, pos + "\t" + pos_dict[pos]
+			print >> output_file, str(pos) + "\t" + list_to_line(pos_depth_info[pos]) + "\t" + pos_dict[pos]
 
 def extract_single_overlapped_read(sam_file):
-	# to extract_single_overlapped_read from pairend_removed.sam file
+	# to extract_single_overlapped_read
+	# from pairend_removed.sam file
+	# these reads have passed rmsk filter, but only one of the pair was kept.
 
 	sam_file_name = sam_file[:(len(sam_file) - 4)]
 	rmsk_file_name = sam_file
 	rmsk_pairend_file_name = sam_file_name + "_pairend.sam"
 	rmsk_removed = sam_file_name + "_removed.sam"
 	rmsk_pairend_removed = sam_file_name + "_pairend_removed.sam"
-	recoverd_overl_read_name = sam_file_name + "_recovered_overlap_read.sam"
+	recoverd_overl_read_name = sam_file_name + ".sam"
 
 	rmsk_pairend_rm_dict = {}
 	with open(rmsk_pairend_removed, "r") as rmsk_pairend_rm_file:
@@ -650,21 +788,28 @@ def extract_single_overlapped_read(sam_file):
 			rmsk_pairend_rm_dict[read.strip().split()[0]] = read.strip()
 	print "rmsk_removed_pairend_removed size", len(rmsk_pairend_rm_dict)
 
+	recovered_paired_reads = 0
 	with open(recoverd_overl_read_name, "w") as recovered_file:
 		with open(rmsk_removed, "r") as rmsk_removed_file:
 			for read in rmsk_removed_file:
 				read_id = read.strip().split()[0]
 				if len(rmsk_pairend_rm_dict) > 0:
 					if read_id in rmsk_pairend_rm_dict:
+						recovered_paired_reads += 1
 						print >> recovered_file, read.strip()
 						print >> recovered_file, rmsk_pairend_rm_dict[read_id]
 						del rmsk_pairend_rm_dict[read_id]
 				else:
 					break
 
+	print "recovered_paired_reads number", len(recovered_paired_reads)
 	combined_file_name = sam_file_name + "_combined.sam"
 	cmd = "cat " + recoverd_overl_read_name + " " + rmsk_pairend_file_name + " > " + combined_file_name
 	os.system(cmd)
+
+def sort_rmsk(rmsk_file):
+	# the fish_wli rmsk is not sorted by starting position. Check chr3 and after.
+	pass
 
 def get_args():
 	desc = "Compare seed and std hap, to check purity of seed"
@@ -699,7 +844,9 @@ if __name__ == '__main__':
 		extract_single_overlapped_read(sam_file)
 	elif mode == "mimi_map_rmsk":
 		# map to rmsk_chrX_hg19.txt
-		rmsk_file = "/home/guoxing/disk2/lima/repeat_chrx/rmsk_chrX_hg19.txt"
+		#rmsk_file = "/home/guoxing/disk2/lima/repeat_chrx/rmsk_chrX_hg19.txt"  # for mimi hg19
+
+		rmsk_file = file_path + "hg18_rmsk.txt_original"        # for mimi solid hg18
 		map_position_repeat_rmsk(rmsk_file, sam_file)
 	elif mode == "mimi_map_combined":
 		# map to combined repeat file
@@ -711,6 +858,10 @@ if __name__ == '__main__':
 		#rmsk_file = "hg18_rmsk.txt"
 		rmsk_file = "hg18_rmsk.txt_original"
 		repeat_remove(rmsk_file, sam_file)
+	elif mode == "fish_wli":
+		# chrM is removed from the rmsk file.
+		rmsk_file = "/home/guoxing/disk2/wli/zebrafish_rmsk_sorted.txt"
+		repeat_remove_fish_wli(rmsk_file, sam_file)
 
 	elapse_time = time.time() - start_time
 	print "run time: ", round(elapse_time, 3), "s"

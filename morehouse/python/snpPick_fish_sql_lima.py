@@ -36,7 +36,6 @@ class reads:
 		self.read_length = 0
 		self.covered_snp = ""
 
-
 def get_ref_geno(chr_name):
 	chr_seq = ""
 
@@ -47,7 +46,6 @@ def get_ref_geno(chr_name):
 			chr_seq += lines.strip()
 	print "total base number: ", len(chr_seq)
 	return chr_seq
-
 
 def variant_call_pair_end(sam_file):
 	"""the sequence pair has already been processed
@@ -262,8 +260,8 @@ def data_filter(start_line, end_line):
 	rows = get_data(db_name, table_name, str(start_line), str(end_line))
 	for item in rows:
 		temp_list = [int(x) for x in item[3:7]]
-
-		if temp_list.count(0) < 3:
+		#if temp_list.count(0) < 3: # remove homo position
+		if temp_list.count(0) == 2:
 			# Remove the postions with 3 zeros and filter by the second_largest_allele_depth
 			temp_list.sort()
 			second_largest_allele_depth = temp_list[2]
@@ -281,7 +279,7 @@ def data_filter(start_line, end_line):
 	return data_list
 
 def output_filtered_data(start_line, end_line):
-	file_name = db_base_name + "_" + start_line + "_" + end_line + "_filtered.txt"
+	file_name = db_base_name + "_" + start_line + "_" + end_line + "_filtered_2nddepth_" + str(second_largest_allele_depth_cutoff) + ".txt"
 
 	start_line = int(start_line)
 	end_line = int(end_line)

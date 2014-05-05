@@ -101,7 +101,7 @@ def pair_end_indel(sam_file, chr_name):
 			
 			# process all chr or one particular chr
 			check_chr_name = chrName_first.startswith("chr") if (chr_name == "chr") else (chr_name == chrName_first)
-			if check_chr_name and (insert_size_first > parameter.insert_size_lower_bond) and (insert_size_first <= parameter.insert_size_upper_bond):					# only keep the reads mapped to chr 
+			if check_chr_name and (insert_size_first >= parameter.insert_size_lower_bond) and (insert_size_first <= parameter.insert_size_upper_bond):					# only keep the reads mapped to chr
 				# if the first read is within insert size limit, check the second read
 				# the insert_size for a pair is the same. If the first read is passed, the second will be passed, too.
 				sam_line_second = inputfile_sam.readline()
@@ -184,6 +184,7 @@ def filter_by_chr():
 	""" filter the reads by chr name and insert size """
 	print "filter_by_chr: ", parameter.sam_file_name
 	output_file = open(parameter.sam_file_name + "_" + parameter.chr_name + ".sam", "w")
+	output_removed_file = open(parameter.sam_file_name + "_" + parameter.chr_name + "_nonchr.sam", "w")
 	inputfile_sam = open(currentPath + parameter.sam_file, "r")
 	sam_line_first = inputfile_sam.readline() # the first read line in a pair
 	total_reads_num = 0
@@ -201,15 +202,19 @@ def filter_by_chr():
 			
 			# process all chr or one particular chr
 			check_chr_name = chrName_first.startswith("chr") if (parameter.chr_name == "chr") else (parameter.chr_name == chrName_first)
-			if check_chr_name and (insert_size_first >= parameter.insert_size_lower_bond) and (insert_size_first <= parameter.insert_size_upper_bond):					# only keep the reads mapped to chr
+			if check_chr_name and chrName_first != "chrM" and (insert_size_first >= parameter.insert_size_lower_bond) and (insert_size_first <= parameter.insert_size_upper_bond):					# only keep the reads mapped to chr
 				reads_after_process_total_number += 1
 				print >> output_file, sam_line_first.strip()
-									
+			else:
+				print >> output_removed_file, sam_line_first.strip()
+
 		sam_line_first = inputfile_sam.readline()
 	inputfile_sam.close()
 	output_file.close()
+	output_removed_file.close()
 	print "total_reads_num: ", total_reads_num
 	print "reads_after_process_total_number: ", reads_after_process_total_number
+	print "reads removed : ", total_reads_num - reads_after_process_total_number
 
 def match_pairend():
 	""" find the matched read pair in a disordered sam file """
@@ -293,7 +298,7 @@ def filter_match_pairend():
 						if len(reads_dict) != previous_size:
 							print "current reads_dict size: ", len(reads_dict)
 						previous_size = len(reads_dict)
-					if 	total_reads_num%1000000 == 0:
+					if total_reads_num%1000000 == 0:
 						print "current line number : ", total_reads_num				
 				sam_line_first = inputfile_sam.readline()
 	
@@ -882,8 +887,8 @@ def samtools_sort(sam_file):
 	bam2sam_Process = subprocess.Popen(bam2sam, shell=True)
 	bam2sam_Process.wait()
 
-	os.system("rm " + sort_input + ".bam")
-	os.system("rm " + sort_input + "_sorted.bam")
+	#os.system("rm " + sort_input + ".bam")
+	#os.system("rm " + sort_input + "_sorted.bam")
 
 def mimi_solid_base_remove(sam_file):
 	# for solid data, to remove 10 bases after the primer, which are not accurate.
@@ -929,7 +934,7 @@ def sam_process(sam_file, chr_name, mode):
 		filter_by_chr()
 	elif mode == "match":	
 		match_pairend()
-	elif mode == "fm":		
+	elif mode == "fm":
 		filter_match_pairend()
 	elif mode == "xa":		
 		filter_by_XA()
@@ -943,7 +948,10 @@ def sam_process(sam_file, chr_name, mode):
 		add_header(sam_file)
 		samtools_sort(sam_file)
 	elif mode == "base_remove":
+		# to remove bases following primer in solid data
 		mimi_solid_base_remove(sam_file)
+	elif mode == "ext_single":
+		extract_single_overlapped_read(parameter.sam_file)
 	elif mode == "mimi":
 		ori_sam_file_name = parameter.sam_file_name
 		"""
