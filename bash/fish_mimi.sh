@@ -5,30 +5,46 @@ ngs_path="/home/guoxing/disk2/ngs/morehouse/python/"
 project_path='/home/guoxing/disk2/wli/'
 rmsk_path=$project_path'rmsk'
 
+
 sam_path="/home/guoxing/disk2/lima/mimi_solid/mimi_solid_sam/"
 db_path="/home/guoxing/disk2/lima/mimi_solid/mimi_solid_snpPick_db/"
 chr_9_length=140273252
 
 #cd $sam_path
-
+: '
 # to sort chr in rmsk file by starting position
 cd $rmsk_path
 
 for((i=1; i<=25; i++))
 	do
 
-	file_name='zebrafish_rmsk_danRer7.txt'
-	chr_name='chr'$i
-	grep_name='rmsk_'$chr_name'.txt'
-	echo 'greping'
+	file_name="zebrafish_rmsk_danRer7.txt"
+	chr_name="chr"$i
+	grep_name="rmsk_"$chr_name".txt"
+	echo "greping"
 	#grep -w $chr_name $file_name > $grep_name
-	echo 'sorting'
-	sorted_name='rmsk_'$chr_name'_sorted.txt'
+	echo "sorting"
+	sorted_name="rmsk_"$chr_name"_sorted.txt"
 	#sort -k 7 -n $grep_name > $sorted_name
-	echo 'cat '$chr_name
+	echo "cat "$chr_name
 	cat rmsk_sorted.txt $sorted_name > rmsk_sorted_tmp.txt
 	mv rmsk_sorted_tmp.txt rmsk_sorted.txt
 	#rm $grep_name
+	done
+'
+# to concanaet sorted chr into one file.
+sorted_sam_path=$project_path'sorted_chr'
+cd $sorted_sam_path
+# need to remove empty line in rmsk_sorted file. Maybe combine 1 and 2 first. or rename chr1 to tmp
+for((i=1; i<=25; i++))
+	do
+
+	chr_name="chr"$i
+
+	sorted_name=$chr_name".sam"
+	echo "cat "$chr_name
+	cat rmsk_sorted.txt $sorted_name > rmsk_sorted_tmp.txt
+	mv rmsk_sorted_tmp.txt rmsk_sorted.txt
 	done
 
 : '

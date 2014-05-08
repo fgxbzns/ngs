@@ -90,6 +90,36 @@ def process_seq(read_seq, qual_line):
 			qual_line = qual_line[:N_position]
 	return (read_seq, qual_line)
 
+def sequence_remove_single_end():
+	# for lima's fastq file to remove certain number of bases from fastq reads
+	# single chromosome
+	# pair end illumina GAII sample 12878
+
+	removed_base_number = 33    # for pairend read 2
+	#removed_base_number = 28    # for pairend read 2
+	output_file = open(input_file_name[:input_file_name.find('.')] + "_seqRem.fastq", 'w')
+	data_tag = "@ILLUMINA"
+	total_reads_number = 0
+
+	with open(input_file_name, 'r') as input_file:
+		line = input_file.readline()
+		while line != "":
+			if line.startswith(data_tag):
+				total_reads_number += 1
+				title = line.strip()
+				read_seq = input_file.readline().strip()
+				plus_symbol = input_file.readline().strip()
+				qual_line = input_file.readline().strip()
+
+				output_file.write(title + "\n")
+				output_file.write(read_seq[removed_base_number:] + "\n")
+				output_file.write("+" + "\n")
+				output_file.write(qual_line[removed_base_number:] + "\n")
+			line = input_file.readline().strip()
+
+	print "total_reads_number", total_reads_number
+	output_file.close()
+
 def get_args():
 	desc = "remove primer"
 	usage = "primerRemove -i input_fastq" 
@@ -114,7 +144,7 @@ if __name__ == '__main__':
 	input_file_name = options.inputFile
 	
 	start_time = time.time()
-	primer_remove_single_end()
-	elapse_time = time.time() - start_time
+	#primer_remove_single_end()
+	sequence_remove_single_end()
 	print "run time is: ", round((time.time() - start_time), 3), "s"
 

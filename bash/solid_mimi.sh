@@ -6,6 +6,8 @@ sam_path="/home/guoxing/disk2/lima/mimi_solid/mimi_solid_sam/"
 db_path="/home/guoxing/disk2/lima/mimi_solid/mimi_solid_snpPick_db/"
 chr_9_length=140273252
 
+declare -a chr_length=('180857866' '154913754' '140273252' '247249719' '134452384' '158821424' '78774742' '114142980' '154913754' '199501827' '134452384');
+
 #cd $sam_path
 cd $db_path
 
@@ -26,7 +28,7 @@ for((i=4; i<=11; i++))
 	cd ..
 	done
 '
-for((i=3; i<=3; i++))
+for((i=5; i<=11; i++))
 
 	do
 	chr_name="chr${chr[$i-1]}"
@@ -47,10 +49,12 @@ for((i=3; i<=3; i++))
 	#$ngs_path"snpPick_fish_sql_lima.py" -s $processed_sam_file -c $chr_name -m update -d $db_file &
 
 	# output variation call
+	target_chr_length=${chr_length[$i-1]}
+	echo $chr_name $target_chr_length
 	#snpPick_fish -c chr -m mf -b startLine -e endLine -d db_name
-	$ngs_path"snpPick_fish_sql_lima.py" -c $chr_name -m mf -b 0 -e $chr_9_length -d $db_file &
+	$ngs_path"snpPick_fish_sql_lima.py" -c $chr_name -m mf -b 0 -e $target_chr_length -d $db_file &
 
 
-	#wait
+	wait
 	cd ..
 	done

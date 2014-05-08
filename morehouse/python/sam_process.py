@@ -191,7 +191,9 @@ def filter_by_chr():
 	reads_after_process_total_number = 0
 
 	while sam_line_first != '':
-		if not sam_line_first.startswith("@"):
+		if sam_line_first.startswith("@"):
+			print >> output_file, sam_line_first.strip()
+		elif not sam_line_first.startswith("@"):
 			total_reads_num += 1
 			elements_first = sam_line_first.strip().split()
 			try:
@@ -202,11 +204,19 @@ def filter_by_chr():
 			
 			# process all chr or one particular chr
 			check_chr_name = chrName_first.startswith("chr") if (parameter.chr_name == "chr") else (parameter.chr_name == chrName_first)
-			if check_chr_name and chrName_first != "chrM" and (insert_size_first >= parameter.insert_size_lower_bond) and (insert_size_first <= parameter.insert_size_upper_bond):					# only keep the reads mapped to chr
+			# to remove reads mapped to non chrs
+			try:
+				chr_number = int(chrName_first[3:])
+			except:
+				#print "chr_number", chr_number
+				check_chr_name = False
+				print >> output_removed_file, sam_line_first.strip()
+
+			if check_chr_name and (insert_size_first >= parameter.insert_size_lower_bond) and (insert_size_first <= parameter.insert_size_upper_bond):					# only keep the reads mapped to chr
 				reads_after_process_total_number += 1
 				print >> output_file, sam_line_first.strip()
-			else:
-				print >> output_removed_file, sam_line_first.strip()
+			#else:
+			#	print >> output_removed_file, sam_line_first.strip()
 
 		sam_line_first = inputfile_sam.readline()
 	inputfile_sam.close()
@@ -945,7 +955,7 @@ def sam_process(sam_file, chr_name, mode):
 	elif mode == "single_xa":
 		single_end_xa()
 	elif mode == "sort":
-		add_header(sam_file)
+		#add_header(sam_file)
 		samtools_sort(sam_file)
 	elif mode == "base_remove":
 		# to remove bases following primer in solid data

@@ -517,14 +517,14 @@ def repeat_remove_fish_wli(rmsk_file, sam_file):
 			if read_chr == "*":         # chrM is converted to * by samtools sort
 				read_chr = "chr26"
 			try:
-				read_chr_number = int(read_chr[3:]), read_line
+				read_chr_number = int(read_chr[3:])
 			except:
 				print "read_chr_number", read_chr_number
 				sys.exit(1)
 				#read_chr = "chr26"
 
 			try:
-				repeat_chr_number = int(repeat_chr[3:]), repeat_line
+				repeat_chr_number = int(repeat_chr[3:])
 			except:
 				print "repeat_chr_number", repeat_chr_number
 				sys.exit(1)
@@ -802,14 +802,9 @@ def extract_single_overlapped_read(sam_file):
 				else:
 					break
 
-	print "recovered_paired_reads number", len(recovered_paired_reads)
 	combined_file_name = sam_file_name + "_combined.sam"
 	cmd = "cat " + recoverd_overl_read_name + " " + rmsk_pairend_file_name + " > " + combined_file_name
 	os.system(cmd)
-
-def sort_rmsk(rmsk_file):
-	# the fish_wli rmsk is not sorted by starting position. Check chr3 and after.
-	pass
 
 def get_args():
 	desc = "Compare seed and std hap, to check purity of seed"

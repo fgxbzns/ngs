@@ -36,6 +36,10 @@ class reads:
 		self.read_length = 0
 		self.covered_snp = ""
 
+class parameter:
+	def __init__(self):
+		self.snp_in_mimi = 0
+
 def get_ref_geno(chr_name):
 	chr_seq = ""
 
@@ -246,9 +250,33 @@ def output_data_filter(file_name, start_line, end_line):
 					print "current progress: ", percentage_of_total, "current row:", current_row + int(start_line)
 					percentage_of_total += 10
 				current_row += 1
+				# pos, chr, ref_base, A, T, C, G, Allele#, Major, Minor, 3rd, 4th, rs#, SNP_allele_1, SNP_allele_2, mm_snp_overlapping
 				print >> output_file, item[0], item[1], item[2], item[3], item[4], item[5], item[6], temp_list[3], \
 					temp_list[2], temp_list[1], temp_list[0]
 	print "total snp number :", current_row
+
+def get_snp_info(pos, first_allele_number, second_allele_number, allele_list):
+	base_list = ["A", "T", "C", "G"]
+	pos = int(pos)
+	if pos in hap_std_dict:
+		parameters.snp_in_mimi += 1
+		rs_number = hap_std_dict[pos][0]
+		SNP_allele_A = hap_std_dict[pos][2]
+		SNP_allele_B = hap_std_dict[pos][3]
+		# 1 = yes, 2 = no
+		mm_snp_overlap = 2
+
+		first_allele = base_list[allele_list.index(first_allele_number)]
+		second_allele = base_list[allele_list.index(second_allele_number)]
+		#print pos, first_allele
+
+		if first_allele == SNP_allele_A and second_allele == SNP_allele_B:
+			mm_snp_overlap = 1
+		elif first_allele == SNP_allele_B and second_allele == SNP_allele_A:
+			mm_snp_overlap = 1
+		return rs_number, SNP_allele_A, SNP_allele_B, mm_snp_overlap
+	else:
+		return "", "", "", ""
 
 def data_filter(start_line, end_line):
 	# prepare data portion for output_filtered_data
@@ -260,8 +288,10 @@ def data_filter(start_line, end_line):
 	rows = get_data(db_name, table_name, str(start_line), str(end_line))
 	for item in rows:
 		temp_list = [int(x) for x in item[3:7]]
+		allele_list = [int(x) for x in item[3:7]]
 		#if temp_list.count(0) < 3: # remove homo position
-		if temp_list.count(0) == 2:
+		number_of_zero = temp_list.count(0)
+		if number_of_zero == 2:
 			# Remove the postions with 3 zeros and filter by the second_largest_allele_depth
 			temp_list.sort()
 			second_largest_allele_depth = temp_list[2]
@@ -271,9 +301,12 @@ def data_filter(start_line, end_line):
 					print "current progress: ", percentage_of_total, "current row:", current_row + int(start_line)
 					percentage_of_total += 10
 				current_row += 1
+				#snp_info = get_snp_info(pos, first_allele, second_allele, hap_std_dict)
+				snp_info = get_snp_info(item[0], temp_list[3], temp_list[2], allele_list)
+				# pos, chr, ref_base, A, T, C, G, Allele#, 1st, 2nd, 3rd, 4th, rs#, SNP_allele_1, SNP_allele_2, mm_snp_overlapping
 				data_list.append(list((
-					item[0], item[1], item[2], item[3], item[4], item[5], item[6], temp_list[3], temp_list[2], temp_list[1],
-					temp_list[0])))
+					item[0], item[1], item[2], item[3], item[4], item[5], item[6], (4-number_of_zero), temp_list[3], temp_list[2], temp_list[1],
+					temp_list[0], snp_info[0], snp_info[1], snp_info[2], snp_info[3])))
 	elapse_time = time.time() - start_time
 	print "running time: ", round(elapse_time, 3), "s"
 	return data_list
@@ -285,6 +318,8 @@ def output_filtered_data(start_line, end_line):
 	end_line = int(end_line)
 	total_row_number = end_line - start_line
 	with open(file_name, "w") as output_file:
+		print >> output_file, "pos", "chr", "ref_allele", "A", "T", "C", "G", \
+		"Allele#", "1st", "2nd", "3rd", "4th", "rs#", "SNP_allele_1", "SNP_allele_2", "mm_snp_overlapping"
 		if total_row_number <= 0:
 			print "error in start point and end point"
 			sys.exit(0)
@@ -374,6 +409,17 @@ if __name__ == '__main__':
 	ref_file = ref_path + "hg18chr_" + chr_name + ".fa"
 	print ref_file
 
+	# load hap_std_dict
+	global hap_std_dict
+	file_path = "/home/guoxing/disk2/solid/common_files/"
+	hap_std_file = file_path + "ASW_"+chr_name+"_child_hap.txt"
+	hap_std_dict = load_raw_data(hap_std_file)[1]
+	print "hap_std_dict", len(hap_std_dict)
+
+	parameters = parameter()
+
+
+
 	"""
 	# lm
 	db_name = "/home/lima/disk2_node3/" + db_name + ".db"
@@ -426,9 +472,8 @@ if __name__ == '__main__':
 		posList = options.posList
 		output_single_pos_data(posList)
 
-
-
 	elapse_time = time.time() - start_time
 	print "run time: ", round(elapse_time, 3), "s"
-	
+	print "snp_in_mimi", parameters.snp_in_mimi
+
 
