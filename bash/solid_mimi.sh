@@ -28,7 +28,32 @@ for((i=4; i<=11; i++))
 	cd ..
 	done
 '
-for((i=5; i<=11; i++))
+
+: '
+# to sort chr in rmsk file by starting position
+rmsk_path="/home/guoxing/disk2/solid/common_files/hg18_rmsh_chr"
+cd $rmsk_path
+
+for((i=1; i<=25; i++))
+	do
+
+	file_name="hg18_rmsk.txt_original"
+	chr_name="chr"$i
+	grep_name="rmsk_"$chr_name".txt"
+	echo "greping"
+	grep -w $chr_name $file_name > $grep_name
+	#echo "sorting"
+	#sorted_name="rmsk_"$chr_name"_sorted.txt"
+	#sort -k 7 -n $grep_name > $sorted_name
+	#echo "cat "$chr_name
+	#cat rmsk_sorted.txt $sorted_name > rmsk_sorted_tmp.txt
+	#mv rmsk_sorted_tmp.txt rmsk_sorted.txt
+	#rm $grep_name
+	done
+'
+
+
+for((i=11; i<=11; i++))
 
 	do
 	chr_name="chr${chr[$i-1]}"
@@ -52,9 +77,13 @@ for((i=5; i<=11; i++))
 	target_chr_length=${chr_length[$i-1]}
 	echo $chr_name $target_chr_length
 	#snpPick_fish -c chr -m mf -b startLine -e endLine -d db_name
-	$ngs_path"snpPick_fish_sql_lima.py" -c $chr_name -m mf -b 0 -e $target_chr_length -d $db_file &
+	#$ngs_path"snpPick_fish_sql_lima.py" -c $chr_name -m mf -b 0 -e $target_chr_length -d $db_file &
 
+	# map rmsk file
+	#repeatRemove_sorted -s song_8_chr13_qs30_0_114142980_filtered_2nddepth_5.txt -r a -c chr13 -m mimi_map_rmsk
+	pos_file="song_"$i"_"$chr_name"_qs30_0_"$target_chr_length"_filtered_2nddepth_5.txt"
+	$ngs_path"repeatRemove_sorted.py" -s $pos_file -c $chr_name -r a -m mimi_map_rmsk &
 
 	wait
-	cd ..
+	#cd ..
 	done

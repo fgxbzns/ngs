@@ -39,6 +39,7 @@ class reads:
 class parameter:
 	def __init__(self):
 		self.snp_in_mimi = 0
+		self.total_mimi = 0
 
 def get_ref_geno(chr_name):
 	chr_seq = ""
@@ -335,11 +336,14 @@ def output_filtered_data(start_line, end_line):
 					print "processing ", i, start_line, start_line + num_in_each_file - 1
 					data_list = data_filter(start_line, start_line + num_in_each_file - 1)
 					print "number of alleles in this range: ", len(data_list)
+					parameters.total_mimi += len(data_list)
 					for data in data_list:
 						print >> output_file, " ".join(str(x) for x in data)
 				else:
 					print "processing ", i, start_line, end_line
 					data_list = data_filter(start_line, end_line)
+					print "number of alleles in this range: ", len(data_list)
+					parameters.total_mimi += len(data_list)
 					for data in data_list:
 						print >> output_file, " ".join(str(x) for x in data)
 				start_line = start_line + num_in_each_file
@@ -388,17 +392,18 @@ if __name__ == '__main__':
 	global db_base_name
 	global ref_file
 	global second_largest_allele_depth_cutoff
+
 	options = get_args()
 
 	chr_name = options.chrName
 	db_name = options.dbname
 	db_base_name = db_name
 	mode = options.mode
-	second_largest_allele_depth_cutoff = 5
+	second_largest_allele_depth_cutoff = 1
 
 	# gx
 	#db_name = "/home/guoxing/disk2/lima/mimi_snpPick_db/" + db_name + ".db"    # for hg19 chrX mimi data
-	db_name = "/home/guoxing/disk2/lima/mimi_solid/mimi_solid_snpPick_db/" + db_name + ".db"
+	db_name = "/home/guoxing/disk2/lima/mimi_solid/mimi_solid_snpPick_db/" + db_name + ".db"    # for solid mimi
 
 	# for hg19 chrX mimi data
 	#ref_path = "/home/guoxing/disk2/lima/mimi_snpPick_db/"
@@ -475,5 +480,6 @@ if __name__ == '__main__':
 	elapse_time = time.time() - start_time
 	print "run time: ", round(elapse_time, 3), "s"
 	print "snp_in_mimi", parameters.snp_in_mimi
+	print "total_mimi", parameters.total_mimi
 
 

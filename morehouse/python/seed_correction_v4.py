@@ -1146,9 +1146,9 @@ def add_seed_by_linkage_longestLD():
 	output_revised_seed(new_seed_file_name, data_dict.seed_dict)
 	same_to_A_dict, same_to_B_dict = seed_std_compare(new_seed_file_name, chr_name)
 
-	hap_bkup = "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict))
-	os.system("cp haplotype.txt " + hap_bkup)
-	os.system("mv " + hap_bkup + " seed_file")
+	#hap_bkup = "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict))
+	#os.system("cp haplotype.txt " + hap_bkup)
+	#os.system("mv " + hap_bkup + " seed_file")
 
 def add_seed_by_linkage_Jan212014():
 	refID_dict = {}
@@ -2984,7 +2984,6 @@ def output_genohomo(filename):
 		print >> seed_new_file, line
 	seed_new_file.close()
 
-
 def overall_process_3(seed_file, chr_name, mode):
 	sub_cycle = data_dict.cycle_number
 	haplotype_file = "haplotype.txt"
@@ -2994,7 +2993,7 @@ def overall_process_3(seed_file, chr_name, mode):
 	same_to_A = 1
 	error_threshold = 60
 	i = 0
-	while same_to_A < 3000:
+	while same_to_A < 6000:
 			
 		remPercent = float(random.randrange(40, 80))/(100.0)
 		print "remPercent", remPercent
@@ -3013,9 +3012,12 @@ def overall_process_3(seed_file, chr_name, mode):
 			os.system("cp haplotype_ori.txt haplotype.txt")
 		else:
 			print "new seed updated"
-			#os.system("cp haplotype_expanded.txt haplotype.txt")
-			os.system("cp haplotype.txt " + "haplotype.txt_" + str(same_to_A) + "_" + str(same_to_B))
+			#os.system("cp haplotype.txt " + "haplotype.txt_" + str(same_to_A) + "_" + str(same_to_B))
+			hap_bkup = "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict))
+			os.system("cp haplotype.txt " + hap_bkup)
+			os.system("mv " + hap_bkup + " seed_file")
 			os.system("cp haplotype.txt haplotype_ori.txt")
+
 		i += 1
 
 def overall_process_1(seed_file, chr_name, mode):

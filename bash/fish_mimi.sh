@@ -32,8 +32,9 @@ for((i=1; i<=25; i++))
 	#rm $grep_name
 	done
 '
+: '
 # to concanaet sorted chr into one file.
-sorted_sam_path=$project_path'sorted_chr'
+sorted_sam_path=$project_path"sorted_chr"
 cd $sorted_sam_path
 # need to remove empty line in rmsk_sorted file. Maybe combine 1 and 2 first. or rename chr1 to tmp
 for((i=1; i<=25; i++))
@@ -46,8 +47,8 @@ for((i=1; i<=25; i++))
 	cat rmsk_sorted.txt $sorted_name > rmsk_sorted_tmp.txt
 	mv rmsk_sorted_tmp.txt rmsk_sorted.txt
 	done
+'
 
-: '
 for((i=3; i<=3; i++))
 
 	do
@@ -76,4 +77,3 @@ for((i=3; i<=3; i++))
 	#wait
 	cd ..
 	done
-'

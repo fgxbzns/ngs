@@ -713,13 +713,14 @@ def map_position_repeat_rmsk(rmsk_file, pos_file):
 	pos_depth_info = {}
 	with open(pos_file, "r") as pos_fp:
 		for line in pos_fp:
-			try:
-				data = line.strip().split()
-				pos = int(data[0])
-				pos_list.append(pos)
-				pos_depth_info[pos] = data[1:]
-			except:
-				print "error in map_position_repeat", pos
+			if not line.startswith("pos"):
+				try:
+					data = line.strip().split()
+					pos = int(data[0])
+					pos_list.append(pos)
+					pos_depth_info[pos] = data[1:]
+				except:
+					print "error in map_position_repeat", line
 	pos_list_ori_prder = list(pos_list)
 	pos_list.sort()
 	pos_dict = {pos: "" for pos in pos_list}
@@ -813,6 +814,7 @@ def get_args():
 	parser = OptionParser(usage=usage, description=desc)
 	parser.add_option("-r", "--rmsk", type="string", dest="rmskFile", help="Input rmsk File Name", default="null")
 	parser.add_option("-s", "--sam", type="string", dest="samFile", help="Input sam File Name", default="null")
+	parser.add_option("-c", "--chr", type="string", dest="chrName", help="Input chr Name", default="null")
 	parser.add_option("-m", "--mode", type="string", dest="mode", help="", default="null")
 
 	(options, args) = parser.parse_args()
@@ -828,6 +830,7 @@ if __name__ == '__main__':
 	options = get_args()
 	rmsk_file = options.rmskFile
 	sam_file = options.samFile
+	chr_name = options.chrName
 	#rmsk_file = "hg18_rmsk.txt"
 	mode = options.mode
 
@@ -841,7 +844,10 @@ if __name__ == '__main__':
 		# map to rmsk_chrX_hg19.txt
 		#rmsk_file = "/home/guoxing/disk2/lima/repeat_chrx/rmsk_chrX_hg19.txt"  # for mimi hg19
 
-		rmsk_file = file_path + "hg18_rmsk.txt_original"        # for mimi solid hg18
+		# for mimi solid hg18
+		rmsk_path="/home/guoxing/disk2/solid/common_files/hg18_rmsh_chr/"
+		rmsk_file = rmsk_path + "rmsk_" + chr_name + ".txt"
+		print rmsk_file
 		map_position_repeat_rmsk(rmsk_file, sam_file)
 	elif mode == "mimi_map_combined":
 		# map to combined repeat file
