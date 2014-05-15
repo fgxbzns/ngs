@@ -533,8 +533,12 @@ def snpPick_solid(sam_file, depth_threshold, chr_name):
 	#quality_score_threshold = 30    # neand data
 	max_allele_percentage_threshold = 0.8
 
-	haplotype_file = "ASW_" + chr_name + "_child_hap_refed.txt"  # for solid and 454 NA10847
-	genotype_file = "genotype_NA10847_" + chr_name + ".txt"  # for solid and 454 NA10847
+	#haplotype_file = "ASW_" + chr_name + "_child_hap_refed.txt"  # for solid and 454 NA10847
+	#genotype_file = "genotype_NA10847_" + chr_name + ".txt"  # for solid and 454 NA10847
+
+	haplotype_file = "NA12878_chr4_haplotype_std_hg18.txt"	# for illumina hg18 NA12878 chr4
+	genotype_file = "genotype_NA12878_"+chr_name+".txt"	# for illumina hg18 NA12878 chr4
+
 	"""
 	haplotype_file = "NA12878_hap_new_refed.txt"	# for simulation hg18 NA12878 chr6
 	genotype_file = "genotype_NA12878_"+chr_name+".txt"	# for simulation
@@ -706,6 +710,10 @@ if __name__ == '__main__':
 
 	start_time = time.time()
 	if mode == "solid":
+
+		snpPick_solid(sam_file, depth_threshold, chr_name)
+		seed_std_compare(sam_file_name + "_combined_seed.txt", chr_name)
+	elif mode == "illumina":
 
 		snpPick_solid(sam_file, depth_threshold, chr_name)
 		seed_std_compare(sam_file_name + "_combined_seed.txt", chr_name)

@@ -20,7 +20,7 @@ primer_length = int(options.primerLength)
 currentPath = os.getcwd() + '/'
 
 primer_dict = {}
-primer_length = 16
+primer_length = 6
 
 b_file = open(currentPath + a_file_name + "_" + str(primer_length),'w')
 
@@ -58,7 +58,7 @@ def generate_permutations(chars = 6) :
 #print primer_dict
 
 
-while primer_length <= 24:
+while primer_length <= 16:
 	a_file = open(currentPath + a_file_name,'r')
 	total_reads_number = 0
 
@@ -99,7 +99,7 @@ while primer_length <= 24:
 		print primer_list[i], float(primer_list[i][1])/float(total_reads_number)
 		b_file.write(str(primer_list[i]) + "\t" + str(float(primer_list[i][1])/float(total_reads_number)) + "\n")
 		i += 1
-	primer_length += 1
+	primer_length += 2
 	primer_dict.clear()	# empty the dict after each round
 	a_file.close()
 

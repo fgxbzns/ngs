@@ -112,13 +112,18 @@ def sequence_remove_single_end():
 				qual_line = input_file.readline().strip()
 
 				output_file.write(title + "\n")
-				output_file.write(read_seq[removed_base_number:] + "\n")
+				#output_file.write(read_seq[removed_base_number:] + "\n")
+				#output_file.write(read_seq[35:] + "\n")
+				output_file.write(read_seq[::-1] + "\n")
 				output_file.write("+" + "\n")
-				output_file.write(qual_line[removed_base_number:] + "\n")
+				#output_file.write(qual_line[removed_base_number:] + "\n")
+				#output_file.write(qual_line[35:] + "\n")
+				output_file.write(qual_line[::-1] + "\n")
 			line = input_file.readline().strip()
 
 	print "total_reads_number", total_reads_number
 	output_file.close()
+
 
 def get_args():
 	desc = "remove primer"

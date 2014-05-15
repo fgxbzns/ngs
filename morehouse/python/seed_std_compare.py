@@ -20,6 +20,7 @@ def output_seed(file_name, seed_title_info, snp_hap_seed_dict, output_seed_dict)
 
 def seed_std_compare(seed_input_file, chr_name):
 	std_file_name = "ASW_"+chr_name+"_child_hap_refed.txt"	# for solid data
+	std_file_name = "NA12878_chr4_haplotype_std_hg18.txt"   # for illumina hg18 NA12878 chr4
 	#std_file_name = "NA12878_hap_new_refed.txt"	# simulation data hg18 chr6
 
 	std_input_file = file_path + std_file_name
@@ -126,18 +127,6 @@ def seed_std_compare(seed_input_file, chr_name):
 		#calculate_maf(file_name, pos)
 	#output_seed("haplotype_A.txt", seed_title_info, snp_hap_seed_dict, same_to_A_dict)
 	return (same_to_A_dict, same_to_B_dict)
-	
-"""
-def usage():
-	print "%s [seed_file] [chr]" % sys.argv[0]
-if __name__=='__main__':
-	if len(sys.argv)!=3:
-		usage()
-		sys.exit(1)
-	seed_input_file=sys.argv[1]
-	chr_name=sys.argv[2]
-	seed_std_compare(seed_input_file, chr_name)
-"""
 
 def seperate_homo_hetero(same_to_AB_dict):
     homo_dict = {}

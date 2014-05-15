@@ -22,7 +22,8 @@ def chr_percentage(a_file_name):
 						elements = line.strip().split()
 						chr_name = elements[2].strip()
 						insertion_size = elements[8].strip()
-						if insertion_size != "0":
+						#if insertion_size != "0":
+						if True:
 							total_reads_number += 1
 							print >> insert_size_output_file, line.strip()
 							if chr_name not in chr_dict:

@@ -2995,8 +2995,8 @@ def overall_process_3(seed_file, chr_name, mode):
 	i = 0
 	while same_to_A < 6000:
 			
-		remPercent = float(random.randrange(40, 80))/(100.0)
-		print "remPercent", remPercent
+		remPercent = float(random.randrange(10, 20))/(100.0)
+		#print "remPercent", remPercent
 		refMerger(haplotype_file, chr_name, remPercent)
 				
 		hifi_run(haplotype_file, data_dict.chr_name)

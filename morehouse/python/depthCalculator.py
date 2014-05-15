@@ -29,7 +29,7 @@ total_base_number = 0
 
 #a_file = open(currentPath + a_file_name,'r')
 inputFile_sam = open(currentPath + sam_file, "r")
-b_file = open(file_path + "depth_calculator.txt",'a')
+b_file = open(file_path + "depth_calculator.txt", 'a')
 
 # for mapped, unique, matched chr depth
 sam_line_first = inputFile_sam.readline()

@@ -38,8 +38,10 @@ def allele_similarity(hifi_result_dict, hifi_std_dict):
 	#print "similarity, same_to_A", same_to_A
 	#print "similarity, same_to_B", same_to_B
 	if same_to_A >= same_to_B:
+		print "same_to_A", same_to_A, "total", same_to_A + same_to_B, "A percentage", float(same_to_A)/(same_to_A + same_to_B)
 		return "similar_to_A"
 	else:
+		print "same_to_B", same_to_B, "total", same_to_A + same_to_B, "B percentage", float(same_to_B)/(same_to_A + same_to_B)
 		return "similar_to_B"
 
 
