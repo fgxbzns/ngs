@@ -35,6 +35,12 @@ class reads:
 		self.read_length = 0
 		self.covered_snp = ""
 
+class parameter:
+	def __init__(self):
+		self.nean_different_human = 0
+		self.total_pos = 0
+		self.max_allele_coverage = 0
+
 def get_ref_geno(chr_name):
 	chr_seq = ""
 
@@ -87,7 +93,6 @@ def variant_call_single_end(sam_file):
 				if (insert_size_first >= insert_size_lower_bond) and (insert_size_first <= insert_size_upper_bond):
 					if True:
 						if chrName_first.startswith(chr_name):
-							#if chrName_first == chr_name:
 							# first read
 							qName_first = elements_first[0].strip()
 							flag_first = elements_first[1].strip()
@@ -219,6 +224,7 @@ def output_data_filter(file_name, start_line, end_line):
 
 def data_filter(start_line, end_line):
 	# prepare data portion for output_filtered_data
+	base_list = ["A", "T", "C", "G"]
 	start_time = time.time()
 	total_row_number = int(end_line) - int(start_line)
 	data_list = []
@@ -227,9 +233,13 @@ def data_filter(start_line, end_line):
 	rows = get_data(db_name, table_name, str(start_line), str(end_line))
 	for item in rows:
 		temp_list = [int(x) for x in item[3:7]]
-		if True:  # wli
-			#if temp_list.count(0) < 3:	# lima
+		max_allele_number = max(temp_list)
+		max_allele = base_list[temp_list.index(max_allele_number)]
+		if max_allele_number > parameters.max_allele_coverage:  # wli
+		#if temp_list.count(0) < 3:	# lima
 			temp_list.sort()
+			#second_largest_allele_depth = temp_list[2]
+			#if second_largest_allele_depth >= second_largest_allele_depth_cutoff:
 			current_percent = int(float(total_row_number * percentage_of_total) / 100)
 			if current_row == current_percent:
 				#print "current progress: ", percentage_of_total, "current row:", current_row + int(start_line)
@@ -238,13 +248,16 @@ def data_filter(start_line, end_line):
 			data_list.append(list((
 			item[0], item[1], item[2], item[3], item[4], item[5], item[6], temp_list[3], temp_list[2], temp_list[1],
 			temp_list[0])))
+			if item[2].lower() != max_allele.lower():
+				print item[2], max_allele
+				parameters.nean_different_human += 1
 	elapse_time = time.time() - start_time
 	print "time: ", round(elapse_time, 3), "s"
 	return data_list
 
 def output_filtered_data(start_line, end_line):
-	file_name = chr_name + "_" + start_line + "_" + end_line + "_filtered.txt"
-	total_snp_num = 0
+	file_name = chr_name + "_" + start_line + "_" + end_line + "_filtered_mac_" + str(parameters.max_allele_coverage) + ".txt"
+	#total_snp_num = 0
 	start_line = int(start_line)
 	end_line = int(end_line)
 	total_row_number = end_line - start_line
@@ -254,7 +267,7 @@ def output_filtered_data(start_line, end_line):
 			print "error in start point and end point"
 			sys.exit(0)
 		elif total_row_number >= 100000:
-			number_of_subfile = 10
+			number_of_subfile = 100
 			total_number_ceilling = int(math.ceil(float(total_row_number) / 100) * 100)
 			print "total_number_ceilling: ", total_number_ceilling
 			num_in_each_file = total_number_ceilling / number_of_subfile
@@ -264,7 +277,7 @@ def output_filtered_data(start_line, end_line):
 				print "processing ", i, start_line, current_end_line
 				data_list = data_filter(start_line, current_end_line)
 				print "filtered snp number: ", len(data_list)
-				total_snp_num += len(data_list)
+				parameters.total_pos += len(data_list)
 				for data in data_list:
 					print >> output_file, " ".join(str(x) for x in data)
 				start_line = start_line + num_in_each_file
@@ -272,10 +285,12 @@ def output_filtered_data(start_line, end_line):
 			print "processing ", start_line, end_line
 			data_list = data_filter(start_line, end_line)
 			print "filtered snp number: ", len(data_list)
-			total_snp_num += len(data_list)
+			parameters.total_pos += len(data_list)
 			for data in data_list:
 				print >> output_file, " ".join(str(x) for x in data)
-	print "total_snp_num: ", total_snp_num
+	print "total_snp_num: ", parameters.total_pos
+	print "nean_different_human number", parameters.nean_different_human
+	print "nean_different_human percentage", round(float(parameters.nean_different_human)/parameters.total_pos, 4)
 
 
 def compare_filtered_data(a_file_name, b_file_name):
@@ -397,6 +412,8 @@ if __name__ == '__main__':
 
 	options = get_args()
 	mode = options.mode
+	global parameters
+	parameters = parameter()
 
 	if (mode == "compare"):
 		global depth_remove_list
