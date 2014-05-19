@@ -201,7 +201,7 @@ alias hifi2='$morehousePath/hifi_v2.py'
 alias sam_position='$morehousePath/sam_position.py'
 alias 18to19='$morehousePath/18to19.py'
 alias journal_selector='$morehousePath/journal_selector.py'
-
+alias tameka='$morehousePath/tameka.py'
 
 
 # other programs

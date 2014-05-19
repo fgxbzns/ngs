@@ -32,8 +32,8 @@ def combine_files(hg18_name, hg19_name, del_name):
 	
 	k = 0
 	while hg18_line_ori != "":
-		k+=1
-		if k%100000==0:
+		k += 1
+		if k % 100000 == 0:
 			print 'Processing line ', str(k)
 		hg18_line = hg18_line_ori.strip().split()
 		try:
@@ -63,7 +63,7 @@ def combine_files(hg18_name, hg19_name, del_name):
 	hg19_file.close()	
 	
 def get_args():
-	desc="./18to19.py -e hg18 -n hg19 -d delete"
+	desc = "./18to19.py -e hg18 -n hg19 -d delete"
 	usage = ""
 	parser = OptionParser(usage = usage, description=desc)
 	parser.add_option("-e", "--eighty", type="string", dest="hg18_name", help="Input file name", default="null")

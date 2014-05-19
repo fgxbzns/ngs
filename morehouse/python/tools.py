@@ -110,7 +110,7 @@ def removeN(hifi_std_dict):
 def list_to_line(list):
 	line = ""
 	for a in list:
-		line += a.strip() + "\t"
+		line += str(a).strip() + "\t"
 	return line.strip()
 	"""
 	a = ['a', 'b', 'c']

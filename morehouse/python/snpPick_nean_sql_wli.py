@@ -249,7 +249,7 @@ def data_filter(start_line, end_line):
 			item[0], item[1], item[2], item[3], item[4], item[5], item[6], temp_list[3], temp_list[2], temp_list[1],
 			temp_list[0])))
 			if item[2].lower() != max_allele.lower():
-				print item[2], max_allele
+				#print item[2], max_allele
 				parameters.nean_different_human += 1
 	elapse_time = time.time() - start_time
 	print "time: ", round(elapse_time, 3), "s"
