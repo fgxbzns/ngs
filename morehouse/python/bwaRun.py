@@ -1,95 +1,95 @@
 #!/usr/bin/python
 
-# run bwa
-
-import os, glob, subprocess, random, operator, time
+import os, glob, subprocess, random, operator, time, sys
 from optparse import OptionParser
 
-ref_path = "/home/guoxing/disk2/UCSC_hg18_index_lm/"
 currentPath = os.getcwd() + '/'
 
-# Reading options
-usage = "usage: %prog [options] arg1" 
-parser = OptionParser(usage = usage) 
-parser.add_option("-i", "--inputfile", type="string", dest="inputfile",help = "Input File Name", default="null")
-parser.add_option("-c", "--chr", type="string", dest="chrName",help = "Input chr Name", default="all")
-(options, args) = parser.parse_args()
+class parameters:
+	def __init__(self):
+		self.chr_name = ""
+		self.fastq_file_1 = ""
+		self.fastq_file_name_1 = ""
+		self.sam_file_name = ""
 
-# start time
-start = time.time()	
+		self.fastq_file_2 = ""
+		self.fastq_file_name_2 = ""
 
-fastq_file = options.inputfile
-fastq_file_name = fastq_file[:(fastq_file.find('fastq')-1)].strip()
-chr_name = options.chrName
+		self.ref_path = "/home/guoxing/disk2/UCSC_hg18_index_lm/"
+		self.ref_file_name = ""
 
-print "fastq_file_name: ", fastq_file_name
+def bwa_sai(fastq_file):
+	print "bwa aln running", parameter.fastq_file
+	fastq_file_name = fastq_file[:(fastq_file.find('fastq')-1)].strip()
+	sai_file = fastq_file_name + "_" + parameter.chr_name + ".sai"
+	sam_file = fastq_file_name + "_" + parameter.chr_name + ".sam"
 
-#ref_file_name = "hg18chr.fa"
-ref_file_name = ref_path + "hg18chr.fa"
-if not chr_name == "all":
-	ref_file_name = ref_path + "hg18chr_" + chr_name + ".fa"
+	bwa_sai = "bwa" + " aln " + parameter.ref_file_name + " " + fastq_file + " > " + sai_file
+	print bwa_sai
+	bwa_sai_Process = subprocess.Popen(bwa_sai, shell=True)
+	bwa_sai_Process.wait()
 
-sai_file = fastq_file_name + "_" + chr_name + ".sai"
-sam_file = fastq_file_name + "_" + chr_name + ".sam"
+def bwa_samse(fastq_file):
+	print "bwa samse running", parameter.fastq_file
+	fastq_file_name = fastq_file[:(fastq_file.find('fastq')-1)].strip()
+	sai_file = fastq_file_name + "_" + parameter.chr_name + ".sai"
+	sam_file = fastq_file_name + "_" + parameter.chr_name + ".sam"
 
-bwa_sai = "bwa" + " aln " + ref_file_name + " " + fastq_file + " > " + sai_file
-print bwa_sai
+	bwa_sam = "bwa" + " samse " + parameter.ref_file_name + " " + sai_file + " " + fastq_file + " > " + sam_file
+	print bwa_sam
+	bwa_sam_Process = subprocess.Popen(bwa_sam, shell=True)
+	bwa_sam_Process.wait()
 
-bwa_sai_Process = subprocess.Popen(bwa_sai, shell=True)
-bwa_sai_Process.wait()
+def bwa_bwasw(fastq_file):
+	print "bwa samse running", parameter.fastq_file
+	fastq_file_name = fastq_file[:(fastq_file.find('fastq')-1)].strip()
+	sai_file = fastq_file_name + "_" + parameter.chr_name + ".sai"
+	sam_file = fastq_file_name + "_" + parameter.chr_name + ".sam"
 
-bwa_sam = "bwa" + " samse " + ref_file_name + " " + sai_file + " " + fastq_file + " > " + sam_file
-print bwa_sam
+	bwa_long = "bwa" + " bwasw " + parameter.ref_file_name + " " + fastq_file + " > " + sam_file
+	print bwa_long
 
-bwa_sam_Process = subprocess.Popen(bwa_sam, shell=True)
-bwa_sam_Process.wait()
-"""
-bwa_long = "bwa" + " bwasw " + ref_file_name + " " + fastq_file + " > " + sam_file
-print bwa_long
+	bwa_long_Process = subprocess.Popen(bwa_long, shell=True)
+	bwa_long_Process.wait()
 
-bwa_long_Process = subprocess.Popen(bwa_long, shell=True)
-bwa_long_Process.wait()
-"""
+def bwa_run():
+	options = get_args()
+	parameter.fastq_file = options.inputfile1
+	parameter.fastq_file_name = parameter.fastq_file[:(parameter.fastq_file.find('fastq')-1)].strip()
+	parameter.chr_name = options.chrName
+	mode = options.mode
 
-end = time.time()
-run_time = str(format((end - start), "0.3f"))
-print "run time is: " + run_time + "s"
-
-data_record_file_name = fastq_file_name + "_BWAtime_" + ".txt"
-data_record_file = open(currentPath + data_record_file_name, "a")
-print >> data_record_file, "run time is: " + run_time + "s"
-data_record_file.close()
-
-
+	parameter.ref_file_name = parameter.ref_path + "hg18chr.fa" \
+							if parameter.chr_name == "all" else parameter.ref_path + "hg18chr_" + parameter.chr_name + ".fa"
+	#if mode == "single":
+	if True:
+		bwa_sai(parameter.fastq_file)
+		bwa_samse(parameter.fastq_file)
 
 def get_args():
-	desc = "remove primer"
-	usage = "primerRemove -i input_fastq" 
+	desc = "bwaRun"
+	usage = "bwaRun -i input_fastq"
 	parser = OptionParser(usage=usage, description=desc) 
-	parser.add_option("-i", "--inputFile", type="string", dest="inputFile",help = "Input File Name", default="null")
-	
-	
-	parser.add_option("-p", "--ps", type="string", dest="primerSequence",help = "Input primer sequence", default="null")
+	parser.add_option("-i", "--inputfile1", type="string", dest="inputfile1", help="Input File Name", default="null")
+	parser.add_option("-n", "--inputfile2", type="string", dest="inputfile2", help="Input File Name", default="null")
+	parser.add_option("-c", "--chr", type="string", dest="chrName",help="Input chr Name", default="all")
+	parser.add_option("-m", "--mode", type="string", dest="mode", help="", default="null")
+
 	(options, args) = parser.parse_args()
-	if options.inputFile == "null":
+	if options.inputfile1 == "null":
 		print "parameters missing..."
 		print usage
 		sys.exit(1)
 	return options
 
 if __name__ == '__main__':
-	global input_file_name
-	global primer_list
-	
-	primer_list = ["TGTGTTGGGTGTGTTTGG", "TGTNTTGGGTGTGTTTGG", "TGTNTTGGGGTGTTTGG", "TGTGTTTGG"]
-	#primer_list = ["TGTGTTGGGTGTGTTTGG", "TGTGTTGGGTGTGTTTGG", "CGCCTTGGCCGTACAGCA"]
-		
-	options = get_args()
-	input_file_name = options.inputFile
-	
+	global parameter
+	parameter = parameters()
+
 	start_time = time.time()
-	primer_remove()
-	elapse_time = time.time() - start_time
-	print "elapse_time is: " + str(format(elapse_time, "0.3f")) + "s"
+	bwa_run()
+	print "a"
+
+	print "elapse_time is: ", round(time.time() - start_time, 3), "s"
 
 

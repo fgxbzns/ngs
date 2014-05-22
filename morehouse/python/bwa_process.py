@@ -26,7 +26,6 @@ fastq_file = options.inputfile
 fastq_file = "song_5_prem_0.fastq"
 fastq_file_name = fastq_file[:(fastq_file.find('fastq')-2)].strip()
 chr_name = options.chrName
-chr_name = "chr11"
 
 number_of_subfile = 10
 

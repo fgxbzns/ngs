@@ -223,6 +223,7 @@ alias seperate_sam_by_chr='$bash_path/seperate_sam_by_chr.sh'
 alias mimi='$bash_path/mimi.sh'
 alias solid_mimi='$bash_path/solid_mimi.sh'
 alias fish_mimi='$bash_path/fish_mimi.sh'
+alias yang_mimi='$bash_path/yang_mimi.sh'
 
  #NGS programs
 #export disk2ToolPath=/home/guoxing/disk2/tool

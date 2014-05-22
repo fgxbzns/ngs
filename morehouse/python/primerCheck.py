@@ -58,14 +58,15 @@ def generate_permutations(chars = 6) :
 #print primer_dict
 
 
-while primer_length <= 16:
+while primer_length <= 12:
 	a_file = open(currentPath + a_file_name,'r')
 	total_reads_number = 0
 
 	line = a_file.readline()
 
 	while line != "":
-		if line.startswith("@ILLUMINA"):	# for quake data
+		#if line.startswith("@ILLUMINA"):	# for quake data
+		if line.startswith("@SRR"):	# for yang data
 			total_reads_number += 1
 			read_seq = a_file.readline().strip()
 			primer_seq_begining = read_seq[:primer_length]		

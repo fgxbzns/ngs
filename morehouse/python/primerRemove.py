@@ -90,16 +90,33 @@ def process_seq(read_seq, qual_line):
 			qual_line = qual_line[:N_position]
 	return (read_seq, qual_line)
 
+def remove_N(read_seq, qual_line):
+	while 'N' in read_seq:
+		seq_length = len(read_seq)
+		N_position = read_seq.find('N')
+		if N_position <= (seq_length/2):
+			read_seq = read_seq[(N_position + 1):]
+			qual_line = qual_line[(N_position + 1):]
+		else:
+			read_seq = read_seq[:N_position]
+			qual_line = qual_line[:N_position]
+	return (read_seq, qual_line)
+
+
 def sequence_remove_single_end():
 	# for lima's fastq file to remove certain number of bases from fastq reads
 	# single chromosome
 	# pair end illumina GAII sample 12878
 
-	removed_base_number = 33    # for pairend read 2
+	# also used for mimi yang data
+
+	removed_base_number = 35    # for pairend read 2
 	#removed_base_number = 28    # for pairend read 2
 	output_file = open(input_file_name[:input_file_name.find('.')] + "_seqRem.fastq", 'w')
-	data_tag = "@ILLUMINA"
+	#data_tag = "@ILLUMINA"
+	data_tag = "@SRR"
 	total_reads_number = 0
+	print "primer remove:", input_file_name
 
 	with open(input_file_name, 'r') as input_file:
 		line = input_file.readline()
@@ -112,18 +129,21 @@ def sequence_remove_single_end():
 				qual_line = input_file.readline().strip()
 
 				output_file.write(title + "\n")
-				#output_file.write(read_seq[removed_base_number:] + "\n")
+
+				read_seq = read_seq[removed_base_number:]
+				qual_line = qual_line[removed_base_number:]
+				read_seq, qual_line = remove_N(read_seq, qual_line)
+				output_file.write(read_seq + "\n")
 				#output_file.write(read_seq[35:] + "\n")
-				output_file.write(read_seq[::-1] + "\n")
+				#output_file.write(read_seq[::-1] + "\n")
 				output_file.write("+" + "\n")
-				#output_file.write(qual_line[removed_base_number:] + "\n")
+				output_file.write(qual_line + "\n")
 				#output_file.write(qual_line[35:] + "\n")
-				output_file.write(qual_line[::-1] + "\n")
+				#output_file.write(qual_line[::-1] + "\n")
 			line = input_file.readline().strip()
 
 	print "total_reads_number", total_reads_number
 	output_file.close()
-
 
 def get_args():
 	desc = "remove primer"

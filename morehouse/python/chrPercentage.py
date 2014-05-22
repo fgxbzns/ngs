@@ -15,7 +15,7 @@ def chr_percentage(a_file_name):
 	total_reads_number = 0
 
 	with open(a_file_name, 'r') as input_file:
-		with open(a_file_name + "_insertsize", 'w') as insert_size_output_file:
+		#with open(a_file_name + "_insertsize", 'w') as insert_size_output_file:
 			with open(a_file_name + "_percentage", 'w') as output_file:
 				for line in input_file:
 					if not line.startswith("@"):
@@ -25,7 +25,7 @@ def chr_percentage(a_file_name):
 						#if insertion_size != "0":
 						if True:
 							total_reads_number += 1
-							print >> insert_size_output_file, line.strip()
+							#print >> insert_size_output_file, line.strip()
 							if chr_name not in chr_dict:
 								chr_dict[chr_name] = 1
 							else:
