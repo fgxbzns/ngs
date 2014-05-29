@@ -15,7 +15,7 @@ declare -a chr=('5' 'X' '9' '1' '11' '7' '17' '13' 'X' '3' '11');
 
 cd $project_path
 
-for((i=6; i<=8; i++))
+for((i=$1; i<=$1; i++))
 	do
 	fastq_file="tag_"$i".fastq"
 	folder_name="tag_"$i
@@ -23,16 +23,23 @@ for((i=6; i<=8; i++))
 	#mv $fastq_file $folder_name
 	cd $folder_name
 	#$ngs_path"primerRemove.py" -i $fastq_file
-:q!
-
 
 	seqRem_file_name="tag_"$i"_seqRem.fastq"
 	echo $seqRem_file_name
-	$ngs_path"bwaRun.py" -i $seqRem_file_name &
+	#$ngs_path"bwaRun.py" -i $seqRem_file_name &
+
+	sam_file_name="tag_"$i"_seqRem_all.sam"
+	cam_chr_file_name="tag_"$i"_seqRem_all_chr.sam"
+	grep "chr" $sam_file_name > $cam_chr_file_name
+
+	$ngs_path"chrPercentage.py" -i $cam_chr_file_name
+	ls -lh
+	chr_percentage_file="tag_"$i"_seqRem_all_chr.sam_percentage"
+	head $chr_percentage_file
 
 	#wait
 	#rm $fastq_file
-	cd ..
+	#cd ..
 	done
 
 

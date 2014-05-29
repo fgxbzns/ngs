@@ -10,6 +10,7 @@ alias cd4='cd ../../../..'
 alias cd5='cd ../../../../..'
 
 export CDPATH=.:~:/home/guoxing/disk2/ 
+export PATH=$PATH:/home/guoxing/disk2/bin/
 
 # Alias to multiple ls commands
 alias la='ls -Al'               # show hidden files
@@ -53,8 +54,8 @@ alias bmcc4='ssh guoxing@bmcc4.cs.gsu.edu'
 alias bmcc4sftp='sshfs guoxing@bmcc4.cs.gsu.edu:/u1/guoxing ~/remote'
 alias node1='ssh -Y guoxing@10.20.1.222'
 alias node1sftp='sshfs guoxing@10.20.1.222:/home/guoxing ~/node1'
-alias node2='ssh guoxing@10.20.1.224 -p 25'
-alias node2sftp='sftp guoxing@10.20.1.224 -p 23'
+alias node2='ssh guoxing@192.168.1.105'
+alias node2sftp='sftp guoxing@192.168.1.105'
 alias node3='ssh -l lima -p 26 10.20.1.224'
 alias node3sftp='sftp -l lima -p 26 10.20.1.224'
 alias lima='ssh lima@192.168.1.106'

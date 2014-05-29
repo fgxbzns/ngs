@@ -88,7 +88,6 @@ if __name__ == '__main__':
 
 	start_time = time.time()
 	bwa_run()
-	print "a"
 
 	print "elapse_time is: ", round(time.time() - start_time, 3), "s"
 
