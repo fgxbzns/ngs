@@ -8,20 +8,23 @@ db_path="/home/guoxing/disk2/lima/yang/mimi_yang_snpPick_db/"
 
 declare -a chr_length=('180857866' '154913754' '140273252' '247249719' '134452384' '158821424' '78774742' '114142980' '154913754' '199501827' '134452384');
 
+chr19_length='63811651'
 #cd $sam_path
-#cd $db_path
+cd $db_path
 
 declare -a chr=('5' 'X' '9' '1' '11' '7' '17' '13' 'X' '3' '11');
 
-cd $project_path
+#cd $project_path
+chr_name="chr19"
 
-for((i=$1; i<=$1; i++))
+for((i=$1; i<=$2; i++))
+#for((i=14; i<=16; i++))
 	do
 	fastq_file="tag_"$i".fastq"
 	folder_name="tag_"$i
 	#mkdir $folder_name
 	#mv $fastq_file $folder_name
-	cd $folder_name
+	#cd $folder_name
 	#$ngs_path"primerRemove.py" -i $fastq_file
 
 	seqRem_file_name="tag_"$i"_seqRem.fastq"
@@ -29,15 +32,28 @@ for((i=$1; i<=$1; i++))
 	#$ngs_path"bwaRun.py" -i $seqRem_file_name &
 
 	sam_file_name="tag_"$i"_seqRem_all.sam"
-	cam_chr_file_name="tag_"$i"_seqRem_all_chr.sam"
-	grep "chr" $sam_file_name > $cam_chr_file_name
+	sam_chr_file_name="tag_"$i"_seqRem_all_chr.sam"
+	#grep "chr" $sam_file_name > sam_chr_file_name
 
-	$ngs_path"chrPercentage.py" -i $cam_chr_file_name
-	ls -lh
-	chr_percentage_file="tag_"$i"_seqRem_all_chr.sam_percentage"
-	head $chr_percentage_file
+	#$ngs_path"chrPercentage.py" -i $cam_chr_file_name
+	#ls -lh
+	#chr_percentage_file="tag_"$i"_seqRem_all_chr.sam_percentage"
+	#head $chr_percentage_file
 
-	#wait
+	#sam_process
+	#$ngs_path"sam_process.py" -s $sam_chr_file_name -c $chr_name -m yang_mimi
+
+	# variation call
+	processed_sam_file="tag_"$i"_seqRem_all_"$chr_name"_XA_sorted_rmsk_single_indel.sam"
+	echo $processed_sam_file
+	db_file="tag_"$i"_"$chr_name"_qs13"
+	#$ngs_path"snpPick_fish_sql_lima.py" -s $processed_sam_file -c $chr_name -m update -d $db_file
+
+	# output variation call
+	#snpPick_fish -c chr -m mf -b startLine -e endLine -d db_name
+	$ngs_path"snpPick_fish_sql_lima.py" -c $chr_name -m mf -b 0 -e $chr19_length -d $db_file &
+
+	wait
 	#rm $fastq_file
 	#cd ..
 	done

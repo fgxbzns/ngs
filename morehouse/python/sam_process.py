@@ -183,7 +183,7 @@ def single_end_indel(sam_file, chr_name):
 def filter_by_chr():
 	""" filter the reads by chr name and insert size """
 	print "filter_by_chr: ", parameter.sam_file_name
-	output_file = open(parameter.sam_file_name + "_" + parameter.chr_name + ".sam", "w")
+	output_file = open(parameter.sam_file_name + parameter.chr_name[3:] + ".sam", "w")
 	output_removed_file = open(parameter.sam_file_name + "_" + parameter.chr_name + "_nonchr.sam", "w")
 	inputfile_sam = open(currentPath + parameter.sam_file, "r")
 	sam_line_first = inputfile_sam.readline() # the first read line in a pair
@@ -193,7 +193,7 @@ def filter_by_chr():
 	while sam_line_first != '':
 		if sam_line_first.startswith("@"):
 			print >> output_file, sam_line_first.strip()
-		elif not sam_line_first.startswith("@"):
+		else:
 			total_reads_num += 1
 			elements_first = sam_line_first.strip().split()
 			try:
@@ -225,6 +225,7 @@ def filter_by_chr():
 	print "total_reads_num: ", total_reads_num
 	print "reads_after_process_total_number: ", reads_after_process_total_number
 	print "reads removed : ", total_reads_num - reads_after_process_total_number
+	print "reads kept % : ", round(float(reads_after_process_total_number)*100/total_reads_num, 2)
 
 def match_pairend():
 	""" find the matched read pair in a disordered sam file """
@@ -295,7 +296,7 @@ def filter_match_pairend():
 						
 					# process all chr or one particular chr
 					check_chr_name = chrName_first.startswith("chr") if (parameter.chr_name == "chr") else (parameter.chr_name == chrName_first)
-					if check_chr_name and (insert_size_first > parameter.insert_size_lower_bond) \
+					if check_chr_name and (insert_size_first >= parameter.insert_size_lower_bond) \
 						and (insert_size_first <= parameter.insert_size_upper_bond):					# only keep the reads mapped to chr 
 						if read_ID_first not in reads_dict:
 							reads_dict[read_ID_first] = sam_line_first.strip()
@@ -334,7 +335,10 @@ def single_end_xa():
 		with open(parameter.sam_file_name + "_XA.sam", "w") as output_file:
 			sam_line_first = inputfile_sam.readline() # the first read line in a pair
 			while sam_line_first != '':
-				if not sam_line_first.startswith("@"):
+				if sam_line_first.startswith("@"):
+					# the @header is needed for samtoos sorting
+					print >> output_file, sam_line_first.strip()
+				else:
 					total_reads_num += 1
 					elements_first = sam_line_first.strip().split()
 					try:
@@ -352,6 +356,7 @@ def single_end_xa():
 	print "total_reads_num: ", total_reads_num
 	print "xa_total: ", xa_total
 	print "reads_after_process_total_number: ", reads_after_process_total_number
+	print "kept percentage", round(float(reads_after_process_total_number)*100/total_reads_num, 2)
 	#return total_reads_num
 
 def filter_by_XA():
@@ -438,7 +443,7 @@ def filter_by_XA_mimi():
 	"""
 	The file is already processed by filter_match_pairend, if both the read in a pair have XA
 	ane they belong to the same chr in XA, check if the start position distance are within
-	the insert size range > 0 and <= 1000 at this moment
+	the insert size range >= 0 and <= 1000 at this moment
 	This is for mimi project. the indel is not processed for sorting purpose
 	"""
 	print "filter_match_pairend: ", parameter.sam_file_name
@@ -453,8 +458,8 @@ def filter_by_XA_mimi():
 				if sam_line_first.startswith("@"):
 					# the @header is needed for samtoos sorting
 					print >> output_file, sam_line_first.strip()
-					sam_line_first = inputfile_sam.readline()
-				elif sam_line_first.startswith("@"):
+					#sam_line_first = inputfile_sam.readline()
+				else:
 					total_reads_num += 1
 					elements_first = sam_line_first.strip().split()
 					try:
@@ -1095,6 +1100,59 @@ def sam_process(sam_file, chr_name, mode):
 
 		#snpPick_mimi -s NA12893_S1_ChrXnew_pairend_XA_sorted_rmsk_combined_indel.sam -c chrX -m update -d NA12893_S1_chrX
 		"""
+		print "8. clean up"
+		# keep the pairend_XA_sorted.sam and pairend_XA_sorted_rmsk.sam
+		os.system("rm " + ori_sam_file_name + ".sam")
+		os.system("rm " + ori_sam_file_name + "_pairend.sam")
+		os.system("rm " + ori_sam_file_name + "_pairend_removed.sam")
+		os.system("rm " + ori_sam_file_name + "_pairend_XA.sam")
+		os.system("rm " + ori_sam_file_name + "_pairend_XA_sorted_record.txt")
+		sorted_rmsk_name = ori_sam_file_name + "_pairend_XA_sorted_rmsk"
+		os.system("rm " + sorted_rmsk_name + "_pairend*.sam")
+		os.system("rm " + sorted_rmsk_name + "_recovered*.sam")
+		os.system("rm " + sorted_rmsk_name + "_removed.sam")
+		os.system("rm " + sorted_rmsk_name + "_combined.sam")
+		"""
+	elif mode == "yang_mimi":
+
+		ori_sam_file_name = parameter.sam_file_name
+		print "1. filter by chr",  parameter.sam_file
+		filter_by_chr()
+
+		parameter.sam_file_name = parameter.sam_file_name + parameter.chr_name[3:]
+		parameter.sam_file = parameter.sam_file_name + ".sam"
+		print "2. filter by XA",  parameter.sam_file
+		# singend data
+		single_end_xa()
+
+		parameter.sam_file_name = parameter.sam_file_name + "_XA"
+		parameter.sam_file = parameter.sam_file_name + ".sam"
+		print "3. sorting",  parameter.sam_file
+		#add_header(parameter.sam_file)
+		samtools_sort(parameter.sam_file)
+
+		parameter.sam_file_name = parameter.sam_file_name + "_sorted"
+		parameter.sam_file = parameter.sam_file_name + ".sam"
+		print "4. repeat remove",  parameter.sam_file
+		rmsk_file = "hg18_rmsk.txt_original"
+		repeat_remove(rmsk_file, parameter.sam_file)
+
+		parameter.sam_file_name = parameter.sam_file_name + "_rmsk"
+		parameter.sam_file = parameter.sam_file_name + ".sam"
+		print "5. process indel",  parameter.sam_file
+		single_end_indel(parameter.sam_file, parameter.chr_name)
+
+		parameter.sam_file_name = parameter.sam_file_name + "_single_indel"
+		parameter.sam_file = parameter.sam_file_name + ".sam"
+		print "6. mv sam file",  parameter.sam_file
+		os.system("cp " + parameter.sam_file + " ../mimi_yang_sam/ &")
+
+		"""
+
+		print "7. find matched pairend from combined file and process indel",  parameter.sam_file
+
+		#snpPick_mimi -s NA12893_S1_ChrXnew_pairend_XA_sorted_rmsk_combined_indel.sam -c chrX -m update -d NA12893_S1_chrX
+
 		print "8. clean up"
 		# keep the pairend_XA_sorted.sam and pairend_XA_sorted_rmsk.sam
 		os.system("rm " + ori_sam_file_name + ".sam")

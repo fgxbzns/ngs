@@ -302,12 +302,18 @@ def data_filter(start_line, end_line):
 					print "current progress: ", percentage_of_total, "current row:", current_row + int(start_line)
 					percentage_of_total += 10
 				current_row += 1
+				"""
+				# This part is for solid data, to compare mimi with snp
 				#snp_info = get_snp_info(pos, first_allele, second_allele, hap_std_dict)
 				snp_info = get_snp_info(item[0], temp_list[3], temp_list[2], allele_list)
 				# pos, chr, ref_base, A, T, C, G, Allele#, 1st, 2nd, 3rd, 4th, rs#, SNP_allele_1, SNP_allele_2, mm_snp_overlapping
 				data_list.append(list((
 					item[0], item[1], item[2], item[3], item[4], item[5], item[6], (4-number_of_zero), temp_list[3], temp_list[2], temp_list[1],
 					temp_list[0], snp_info[0], snp_info[1], snp_info[2], snp_info[3])))
+				"""
+				data_list.append(list((
+					item[0], item[1], item[2], item[3], item[4], item[5], item[6], (4-number_of_zero), temp_list[3], temp_list[2], temp_list[1],
+					temp_list[0])))
 	elapse_time = time.time() - start_time
 	print "running time: ", round(elapse_time, 3), "s"
 	return data_list
@@ -399,11 +405,12 @@ if __name__ == '__main__':
 	db_name = options.dbname
 	db_base_name = db_name
 	mode = options.mode
-	second_largest_allele_depth_cutoff = 1
+	second_largest_allele_depth_cutoff = 3
 
 	# gx
 	#db_name = "/home/guoxing/disk2/lima/mimi_snpPick_db/" + db_name + ".db"    # for hg19 chrX mimi data
-	db_name = "/home/guoxing/disk2/lima/mimi_solid/mimi_solid_snpPick_db/" + db_name + ".db"    # for solid mimi
+	#db_name = "/home/guoxing/disk2/lima/mimi_solid/mimi_solid_snpPick_db/" + db_name + ".db"    # for solid mimi
+	db_name = "/home/guoxing/disk2/lima/yang/mimi_yang_snpPick_db/" + db_name + ".db"    # for yang mimi
 
 	# for hg19 chrX mimi data
 	#ref_path = "/home/guoxing/disk2/lima/mimi_snpPick_db/"
@@ -418,8 +425,8 @@ if __name__ == '__main__':
 	global hap_std_dict
 	file_path = "/home/guoxing/disk2/solid/common_files/"
 	hap_std_file = file_path + "ASW_"+chr_name+"_child_hap.txt"
-	hap_std_dict = load_raw_data(hap_std_file)[1]
-	print "hap_std_dict", len(hap_std_dict)
+	#hap_std_dict = load_raw_data(hap_std_file)[1]
+	#print "hap_std_dict", len(hap_std_dict)
 
 	parameters = parameter()
 
@@ -439,7 +446,7 @@ if __name__ == '__main__':
 	"""
 	global quality_score_threshold
 	quality_score_threshold = options.qscore
-	quality_score_threshold = 30
+	quality_score_threshold = 13
 	print "quality_score_threshold: ", quality_score_threshold
 	print "db_base_name: ", db_base_name
 
