@@ -20,7 +20,7 @@ primer_length = int(options.primerLength)
 currentPath = os.getcwd() + '/'
 
 primer_dict = {}
-primer_length = 6
+primer_length = 16
 
 b_file = open(currentPath + a_file_name + "_" + str(primer_length),'w')
 
@@ -58,7 +58,7 @@ def generate_permutations(chars = 6) :
 #print primer_dict
 
 
-while primer_length <= 12:
+while primer_length <= 22:
 	a_file = open(currentPath + a_file_name,'r')
 	total_reads_number = 0
 
@@ -66,7 +66,8 @@ while primer_length <= 12:
 
 	while line != "":
 		#if line.startswith("@ILLUMINA"):	# for quake data
-		if line.startswith("@SRR"):	# for yang data
+		#if line.startswith("@SRR"):	# for yang data
+		if line.startswith("@HWI"):	# for rna_seq data
 			total_reads_number += 1
 			read_seq = a_file.readline().strip()
 			primer_seq_begining = read_seq[:primer_length]		

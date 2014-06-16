@@ -242,3 +242,7 @@ export hifiPath=/home/guoxing/disk2/ngs/morehouse/other
 #alias bwa='/home/guoxing/disk2/bwa-0.6.2/bwa'
 #alias bwa='$morehousePath/other/bwa-0.6.2/bwa'
 #alias bwa_run='$morehousePath/bwa_run.py'
+
+PERL_MB_OPT="--install_base \"/home/guoxing/perl5\""; export PERL_MB_OPT;
+PERL_MM_OPT="INSTALL_BASE=/home/guoxing/perl5"; export PERL_MM_OPT;
+
