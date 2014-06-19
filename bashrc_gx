@@ -1,4 +1,4 @@
-#check size
+check size
 alias du='du -h'	#folder
 alias df='df -h'	#disk
 
@@ -203,6 +203,7 @@ alias sam_position='$morehousePath/sam_position.py'
 alias 18to19='$morehousePath/18to19.py'
 alias journal_selector='$morehousePath/journal_selector.py'
 alias tameka='$morehousePath/tameka.py'
+alias rna_seq='$morehousePath/rna_seq.py'
 
 
 # other programs
@@ -225,6 +226,7 @@ alias mimi='$bash_path/mimi.sh'
 alias solid_mimi='$bash_path/solid_mimi.sh'
 alias fish_mimi='$bash_path/fish_mimi.sh'
 alias yang_mimi='$bash_path/yang_mimi.sh'
+alias rna_cuff='$bash_path/rna_cuff.sh'
 
  #NGS programs
 #export disk2ToolPath=/home/guoxing/disk2/tool
