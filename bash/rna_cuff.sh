@@ -2,9 +2,10 @@
 
 project_path="/home/guoxing/disk3/rna_seq"
 cd $project_path
-echo combine bam
+echo running cufflinks
 tophat_output=$project_path"/tophat_output"
-for ((i=1; i<=9; i++))
+: '
+for ((i=1; i<=1; i++))
 
 	do
 	echo "processing sample "$i
@@ -26,6 +27,22 @@ for ((i=1; i<=9; i++))
 	echo "sorting finished"
 	rm $combined_sam
 	wait
+	done
+echo "All done"
+'
+
+for ((i=16; i<=26; i++))
+
+	do
+	echo "processing sample "$i
+	output_folder=$project_path"/cufflinks/"$i
+	cd $output_folder
+	sorted_sam=$output_folder"/"$i"_tophat_accepted_sorted.sam"
+	echo processing $sorted_sam
+	cufflinks $sorted_sam &
+
+	wait
+	echo finished processing $sorted_sam
 
 	done
 echo "All done"

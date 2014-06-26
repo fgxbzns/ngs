@@ -10,7 +10,7 @@ alias cd4='cd ../../../..'
 alias cd5='cd ../../../../..'
 
 export CDPATH=.:~:/home/guoxing/disk2/ 
-export PATH=$PATH:/home/guoxing/disk2/bin/
+export PATH=/home/guoxing/disk2/tool/fastx_toolkit:/home/guoxing/disk2/bin/:$PATH
 
 # Alias to multiple ls commands
 alias la='ls -Al'               # show hidden files
@@ -204,6 +204,7 @@ alias 18to19='$morehousePath/18to19.py'
 alias journal_selector='$morehousePath/journal_selector.py'
 alias tameka='$morehousePath/tameka.py'
 alias rna_seq='$morehousePath/rna_seq.py'
+alias gtf_convert='$morehousePath/gtf_convert.py'
 
 
 # other programs
