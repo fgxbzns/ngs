@@ -8,6 +8,71 @@ import os, glob, subprocess, random, operator, time, sys, copy
 from optparse import OptionParser
 from tools import *
 
+chr_dict = {}
+
+class Chr:
+	def __init__(self):
+		self.chr_name = ""
+		self.length = 0
+		self.gene_dict = {}
+		self.gene_number = 0
+		self.transcript_dict = {}
+		self.transcript_number = 0
+
+class Transcript:
+	def __init__(self):
+		self.transcript_id = ""
+		self.transcript_start = 0
+		self.transcript_end = 0
+		self.transcript_length = 0
+		self.exon_dict = {}
+		self.exon_number = 0
+		self.FPKM = 0
+
+class Exon:
+	def __init__(self):
+		self.exon_id = ""
+		self.exon_start = 0
+		self.exon_end = 0
+		self.exon_length = 0
+
+def convert_file(file):
+	#with open(file + "_output.txt", "w") as output_file:
+	with open(file, "r") as input_file:
+		line = input_file.readline()
+		while line != "":
+			elements = line.strip().split()
+			chr_name = elements[0]
+			if chr_name not in chr_dict:
+				chr_dict[chr_name] = Chr()
+			element_type = elements[2]
+			start = elements[3]
+			end = elements[4]
+			length = int(end) - int(start)
+			gene_id = elements[9][1:-2]
+			if gene_id not in chr_dict[chr_name].gene_dict:
+				chr_dict[chr_name].gene_dict[gene_id] = ""
+			transcript_id = elements[11][1:-2]
+			FPKM = elements[11][1:-2]
+
+			if element_type == "transcript":
+				temp_trans = Transcript()
+				temp_trans.transcript_id = transcript_id
+				temp_trans.transcript_start = start
+				temp_trans.transcript_end = end
+				temp_trans.transcript_length = length
+				temp_trans.FPKM = FPKM
+
+				line = input_file.readline()
+
+
+
+def process_line(line):
+
+	elements = line.strip().split()
+	chr_name = elements[0]
+
+
 def covert_line(line):
 	#position_key = 0
 	gtf_line = ""

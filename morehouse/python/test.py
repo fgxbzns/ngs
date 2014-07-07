@@ -174,3 +174,28 @@ with open(os.path.join(outpath,'count.txt'),'w') as fo:
     song_5
     /home/guoxing/disk2/solid/song_5/prem_rmsk_indel/hifi_1/7766_45/7819_48
 """
+
+
+sudo apt-get install r-cran-rcpp -y
+sudo apt-get install r-cran-dbi -y
+
+
+
+
+
+"""
+ERROR: dependency ‘Rcpp’ is not available for package ‘plyr’
+* removing ‘/home/guoxing/R/x86_64-pc-linux-gnu-library/2.14/plyr’
+ERROR: dependency ‘DBI’ is not available for package ‘RSQLite’
+* removing ‘/home/guoxing/R/x86_64-pc-linux-gnu-library/2.14/RSQLite’
+ERROR: dependencies ‘plyr’, ‘Rcpp’ are not available for package ‘reshape2’
+* removing ‘/home/guoxing/R/x86_64-pc-linux-gnu-library/2.14/reshape2’
+ERROR: dependency ‘plyr’ is not available for package ‘scales’
+* removing ‘/home/guoxing/R/x86_64-pc-linux-gnu-library/2.14/scales’
+ERROR: dependency ‘plyr’ is not available for package ‘reshape’
+* removing ‘/home/guoxing/R/x86_64-pc-linux-gnu-library/2.14/reshape’
+ERROR: dependencies ‘plyr’, ‘reshape2’, ‘scales’ are not available for package ‘ggplot2’
+* removing ‘/home/guoxing/R/x86_64-pc-linux-gnu-library/2.14/ggplot2’
+ERROR: dependencies ‘RSQLite’, ‘reshape’, ‘ggplot2’ are not available for package ‘cummeRbund’
+* removing ‘/home/guoxing/R/x86_64-pc-linux-gnu-library/2.14/cummeRbund’
+"""
