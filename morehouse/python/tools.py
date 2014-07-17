@@ -139,6 +139,20 @@ def sort_dict_by_key(input_dict):
 	#sorted_list.sort(key=lambda x: x[1]) # sort by value
 	return sorted_list
 
+def get_average(list):
+	average = sum(list) * 1.0 / len(list)
+	return round(average, 2)
+
+def get_stdev(list):
+	"""
+	using numpy, but numpy may not be always installed
+	import numpy
+	numpy.std(s)
+	"""
+	average = get_average(list)
+	variance = map(lambda x: (x - average) ** 2, list)
+	stdev = math.sqrt(get_average(variance))
+	return round(stdev, 2)
 
 def sort_dict_by_value(input_dict):
 	sorted_list = []

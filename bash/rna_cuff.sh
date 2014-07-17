@@ -1,9 +1,10 @@
 #!/bin/bash
+ngs_path="/home/guoxing/disk2/ngs/morehouse/python"
 
 project_path="/home/guoxing/disk3/rna_seq"
 cd $project_path
 echo running cufflinks
-tophat_output=$project_path"/tophat_output"
+tophat_output=$project_path"/tophat"
 : '
 for ((i=1; i<=1; i++))
 
@@ -31,18 +32,26 @@ for ((i=1; i<=1; i++))
 echo "All done"
 '
 
-for ((i=16; i<=26; i++))
+for ((i=1; i<=24; i++))
 
 	do
 	echo "processing sample "$i
 	output_folder=$project_path"/cufflinks/"$i
-	cd $output_folder
-	sorted_sam=$output_folder"/"$i"_tophat_accepted_sorted.sam"
-	echo processing $sorted_sam
-	cufflinks $sorted_sam &
-
+	#cd $output_folder
+	#sorted_sam=$output_folder"/"$i"_tophat_accepted_sorted.sam"
+	#echo processing $sorted_sam
+	#cufflinks $sorted_sam &
+	#$ngs_path/rnaseq_analyze.py -f transcripts.gtf
 	wait
-	echo finished processing $sorted_sam
+	#mv transcripts_statistics.txt $project_path/statistics/"transcripts_statistics_"$i".txt"
+
+	folder=$tophat_output"/"$i
+	cd $folder
+	rm -r $folder/logs
+
+
+	echo finished processing $i
+	#cp align_summary.txt $tophat_output/summary/"align_summary_"$i".txt"
 
 	done
 echo "All done"

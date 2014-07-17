@@ -205,6 +205,7 @@ alias journal_selector='$morehousePath/journal_selector.py'
 alias tameka='$morehousePath/tameka.py'
 alias rna_seq='$morehousePath/rna_seq.py'
 alias gtf_convert='$morehousePath/gtf_convert.py'
+alias rnaseq_analyze='$morehousePath/rnaseq_analyze.py'
 
 
 # other programs
