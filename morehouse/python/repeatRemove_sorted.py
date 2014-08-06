@@ -861,7 +861,7 @@ if __name__ == '__main__':
 		repeat_remove(rmsk_file, sam_file)
 	elif mode == "fish_wli":
 		# chrM is removed from the rmsk file.
-		rmsk_file = "/home/guoxing/disk2/wli/zebrafish_rmsk_sorted.txt"
+		#rmsk_file = "/home/guoxing/disk2/wli/zebrafish_rmsk_sorted.txt"
 		repeat_remove_fish_wli(rmsk_file, sam_file)
 
 	elapse_time = time.time() - start_time

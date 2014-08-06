@@ -1033,12 +1033,15 @@ def sam_process(sam_file, chr_name, mode):
 		parameter.sam_file = parameter.sam_file_name + ".sam"
 		print "2. filter by XA",  parameter.sam_file
 		filter_by_XA_mimi()
-		"""
+
 		#parameter.sam_file_name = parameter.sam_file_name + "_XA"
 		parameter.sam_file = parameter.sam_file_name + ".sam"
 		print "3. sorting",  parameter.sam_file
 		samtools_sort(parameter.sam_file)
-		"""
+
+		cmd = "sort -k 3,3 -k 4,4n $combined_sam > $sorted_sam"
+
+
 		#parameter.sam_file_name = parameter.sam_file_name + "_pairend"
 		#parameter.sam_file_name = parameter.sam_file_name + "_XA"
 
@@ -1053,15 +1056,16 @@ def sam_process(sam_file, chr_name, mode):
 		print "5. find matched pairend after repeat remove",  parameter.sam_file
 		filter_match_pairend()
 
-		#parameter.sam_file_name = parameter.sam_file_name[:len(parameter.sam_file_name)-5]
-		#parameter.sam_file = parameter.sam_file_name + ".sam"
 		print "6. extract_single_overlapped_read",  parameter.sam_file
 		extract_single_overlapped_read(parameter.sam_file)
+		"""
+
 
 		parameter.sam_file_name = parameter.sam_file_name + "_combined"
 		parameter.sam_file = parameter.sam_file_name + ".sam"
 		print "7. find matched pairend from combined file and process indel",  parameter.sam_file
 		pair_end_indel(parameter.sam_file, parameter.chr_name)
+		"""
 
 		#snpPick_mimi -s NA12893_S1_ChrXnew_pairend_XA_sorted_rmsk_combined_indel.sam -c chrX -m update -d NA12893_S1_chrX
 

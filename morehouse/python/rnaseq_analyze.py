@@ -66,7 +66,7 @@ def convert_file(file):
 				element_type = elements[2]
 				start = elements[3]
 				end = elements[4]
-				length = int(end) - int(start)
+				length = int(end) - int(start) + 1
 				gene_id = elements[9][1:-2]
 				if gene_id not in chr_dict[chr_name].gene_dict:
 					chr_dict[chr_name].gene_dict[gene_id] = ""
@@ -92,7 +92,7 @@ def convert_file(file):
 						temp_exon = Exon()
 						temp_exon.exon_start = elements[3]
 						temp_exon.exon_end = elements[4]
-						temp_exon.exon_length = int(end) - int(start)
+						temp_exon.exon_length = int(temp_exon.exon_end) - int(temp_exon.exon_start) + 1
 						temp_exon.exon_id = elements[13][1:-2]
 						temp_exon.FPKM = elements[15][1:-2]
 						chr_dict[chr_name].transcript_dict[temp_transcript.transcript_id].exon_list.append(temp_exon)

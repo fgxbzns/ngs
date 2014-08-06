@@ -37,17 +37,17 @@ for ((i=1; i<=24; i++))
 	do
 	echo "processing sample "$i
 	output_folder=$project_path"/cufflinks/"$i
-	#cd $output_folder
+	cd $output_folder
 	#sorted_sam=$output_folder"/"$i"_tophat_accepted_sorted.sam"
 	#echo processing $sorted_sam
 	#cufflinks $sorted_sam &
-	#$ngs_path/rnaseq_analyze.py -f transcripts.gtf
+	$ngs_path/rnaseq_analyze.py -f transcripts.gtf
 	wait
-	#mv transcripts_statistics.txt $project_path/statistics/"transcripts_statistics_"$i".txt"
+	mv transcripts_statistics.txt $project_path/cufflinks/statistics/"transcripts_statistics_"$i".txt"
 
-	folder=$tophat_output"/"$i
-	cd $folder
-	rm -r $folder/logs
+	#folder=$tophat_output"/"$i
+	#cd $folder
+	#rm -r $folder/logs
 
 
 	echo finished processing $i
