@@ -2,15 +2,52 @@
 ngs_path="/home/guoxing/disk2/ngs/morehouse/python/"
 
 # for hg18 solid mimi data
-project_path='/home/guoxing/disk2/wli/'
+project_path='/home/guoxing/storage1/zebrafish/'
+sample_name="C0"
+sample_path=$project_path'C0'
 rmsk_path=$project_path'rmsk'
 
+#sam_path="/home/guoxing/disk2/lima/mimi_solid/mimi_solid_sam/"
+#db_path="/home/guoxing/disk2/lima/mimi_solid/mimi_solid_snpPick_db/"
 
-sam_path="/home/guoxing/disk2/lima/mimi_solid/mimi_solid_sam/"
-db_path="/home/guoxing/disk2/lima/mimi_solid/mimi_solid_snpPick_db/"
-chr_9_length=140273252
+chr_3_length=63268876
 
-#cd $sam_path
+declare -a chr_length=('xxx' '60300536' '63268876' 'xxx' 'xxx' 'xxx' 'xxx' 'xxx' 'xxx' 'xxx' 'xxx');
+
+for((i=1; i<=25; i++))
+
+	do
+	cd $sample_path
+	chr_name="chr"$i
+	sam_file=$chr_name".sam"
+	folder_name="chr"$i
+
+	mkdir -p $folder_name
+	mv $sam_file $folder_name
+	cd $folder_name
+	echo "processing " $chr_name
+
+	# repeat remove
+	$ngs_path"sam_process.py" -s $sam_file -c $chr_name -m fish_wli > sam_process_record.txt
+
+	# variation call
+	processed_sam_file=$chr_name"_pairend_XA_sorted_rmsk_combined_indel.sam"
+	echo $processed_sam_file
+	db_file=$sample_name"_"$chr_name"_qs30"
+	#$ngs_path"snpPick_fish_sql_mimi_wli.py" -s $processed_sam_file -c $chr_name -m update -d $db_file > variation_call_record.txt &
+
+	# output variation call
+	#snpPick_fish -c chr -m mf -b startLine -e endLine -d db_name
+	#$ngs_path"snpPick_fish_sql_mimi_wli.py" -c $chr_name -m mf -b 0 -e $chr_3_length -d $db_file > mimi_output_record.txt
+
+
+	#wait
+	#echo "processing finished " $chr_name
+	cd ..
+	done
+
+
+
 : '
 # to sort chr in rmsk file by starting position
 cd $rmsk_path
@@ -48,32 +85,3 @@ for((i=1; i<=25; i++))
 	mv rmsk_sorted_tmp.txt rmsk_sorted.txt
 	done
 '
-
-for((i=3; i<=3; i++))
-
-	do
-	chr_name="chr${chr[$i-1]}"
-	sam_file="song_"$i"_prem_"$chr_name"_sorted.sam"
-	folder_name="song_"$i
-
-	#mkdir $folder_name
-	#mv $sam_file $folder_name
-	#cd $folder_name
-
-	# repeat remove
-	#$ngs_path"sam_process.py" -s $sam_file -c $chr_name -m solid_lima &
-
-	# variation call
-	processed_sam_file="song_"$i"_prem_"$chr_name"_sorted_rmsk_single_indel_base_cleaned.sam"
-	echo $processed_sam_file
-	db_file="song_"$i"_"$chr_name"_qs30"
-	#$ngs_path"snpPick_fish_sql_lima.py" -s $processed_sam_file -c $chr_name -m update -d $db_file &
-
-	# output variation call
-	#snpPick_fish -c chr -m mf -b startLine -e endLine -d db_name
-	$ngs_path"snpPick_fish_sql_lima.py" -c $chr_name -m mf -b 0 -e $chr_9_length -d $db_file &
-
-
-	#wait
-	cd ..
-	done

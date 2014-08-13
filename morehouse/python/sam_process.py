@@ -183,7 +183,7 @@ def single_end_indel(sam_file, chr_name):
 def filter_by_chr():
 	""" filter the reads by chr name and insert size """
 	print "filter_by_chr: ", parameter.sam_file_name
-	output_file = open(parameter.sam_file_name + parameter.chr_name[3:] + ".sam", "w")
+	output_file = open(parameter.sam_file_name + parameter.chr_name[3:] + "_chr.sam", "w")
 	output_removed_file = open(parameter.sam_file_name + "_" + parameter.chr_name + "_nonchr.sam", "w")
 	inputfile_sam = open(currentPath + parameter.sam_file, "r")
 	sam_line_first = inputfile_sam.readline() # the first read line in a pair
@@ -1025,31 +1025,28 @@ def sam_process(sam_file, chr_name, mode):
 
 	elif mode == "fish_wli":
 		ori_sam_file_name = parameter.sam_file_name
-		"""
+
 		print "1. filter chr and find pairend",  parameter.sam_file
 		filter_match_pairend()
 
-		#parameter.sam_file_name = parameter.sam_file_name + "_pairend"
+		parameter.sam_file_name = parameter.sam_file_name + "_pairend"
 		parameter.sam_file = parameter.sam_file_name + ".sam"
 		print "2. filter by XA",  parameter.sam_file
 		filter_by_XA_mimi()
 
-		#parameter.sam_file_name = parameter.sam_file_name + "_XA"
+		parameter.sam_file_name = parameter.sam_file_name + "_XA"
 		parameter.sam_file = parameter.sam_file_name + ".sam"
 		print "3. sorting",  parameter.sam_file
-		samtools_sort(parameter.sam_file)
 
-		cmd = "sort -k 3,3 -k 4,4n $combined_sam > $sorted_sam"
-
-
-		#parameter.sam_file_name = parameter.sam_file_name + "_pairend"
-		#parameter.sam_file_name = parameter.sam_file_name + "_XA"
+		cmd = "sort -k 3,3 -k 4,4n " + parameter.sam_file + " > " + parameter.sam_file_name + "_sorted.sam"
+		os.system(cmd)
 
 		parameter.sam_file_name = parameter.sam_file_name + "_sorted"
 		parameter.sam_file = parameter.sam_file_name + ".sam"
 		print "4. repeat remove",  parameter.sam_file
-		rmsk_file = "/home/guoxing/disk2/lima/rmsk_chrX_hg19_MultSNPs_chrX_SegDups_chrX.txt"
-		repeat_remove_mimi(rmsk_file, parameter.sam_file)
+		rmsk_file = "/home/guoxing/disk2/wli/rmsk/rmsk_" + parameter.chr_name + "_sorted.txt"
+		print rmsk_file
+		repeat_remove_fish_wli(rmsk_file, parameter.sam_file)
 
 		parameter.sam_file_name = parameter.sam_file_name + "_rmsk"
 		parameter.sam_file = parameter.sam_file_name + ".sam"
@@ -1058,20 +1055,18 @@ def sam_process(sam_file, chr_name, mode):
 
 		print "6. extract_single_overlapped_read",  parameter.sam_file
 		extract_single_overlapped_read(parameter.sam_file)
-		"""
-
 
 		parameter.sam_file_name = parameter.sam_file_name + "_combined"
 		parameter.sam_file = parameter.sam_file_name + ".sam"
 		print "7. find matched pairend from combined file and process indel",  parameter.sam_file
 		pair_end_indel(parameter.sam_file, parameter.chr_name)
-		"""
+
 
 		#snpPick_mimi -s NA12893_S1_ChrXnew_pairend_XA_sorted_rmsk_combined_indel.sam -c chrX -m update -d NA12893_S1_chrX
 
 		print "8. clean up"
 		# keep the pairend_XA_sorted.sam and pairend_XA_sorted_rmsk.sam
-		os.system("rm " + ori_sam_file_name + ".sam")
+		#os.system("rm " + ori_sam_file_name + ".sam")
 		os.system("rm " + ori_sam_file_name + "_pairend.sam")
 		os.system("rm " + ori_sam_file_name + "_pairend_removed.sam")
 		os.system("rm " + ori_sam_file_name + "_pairend_XA.sam")
@@ -1081,7 +1076,7 @@ def sam_process(sam_file, chr_name, mode):
 		os.system("rm " + sorted_rmsk_name + "_recovered*.sam")
 		os.system("rm " + sorted_rmsk_name + "_removed.sam")
 		os.system("rm " + sorted_rmsk_name + "_combined.sam")
-		"""
+
 	elif mode == "solid_lima":
 		# solid mimi process, single end, no XA_filter needed, hg18, already sorted.
 		ori_sam_file_name = parameter.sam_file_name

@@ -421,10 +421,11 @@ if __name__ == '__main__':
 	#db_name = "/home/guoxing/disk2/lima/mimi_solid/mimi_solid_snpPick_db/" + db_name + ".db"    # for solid mimi
 	#db_name = "/home/guoxing/disk2/lima/yang/mimi_yang_snpPick_db/" + db_name + ".db"    # for yang mimi
 
-	# for zebra fish mimi data
-	ref_path = "/home/guoxing/disk2/wli/ref_genome/"
-	ref_file = ref_path + "danRer7_" + chr_name + ".fa"
+	# for jendai mouse data
+	ref_path = "/home/guoxing/storage1/Reference_from_wenzhi/Rat/chr/"
+	ref_file = ref_path + "rn5_chr1.fa"
 	print ref_file
+
 
 	"""
 	# load hap_std_dict
@@ -443,7 +444,7 @@ if __name__ == '__main__':
 	global quality_score_threshold
 	quality_score_threshold = options.qscore
 	#quality_score_threshold = 13
-	quality_score_threshold = 30
+	quality_score_threshold = 20
 	print "quality_score_threshold: ", quality_score_threshold
 	print "db_base_name: ", db_base_name
 
