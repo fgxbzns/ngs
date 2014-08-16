@@ -3,8 +3,8 @@ ngs_path="/home/guoxing/disk2/ngs/morehouse/python/"
 
 # for hg18 solid mimi data
 project_path='/home/guoxing/storage1/zebrafish/'
-sample_name="C0"
-sample_path=$project_path'C0'
+sample_name="A2"
+sample_path=$project_path'A2'
 rmsk_path=$project_path'rmsk'
 
 #sam_path="/home/guoxing/disk2/lima/mimi_solid/mimi_solid_sam/"
@@ -14,7 +14,7 @@ chr_3_length=63268876
 
 declare -a chr_length=('xxx' '60300536' '63268876' 'xxx' 'xxx' 'xxx' 'xxx' 'xxx' 'xxx' 'xxx' 'xxx');
 
-for((i=1; i<=25; i++))
+for((i=17; i<=20; i++))
 
 	do
 	cd $sample_path
@@ -23,18 +23,18 @@ for((i=1; i<=25; i++))
 	folder_name="chr"$i
 
 	mkdir -p $folder_name
-	mv $sam_file $folder_name
+	#mv $sam_file $folder_name
 	cd $folder_name
 	echo "processing " $chr_name
 
 	# repeat remove
-	$ngs_path"sam_process.py" -s $sam_file -c $chr_name -m fish_wli > sam_process_record.txt
+	#$ngs_path"sam_process.py" -s $sam_file -c $chr_name -m fish_wli > sam_process_record.txt
 
 	# variation call
 	processed_sam_file=$chr_name"_pairend_XA_sorted_rmsk_combined_indel.sam"
 	echo $processed_sam_file
 	db_file=$sample_name"_"$chr_name"_qs30"
-	#$ngs_path"snpPick_fish_sql_mimi_wli.py" -s $processed_sam_file -c $chr_name -m update -d $db_file > variation_call_record.txt &
+	$ngs_path"snpPick_fish_sql_mimi_wli.py" -s $processed_sam_file -c $chr_name -m update -d $db_file > variation_call_record.txt &
 
 	# output variation call
 	#snpPick_fish -c chr -m mf -b startLine -e endLine -d db_name

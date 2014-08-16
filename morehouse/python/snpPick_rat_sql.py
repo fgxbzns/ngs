@@ -414,7 +414,7 @@ if __name__ == '__main__':
 	db_name = options.dbname
 	db_base_name = db_name
 	mode = options.mode
-	second_largest_allele_depth_cutoff = 5
+	second_largest_allele_depth_cutoff = 1
 
 	# gx
 	#db_name = "/home/guoxing/disk2/lima/mimi_snpPick_db/" + db_name + ".db"    # for hg19 chrX mimi data

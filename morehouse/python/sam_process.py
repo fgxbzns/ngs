@@ -17,7 +17,6 @@ class parameters:
 
 def is_multiple_maping(elements):
 	multiple_maping = False
-	#XA = ""
 	XA = elements[-1].strip()
 	if XA.startswith('XA'):
 		multiple_maping = True
@@ -259,7 +258,7 @@ def match_pairend():
 						if len(reads_dict) != previous_size:
 							print "current reads_dict size: ", len(reads_dict)
 						previous_size = len(reads_dict)
-					if 	total_reads_num%1000000 == 0:
+					if total_reads_num%1000000 == 0:
 						print "current line number : ", total_reads_num				
 				sam_line_first = inputfile_sam.readline()
 	
