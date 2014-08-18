@@ -36,17 +36,18 @@ class reads:
 		self.read_length = 0
 		self.covered_snp = ""
 
+
 class parameter:
 	def __init__(self):
 		self.sam_file = ""
 		self.snp_in_mimi = 0
 		self.total_mimi = 0
 		self.ref_file = ""
+		self.current_max_pos = 0
+
 
 def get_ref_geno(chr_name):
 	chr_seq = ""
-
-	#print ref_file
 	input_file = open(ref_file, "r")
 	for lines in input_file:
 		if not lines.startswith(">"):
@@ -54,9 +55,19 @@ def get_ref_geno(chr_name):
 	print "total base number: ", len(chr_seq)
 	return chr_seq
 
+
+def wccount(file_name):
+	out = subprocess.Popen(['wc', '-l', file_name],
+	                       stdout=subprocess.PIPE,
+	                       stderr=subprocess.STDOUT
+	).communicate()[0]
+	return int(out.partition(b' ')[0])
+
 def variant_call_pair_end(sam_file):
-	"""the sequence pair has already been processed
-	now treat the read as single end """
+	"""
+	the sequence pair has already been processed
+	now treat the read as single end
+	"""
 
 	total_reads_number = wccount(sam_file)
 	percentage_of_total_file = 0
@@ -88,15 +99,13 @@ def variant_call_pair_end(sam_file):
 				try:
 					read_ID_first = elements_first[0].strip()
 					chrName_first = elements_first[2].strip()
-					insert_size_first = abs(int(elements_first[8].strip()))  #  insert_size for second read is negative
+					insert_size_first = abs(int(elements_first[8].strip()))  # insert_size for second read is negative
 				except:
 					print "error in first read:", sam_line_first
-				#print "this is a new read"	
 				if (insert_size_first >= insert_size_lower_bond) and (insert_size_first <= insert_size_upper_bond):
-					#if True:
-					if True:
+					if True:  # this is for pair-end verification. Not needed at this moment.
 						if chrName_first.startswith(chr_name):
-							#if chrName_first == chr_name:
+							# if chrName_first == chr_name:
 							# first read
 							qName_first = elements_first[0].strip()
 							flag_first = elements_first[1].strip()
@@ -114,6 +123,8 @@ def variant_call_pair_end(sam_file):
 
 								covered_snp = read_sequence_first[i]  # ith position is the covered snp
 								quality_score_symbol = quality_score_sequence_first[i]
+								# update each read, or save certain amount of reads in a array and update together.
+								# can be improved if needed.
 								if (not covered_snp == 'N') and (
 											(ord(quality_score_symbol) - 33) > quality_score_threshold):  # check quality_score
 									#print ord(quality_score_symbol) - 33
@@ -136,7 +147,8 @@ def variant_call_pair_end(sam_file):
 											               " (position, chr, ref_allele, A_depth, T_depth, C_depth, G_depth ) VALUES (" + \
 											               str(current_base_position) + \
 											               ",'" + chrName_first + "','" + chr_seq[
-												               current_base_position - 1] + "'," + str(A_depth) + "," + str(
+												               current_base_position - 1] + "'," + str(
+												A_depth) + "," + str(
 												T_depth) \
 											               + "," + str(C_depth) + "," + str(G_depth) + ")"
 
@@ -171,21 +183,21 @@ def snpPick(sam_file):
 	total_reads_num = variant_call_pair_end(sam_file)
 	print "total_reads_num", total_reads_num
 
+
 def get_data(db_name, table_name, start_line, end_line):
 	con = lite.connect(db_name)
 	with con:
 		cur = con.cursor()
 		querry = "SELECT * FROM " + table_name + " where position>" + start_line + " and position<" + end_line
-		#print querry
+		# print querry
 		cur.execute(querry)
 		rows = [[str(item) for item in results] for results in cur.fetchall()]
 		#print len(rows)
 		return rows
 
-
 def output_data(file_name, start_line, end_line):
 	total_row_number = int(end_line) - int(start_line)
-	#print total_row_number
+	# print total_row_number
 	if total_row_number <= 0:
 		print "error in start point and end point"
 		sys.exit(0)
@@ -218,6 +230,7 @@ def get_single_pos_data(db_name, table_name, pos):
 		rows = [[str(item) for item in results] for results in cur.fetchall()]
 		return rows
 
+
 def output_single_pos_data(pos_file_name):
 	percentage_of_total = 0
 	current_row = 0
@@ -239,6 +252,7 @@ def output_single_pos_data(pos_file_name):
 					print >> output_file, item[0], item[1], item[2], item[3], item[4], item[5], item[6]
 			else:
 				print >> output_file, pos
+
 
 def output_data_filter(file_name, start_line, end_line):
 	# output data with small total number, divide the total number into small pieces
@@ -265,6 +279,7 @@ def output_data_filter(file_name, start_line, end_line):
 					temp_list[2], temp_list[1], temp_list[0]
 	print "total snp number :", current_row
 
+
 def get_snp_info(pos, first_allele_number, second_allele_number, allele_list):
 	base_list = ["A", "T", "C", "G"]
 	pos = int(pos)
@@ -278,7 +293,7 @@ def get_snp_info(pos, first_allele_number, second_allele_number, allele_list):
 
 		first_allele = base_list[allele_list.index(first_allele_number)]
 		second_allele = base_list[allele_list.index(second_allele_number)]
-		#print pos, first_allele
+		# print pos, first_allele
 
 		if first_allele == SNP_allele_A and second_allele == SNP_allele_B:
 			mm_snp_overlap = 1
@@ -287,6 +302,7 @@ def get_snp_info(pos, first_allele_number, second_allele_number, allele_list):
 		return rs_number, SNP_allele_A, SNP_allele_B, mm_snp_overlap
 	else:
 		return "", "", "", ""
+
 
 def data_filter(start_line, end_line):
 	# prepare data portion for output_filtered_data
@@ -299,7 +315,7 @@ def data_filter(start_line, end_line):
 	for item in rows:
 		temp_list = [int(x) for x in item[3:7]]
 		allele_list = [int(x) for x in item[3:7]]
-		#if temp_list.count(0) < 3: # remove homo position
+		# if temp_list.count(0) < 3: # remove homo position
 		number_of_zero = temp_list.count(0)
 		if number_of_zero == 2:
 			# Remove the postions with 3 zeros and filter by the second_largest_allele_depth
@@ -321,21 +337,24 @@ def data_filter(start_line, end_line):
 					temp_list[0], snp_info[0], snp_info[1], snp_info[2], snp_info[3])))
 				"""
 				data_list.append(list((
-					item[0], item[1], item[2], item[3], item[4], item[5], item[6], (4-number_of_zero), temp_list[3], temp_list[2], temp_list[1],
+					item[0], item[1], item[2], item[3], item[4], item[5], item[6], (4 - number_of_zero), temp_list[3],
+					temp_list[2], temp_list[1],
 					temp_list[0])))
 	elapse_time = time.time() - start_time
 	print "running time: ", round(elapse_time, 3), "s"
 	return data_list
 
+
 def output_filtered_data(start_line, end_line):
-	file_name = db_base_name + "_" + start_line + "_" + end_line + "_filtered_2nddepth_" + str(second_largest_allele_depth_cutoff) + ".txt"
+	file_name = db_base_name + "_" + start_line + "_" + end_line + "_filtered_2nddepth_" + str(
+		second_largest_allele_depth_cutoff) + ".txt"
 
 	start_line = int(start_line)
 	end_line = int(end_line)
 	total_row_number = end_line - start_line
 	with open(file_name, "w") as output_file:
 		print >> output_file, "pos", "chr", "ref_allele", "A", "T", "C", "G", \
-		"Allele#", "1st", "2nd", "3rd", "4th", "rs#", "SNP_allele_1", "SNP_allele_2", "mm_snp_overlapping"
+			"Allele#", "1st", "2nd", "3rd", "4th", "rs#", "SNP_allele_1", "SNP_allele_2", "mm_snp_overlapping"
 		if total_row_number <= 0:
 			print "error in start point and end point"
 			sys.exit(0)
@@ -345,7 +364,7 @@ def output_filtered_data(start_line, end_line):
 			print "total_number_ceilling: ", total_number_ceilling
 			num_in_each_file = total_number_ceilling / number_of_subfile
 			print "total_number_ceilling in each: ", num_in_each_file
-			#seed_removed_in_last_subfile = int(math.fmod(len(seed_hetero_sorted_list), seed_removed_in_each_subfile))
+			# seed_removed_in_last_subfile = int(math.fmod(len(seed_hetero_sorted_list), seed_removed_in_each_subfile))
 			for i in range(number_of_subfile):
 				if i != number_of_subfile - 1:
 					print "processing ", i, start_line, start_line + num_in_each_file - 1
@@ -376,7 +395,7 @@ def load_mimi_data(file_name):
 			try:
 				data[int(elements[0])] = elements[:7]
 			except:
-				#print "error in ", line, file_name
+				# print "error in ", line, file_name
 				pass
 	return data
 
@@ -417,7 +436,7 @@ if __name__ == '__main__':
 	second_largest_allele_depth_cutoff = 5
 
 	# gx
-	#db_name = "/home/guoxing/disk2/lima/mimi_snpPick_db/" + db_name + ".db"    # for hg19 chrX mimi data
+	# db_name = "/home/guoxing/disk2/lima/mimi_snpPick_db/" + db_name + ".db"    # for hg19 chrX mimi data
 	#db_name = "/home/guoxing/disk2/lima/mimi_solid/mimi_solid_snpPick_db/" + db_name + ".db"    # for solid mimi
 	#db_name = "/home/guoxing/disk2/lima/yang/mimi_yang_snpPick_db/" + db_name + ".db"    # for yang mimi
 
@@ -484,7 +503,7 @@ if __name__ == '__main__':
 
 	elapse_time = time.time() - start_time
 	print "run time: ", round(elapse_time, 3), "s"
-	print "snp_in_mimi", parameters.snp_in_mimi
-	print "total_mimi", parameters.total_mimi
+	#print "snp_in_mimi", parameters.snp_in_mimi
+	#print "total_mimi", parameters.total_mimi
 
 
