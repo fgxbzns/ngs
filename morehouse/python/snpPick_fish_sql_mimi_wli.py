@@ -40,11 +40,25 @@ class reads:
 class parameter:
 	def __init__(self):
 		self.sam_file = ""
+		self.chr_name = ""
 		self.snp_in_mimi = 0
 		self.total_mimi = 0
 		self.ref_file = ""
-		self.current_max_pos = 0
+		self.temp_data_dict = {}
+		self.temp_data_dict_counter = 0
+		self.temp_data_dict_max_limit = 5000
+		self.temp_data_dict_min_limit = 1000
+		self.output_file = open("pos.output", "w")
 
+class position_data:
+	def __init__(self):
+		self.pos = 0
+		self.chr_name = ""
+		self.ref_allele = ""
+		self.A_depth = 0
+		self.T_depth = 0
+		self.C_depth = 0
+		self.G_depth = 0
 
 def get_ref_geno(chr_name):
 	chr_seq = ""
@@ -63,10 +77,11 @@ def wccount(file_name):
 	).communicate()[0]
 	return int(out.partition(b' ')[0])
 
-def variant_call_pair_end(sam_file):
+def variant_call_pair_end_sql(sam_file):
 	"""
 	the sequence pair has already been processed
 	now treat the read as single end
+	using sqlite
 	"""
 
 	total_reads_number = wccount(sam_file)
@@ -123,7 +138,7 @@ def variant_call_pair_end(sam_file):
 
 								covered_snp = read_sequence_first[i]  # ith position is the covered snp
 								quality_score_symbol = quality_score_sequence_first[i]
-								# update each read, or save certain amount of reads in a array and update together.
+								# update each read, or save certain amount of reads in an array and update together.
 								# can be improved if needed.
 								if (not covered_snp == 'N') and (
 											(ord(quality_score_symbol) - 33) > quality_score_threshold):  # check quality_score
@@ -175,6 +190,113 @@ def variant_call_pair_end(sam_file):
 		inputfile_sam.close()
 	return total_reads_num
 
+def variant_call_pair_end(sam_file):
+	"""
+	the sequence pair has already been processed
+	now treat the read as single end
+	using temp_dict
+	"""
+
+	total_reads_number = wccount(sam_file)
+	percentage_of_total_file = 0
+
+	chr_seq = get_ref_geno(chr_name)
+
+	global table_name
+	if True:
+
+		inputfile_sam = open(currentPath + sam_file, "r")
+		sam_line_first = inputfile_sam.readline()  # the first read line in a pair
+		total_reads_num = 0
+
+		insert_size_lower_bond = 0
+		insert_size_upper_bond = 1000
+
+		while sam_line_first != '':
+			if not sam_line_first.startswith("@"):
+				current_percent = int(float(total_reads_number * percentage_of_total_file) / 100)
+				if total_reads_num == current_percent:
+					print "current progress: ", percentage_of_total_file
+					percentage_of_total_file += 10
+
+				total_reads_num += 1
+				elements_first = sam_line_first.strip().split()
+				try:
+					read_ID_first = elements_first[0].strip()
+					chrName_first = elements_first[2].strip()
+					insert_size_first = abs(int(elements_first[8].strip()))  # insert_size for second read is negative
+				except:
+					print "error in first read:", sam_line_first
+				if (insert_size_first >= insert_size_lower_bond) and (insert_size_first <= insert_size_upper_bond):
+					if True:  # this is for pair-end verification. Not needed at this moment.
+						if chrName_first.startswith(chr_name):
+							# if chrName_first == chr_name:
+							# first read
+							qName_first = elements_first[0].strip()
+							flag_first = elements_first[1].strip()
+							start_position_first = int(elements_first[3].strip())
+							read_sequence_first = elements_first[9].strip()
+							read_length_first = len(read_sequence_first)
+							quality_score_sequence_first = elements_first[10].strip()
+
+							for i in range(read_length_first):
+								current_base_position = start_position_first + i
+
+								covered_snp = read_sequence_first[i]  # ith position is the covered snp
+								quality_score_symbol = quality_score_sequence_first[i]
+								if (covered_snp != 'N') and (
+											(ord(quality_score_symbol) - 33) > quality_score_threshold):  # check quality_score
+									#print ord(quality_score_symbol) - 33
+									if current_base_position not in parameters.temp_data_dict:
+										temp_pos = position_data()
+										temp_pos.pos = current_base_position
+										temp_pos.chr_name = parameters.chr_name
+										temp_pos.ref_allele = chr_seq[current_base_position - 1]
+										parameters.temp_data_dict[current_base_position] = temp_pos
+										parameters.temp_data_dict_counter += 1
+
+									if covered_snp == "A":
+										parameters.temp_data_dict[current_base_position].A_depth += 1
+									elif covered_snp == "T":
+										parameters.temp_data_dict[current_base_position].T_depth += 1
+									elif covered_snp == "C":
+										parameters.temp_data_dict[current_base_position].C_depth += 1
+									elif covered_snp == "G":
+										parameters.temp_data_dict[current_base_position].G_depth += 1
+
+								# output the data when it reaches the size limit
+								if parameters.temp_data_dict_counter > parameters.temp_data_dict_max_limit:
+									output_temp_dict()
+
+					else:
+						print "first and second read ID do not match", read_ID_first
+			sam_line_first = inputfile_sam.readline()
+		inputfile_sam.close()
+	if len(parameters.temp_data_dict) > 0:
+		print "last temp dict size", len(parameters.temp_data_dict)
+		output_temp_dict()
+	return total_reads_num
+
+def output_temp_dict():
+	#current_time = time.time()
+	#print "before output", len(parameters.temp_data_dict)
+	sorted_pos_list = parameters.temp_data_dict.keys()
+	sorted_pos_list.sort()
+	output_size = len(sorted_pos_list) - parameters.temp_data_dict_min_limit \
+		if len(sorted_pos_list) >= parameters.temp_data_dict_min_limit else len(sorted_pos_list)
+
+	if len(parameters.temp_data_dict) < parameters.temp_data_dict_max_limit:
+		output_size = len(sorted_pos_list)
+		print sorted_pos_list[-1]
+
+	for i in range(output_size):
+		temp_pos_data = parameters.temp_data_dict[sorted_pos_list[i]]
+		print >> parameters.output_file, temp_pos_data.pos, temp_pos_data.chr_name, temp_pos_data.ref_allele, \
+				temp_pos_data.A_depth, temp_pos_data.T_depth, temp_pos_data.C_depth, temp_pos_data.G_depth
+		del parameters.temp_data_dict[sorted_pos_list[i]]
+	parameters.temp_data_dict_counter = 0
+	#print "after output", len(parameters.temp_data_dict)
+	#print "take time: ", round(time.time() - current_time, 3), "s"
 
 def snpPick(sam_file):
 	global sam_file_name
@@ -458,6 +580,7 @@ if __name__ == '__main__':
 	hap_std_dict = {}
 
 	parameters = parameter()
+	parameters.chr_name = chr_name
 
 	global quality_score_threshold
 	quality_score_threshold = options.qscore
@@ -505,5 +628,6 @@ if __name__ == '__main__':
 	print "run time: ", round(elapse_time, 3), "s"
 	#print "snp_in_mimi", parameters.snp_in_mimi
 	#print "total_mimi", parameters.total_mimi
+	parameters.output_file.close()
 
 
