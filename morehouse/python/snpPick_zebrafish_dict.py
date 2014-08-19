@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
 # for zebra fish data
-# use sqlite to store data. slow. Replaced by snpPick_zebrafish_dict
 
 import os, glob, subprocess, random, operator, time, sys
 from optparse import OptionParser
