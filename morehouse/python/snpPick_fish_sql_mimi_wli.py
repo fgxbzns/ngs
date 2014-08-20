@@ -78,7 +78,7 @@ def wccount(file_name):
 	).communicate()[0]
 	return int(out.partition(b' ')[0])
 
-def variant_call_pair_end_sql(sam_file):
+def variant_call_pair_end(sam_file):
 	"""
 	the sequence pair has already been processed
 	now treat the read as single end
@@ -191,7 +191,7 @@ def variant_call_pair_end_sql(sam_file):
 		inputfile_sam.close()
 	return total_reads_num
 
-def variant_call_pair_end(sam_file):
+def variant_call_pair_end_dict(sam_file):
 	"""
 	the sequence pair has already been processed
 	now treat the read as single end
