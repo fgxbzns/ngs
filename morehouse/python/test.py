@@ -47,7 +47,7 @@ def get_args():
 	parser.add_option("-e", "--en", type="string", dest="en_name",help = "Input enzyme file name", default="null")
 	parser.add_option("-s", "--seq", type="string", dest="seq_name",help = "Input seq file name", default="null")
 	(options, args) = parser.parse_args()
-	if options.en_name == "null" or options.seq_name == "null":
+	if options.en_name == "null":
 		print "parameters missing..."
 		print usage
 		sys.exit(1)
@@ -76,13 +76,46 @@ for thread in record:
 """
 
 
+def readline(file_name):
+	total_line = 0
+	with open(file_name, "r") as input:
+		sam_line_first = input.readline()
+		while sam_line_first != '':
+			total_line += 1
+			sam_line_first = input.readline()
+	return total_line
 
-def offer(queue):
-	queue.put
+def readlines(file_name):
+	total_line = 0
+	with open(file_name, "r") as input:
+		sam_line_first = input.readlines()
+		for line in sam_line_first:
+			total_line += 1
+	return total_line
 
-
+def xreadlines(file_name):
+	total_line = 0
+	with open(file_name, "r") as input:
+		sam_line_first = input.xreadlines()
+		for line in sam_line_first:
+			total_line += 1
+	return total_line
 
 if __name__=='__main__':
+
+	start_time = time.time()
+	options = get_args()
+	file_name = options.en_name
+	#print readline(file_name)
+	print readlines(file_name)
+	#print xreadlines(file_name)
+
+	print "run time: ", round(time.time() - start_time, 3), "s"
+
+
+
+
+
 	#options = get_args()
 	#file_name = options.ref_name
 	"""
@@ -100,8 +133,8 @@ if __name__=='__main__':
 	#hifi.main.argtypes = [c_int,c_char_p]
 	
 	#hifi.main(1, "haplotype.txt")
-	hap_file_name="haplotype.txt"
-	chr_name = "chr9"
+	#hap_file_name="haplotype.txt"
+	#chr_name = "chr9"
 	"""
 	hifi_process(MAFSTEP = 0.1)
 	hifiAccuCheck("imputed_"+hap_file_name, chr_name)
@@ -109,6 +142,7 @@ if __name__=='__main__':
 	hifiAccuCheck("imputed_"+hap_file_name, chr_name)
 	"""
 	# Multi-process
+	"""
 	record = []
 	lock = multiprocessing.Lock()
 	for i in range(5):
@@ -122,11 +156,12 @@ if __name__=='__main__':
 	print "abdcd"
 	if os.path.exists("haplotype.txt"):
 		print "a"
+	"""
 
 
 
 
-
+"""
 #!/usr/bin/env python
 
 import sys
@@ -167,7 +202,7 @@ with open(os.path.join(outpath,'count.txt'),'w') as fo:
         fo.write('%s\t%s\t%d\n' % (val[1],key,val[0]))
         val[2].close()
 
-
+"""
 """
 	song_3
 	~/disk2/solid/song_3/prem_rmsk_indel/refM_test/2280/mref$
@@ -175,27 +210,3 @@ with open(os.path.join(outpath,'count.txt'),'w') as fo:
     /home/guoxing/disk2/solid/song_5/prem_rmsk_indel/hifi_1/7766_45/7819_48
 """
 
-
-sudo apt-get install r-cran-rcpp -y
-sudo apt-get install r-cran-dbi -y
-
-
-
-
-
-"""
-ERROR: dependency ‘Rcpp’ is not available for package ‘plyr’
-* removing ‘/home/guoxing/R/x86_64-pc-linux-gnu-library/2.14/plyr’
-ERROR: dependency ‘DBI’ is not available for package ‘RSQLite’
-* removing ‘/home/guoxing/R/x86_64-pc-linux-gnu-library/2.14/RSQLite’
-ERROR: dependencies ‘plyr’, ‘Rcpp’ are not available for package ‘reshape2’
-* removing ‘/home/guoxing/R/x86_64-pc-linux-gnu-library/2.14/reshape2’
-ERROR: dependency ‘plyr’ is not available for package ‘scales’
-* removing ‘/home/guoxing/R/x86_64-pc-linux-gnu-library/2.14/scales’
-ERROR: dependency ‘plyr’ is not available for package ‘reshape’
-* removing ‘/home/guoxing/R/x86_64-pc-linux-gnu-library/2.14/reshape’
-ERROR: dependencies ‘plyr’, ‘reshape2’, ‘scales’ are not available for package ‘ggplot2’
-* removing ‘/home/guoxing/R/x86_64-pc-linux-gnu-library/2.14/ggplot2’
-ERROR: dependencies ‘RSQLite’, ‘reshape’, ‘ggplot2’ are not available for package ‘cummeRbund’
-* removing ‘/home/guoxing/R/x86_64-pc-linux-gnu-library/2.14/cummeRbund’
-"""
