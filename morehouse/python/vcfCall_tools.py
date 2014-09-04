@@ -391,7 +391,7 @@ Following is function for temp_dcit
 """
 
 
-def variant_call_pair_end(parameters):
+def variant_call_pair_end_old(parameters):
 	"""
 	the sequence pair has already been processed
 	now treat the read as single end
@@ -474,6 +474,92 @@ def variant_call_pair_end(parameters):
 						print "first and second read ID do not match", read_ID_first
 			sam_line_first = inputfile_sam.readline()
 		inputfile_sam.close()
+	if len(parameters.temp_data_dict) > 0:
+		#print "last temp dict size", len(parameters.temp_data_dict)
+		output_temp_dict(parameters)
+	return total_reads_num
+
+def variant_call_pair_end(parameters):
+	"""
+	the sequence pair has already been processed
+	now treat the read as single end
+	using temp_dict
+	"""
+
+	total_reads_number = wccount(parameters.sam_file)
+	percentage_of_total_file = 0
+
+	chr_seq = get_ref_geno(parameters)
+	total_reads_num = 0
+
+	with open(parameters.sam_file, "r") as inputfile_sam:
+		for sam_line_first in inputfile_sam:
+
+			insert_size_lower_bond = 0
+			insert_size_upper_bond = 1000
+
+			if not sam_line_first.startswith("@"):
+				current_percent = int(float(total_reads_number * percentage_of_total_file) / 100)
+				if total_reads_num == current_percent:
+					print "current progress: ", percentage_of_total_file
+					percentage_of_total_file += 10
+
+				total_reads_num += 1
+				elements_first = sam_line_first.strip().split()
+				try:
+					read_ID_first = elements_first[0].strip()
+					chrName_first = elements_first[2].strip()
+					insert_size_first = abs(int(elements_first[8].strip()))  # insert_size for second read is negative
+				except:
+					print "error in first read:", sam_line_first
+				if (insert_size_first >= insert_size_lower_bond) and (insert_size_first <= insert_size_upper_bond):
+					if True:  # this is for pair-end verification. Not needed at this moment.
+						if chrName_first.startswith(parameters.chr_name):
+							# if chrName_first == parameters.chr_name:
+							# first read
+							qName_first = elements_first[0].strip()
+							flag_first = elements_first[1].strip()
+							start_position_first = int(elements_first[3].strip())
+							read_sequence_first = elements_first[9].strip()
+							read_length_first = len(read_sequence_first)
+							quality_score_sequence_first = elements_first[10].strip()
+
+							for i in range(read_length_first):
+								current_base_position = start_position_first + i
+
+								covered_snp = read_sequence_first[i]  # ith position is the covered snp
+								quality_score_symbol = quality_score_sequence_first[i]
+								if (covered_snp != 'N') and (
+											(ord(quality_score_symbol) - 33) > parameters.quality_score_threshold):  # check quality_score
+									#print ord(quality_score_symbol) - 33
+									if current_base_position not in parameters.temp_data_dict:
+										temp_pos = position_data()
+										temp_pos.pos = current_base_position
+										temp_pos.chr_name = parameters.chr_name
+										try:
+											temp_pos.ref_allele = chr_seq[current_base_position - 1]
+										except:
+											print "chr_seq pos error, chr_length_,current_pos:", len(chr_seq), current_base_position-1
+											temp_pos.ref_allele = ""
+										parameters.temp_data_dict[current_base_position] = temp_pos
+										parameters.temp_data_dict_counter += 1
+										parameters.total_called_pos += 1
+
+									if covered_snp == "A":
+										parameters.temp_data_dict[current_base_position].A_depth += 1
+									elif covered_snp == "T":
+										parameters.temp_data_dict[current_base_position].T_depth += 1
+									elif covered_snp == "C":
+										parameters.temp_data_dict[current_base_position].C_depth += 1
+									elif covered_snp == "G":
+										parameters.temp_data_dict[current_base_position].G_depth += 1
+
+								# output the data when it reaches the size limit
+								if parameters.temp_data_dict_counter > parameters.temp_data_dict_max_limit:
+									output_temp_dict(parameters)
+
+					else:
+						print "first and second read ID do not match", read_ID_first
 	if len(parameters.temp_data_dict) > 0:
 		#print "last temp dict size", len(parameters.temp_data_dict)
 		output_temp_dict(parameters)

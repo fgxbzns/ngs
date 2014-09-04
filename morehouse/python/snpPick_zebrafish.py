@@ -52,7 +52,7 @@ if __name__ == '__main__':
 	if (mode == "update"):
 		parameters.sam_file = options.samFile
 		parameters.sam_file_name = parameters.sam_file[:parameters.sam_file.find('.')]
-		output_file_name = parameters.sam_file_name + "_qs" + str(parameters.quality_score_threshold) +  ".txt"
+		output_file_name = parameters.sam_file_name + "_qs" + str(parameters.quality_score_threshold) + ".txt"
 		parameters.output_file = open(output_file_name, "w")
 
 		snpPick(parameters)

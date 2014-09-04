@@ -2550,6 +2550,7 @@ def multple_ref_expand_late_stage(seed_file, chr_name, mode):
 	
 	sub_cycle = 3
 	same_to_A = 7000
+	error_threshold = 60
 	os.system("cp haplotype.txt haplotype_ori.txt")
 	
 	while same_to_A < 9000:
@@ -2581,7 +2582,10 @@ def multple_ref_expand_late_stage(seed_file, chr_name, mode):
 				same_to_A_dict, same_to_B_dict = seed_std_compare("haplotype_expanded.txt", data_dict.chr_name)
 				same_to_A = len(same_to_A_dict)
 				same_to_B = len(same_to_B_dict)
-				if True:
+				if same_to_B > error_threshold:
+					print "ori seed recovered"
+					os.system("cp haplotype_ori.txt haplotype.txt")
+				else:
 					print "new seed updated"
 					os.system("cp haplotype_expanded.txt haplotype.txt")
 					os.system("cp haplotype_expanded.txt " + "haplotype.txt_" + str(same_to_A) + "_" + str(same_to_B))
@@ -2730,6 +2734,7 @@ def multple_geno_expand(seed_file, chr_name, mode):
 	
 	sub_cycle = 3
 	same_to_A = 4000
+	error_threshold = 40
 	while same_to_A < 10000:
 		
 		for i in range (1):
@@ -2746,7 +2751,10 @@ def multple_geno_expand(seed_file, chr_name, mode):
 			seed_correction(seed_file, chr_name, mode)
 			exp_file_name = "haplotype_expanded.txt"
 			same_to_A_dict, same_to_B_dict = seed_std_compare(exp_file_name, chr_name)
-			os.system("cp haplotype_expanded.txt haplotype.txt")
+			if len(same_to_B_dict) > error_threshold:
+				os.system("cp haplotype_ori.txt haplotype.txt")
+			else:
+				os.system("cp haplotype_expanded.txt haplotype.txt")
 			
 			for j in range(1):
 				#os.system("cp haplotype.txt haplotype_ori.txt")
@@ -2757,7 +2765,9 @@ def multple_geno_expand(seed_file, chr_name, mode):
 				same_to_A_dict, same_to_B_dict = seed_std_compare(exp_file_name, chr_name)
 				same_to_A = len(same_to_A_dict)
 				same_to_B = len(same_to_B_dict)
-				if True:
+				if same_to_B > error_threshold:
+					os.system("cp haplotype_ori.txt haplotype.txt")
+				else:
 					os.system("cp haplotype_expanded.txt haplotype.txt")
 				os.system("cp haplotype_expanded.txt " + "haplotype.txt_" + str(same_to_A) + "_" + str(same_to_B))
 			
@@ -2767,7 +2777,10 @@ def multple_geno_expand(seed_file, chr_name, mode):
 			seed_correction(seed_file, chr_name, mode)
 			exp_file_name = "haplotype_expanded.txt"
 			same_to_A_dict, same_to_B_dict = seed_std_compare(exp_file_name, chr_name)
-			os.system("cp haplotype_expanded.txt haplotype.txt")
+			if len(same_to_B_dict) > error_threshold:
+				os.system("cp haplotype_ori.txt haplotype.txt")
+			else:
+				os.system("cp haplotype_expanded.txt haplotype.txt")
 			
 		#os.system("cp haplotype_expanded.txt " + "haplotype.txt_" + str(same_to_A) + "_" + str(same_to_B))
 		
@@ -2777,7 +2790,10 @@ def multple_geno_expand(seed_file, chr_name, mode):
 		seed_correction(seed_file, chr_name, mode)
 		exp_file_name = "haplotype.txt"
 		same_to_A_dict, same_to_B_dict = seed_std_compare(exp_file_name, chr_name)
-		os.system("cp haplotype_expanded.txt haplotype.txt")
+		if len(same_to_B_dict) > error_threshold:
+			os.system("cp haplotype_ori.txt haplotype.txt")
+		else:
+			os.system("cp haplotype_expanded.txt haplotype.txt")
 		os.system("cp haplotype.txt " + "haplotype.txt_" + str(same_to_A) + "_" + str(same_to_B))
 		
 
@@ -2975,6 +2991,7 @@ def overall_process_3(seed_file, chr_name, mode):
 	os.system("cp haplotype.txt haplotype_ori.txt")
 	
 	same_to_A = 1
+	error_threshold = 60
 	i = 0
 	while same_to_A < 6000:
 			
@@ -2990,7 +3007,10 @@ def overall_process_3(seed_file, chr_name, mode):
 		
 		same_to_A = len(same_to_A_dict)
 		same_to_B = len(same_to_B_dict)
-		if True:
+		if same_to_B > error_threshold:
+			print "ori seed recovered"
+			os.system("cp haplotype_ori.txt haplotype.txt")
+		else:
 			print "new seed updated"
 			#os.system("cp haplotype.txt " + "haplotype.txt_" + str(same_to_A) + "_" + str(same_to_B))
 			hap_bkup = "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict))
