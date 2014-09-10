@@ -2433,14 +2433,6 @@ def calculate_seed_group_accuracy():
 	print ">=0.9", (sum(seed_percentage_dict[0.9]) + sum(seed_percentage_dict[1.0]))/(len(seed_percentage_dict[0.9]) + len(seed_percentage_dict[1.0]))
 
 
-
-
-
-
-
-
-	
-	
 def combine_hifi_seed(input_prefix, ori_seed_file):
 	"""
 	combine hifi seed from mutiple run based on consistence
@@ -2725,62 +2717,6 @@ def multple_ref_expand_0(seed_file, chr_name, mode):
 	clean_up()
 
 
-
-def multple_geno_expand(seed_file, chr_name, mode):
-	
-	sub_cycle = 3
-	same_to_A = 4000
-	while same_to_A < 10000:
-		
-		for i in range (1):
-			
-			os.system("cp haplotype.txt haplotype_ori.txt")
-			#remPercent = 0.8
-			remPercent = float(random.randrange(40, 70))/(100.0)
-			print "remPercent", remPercent
-			haplotype_file = "haplotype.txt"
-			refMerger(haplotype_file, chr_name, remPercent)
-			
-			mode = "geno"
-			load_data_dicts(seed_file, chr_name)
-			seed_correction(seed_file, chr_name, mode)
-			exp_file_name = "haplotype_expanded.txt"
-			same_to_A_dict, same_to_B_dict = seed_std_compare(exp_file_name, chr_name)
-			os.system("cp haplotype_expanded.txt haplotype.txt")
-			
-			for j in range(1):
-				#os.system("cp haplotype.txt haplotype_ori.txt")
-				mode = "ref"
-				load_data_dicts(seed_file, chr_name)
-				seed_correction(seed_file, chr_name, mode)
-				exp_file_name = "haplotype_expanded.txt"
-				same_to_A_dict, same_to_B_dict = seed_std_compare(exp_file_name, chr_name)
-				same_to_A = len(same_to_A_dict)
-				same_to_B = len(same_to_B_dict)
-				if True:
-					os.system("cp haplotype_expanded.txt haplotype.txt")
-				os.system("cp haplotype_expanded.txt " + "haplotype.txt_" + str(same_to_A) + "_" + str(same_to_B))
-			
-			os.system("cp haplotype.txt haplotype_ori.txt")
-			mode = "cluster"
-			load_data_dicts(seed_file, chr_name)
-			seed_correction(seed_file, chr_name, mode)
-			exp_file_name = "haplotype_expanded.txt"
-			same_to_A_dict, same_to_B_dict = seed_std_compare(exp_file_name, chr_name)
-			os.system("cp haplotype_expanded.txt haplotype.txt")
-			
-		#os.system("cp haplotype_expanded.txt " + "haplotype.txt_" + str(same_to_A) + "_" + str(same_to_B))
-		
-		refMerger(haplotype_file, chr_name, 0)	
-		load_data_dicts(seed_file, chr_name)
-		mode = "recover"
-		seed_correction(seed_file, chr_name, mode)
-		exp_file_name = "haplotype.txt"
-		same_to_A_dict, same_to_B_dict = seed_std_compare(exp_file_name, chr_name)
-		os.system("cp haplotype_expanded.txt haplotype.txt")
-		os.system("cp haplotype.txt " + "haplotype.txt_" + str(same_to_A) + "_" + str(same_to_B))
-		
-
 def verify_expanded_seed_by_cluster(revised_seed_dict):
 	"""
 	ref_file_name = "refHaplos.txt" 
@@ -2968,38 +2904,6 @@ def output_genohomo(filename):
 		print >> seed_new_file, line
 	seed_new_file.close()
 
-def overall_process_3(seed_file, chr_name, mode):
-	sub_cycle = data_dict.cycle_number
-	haplotype_file = "haplotype.txt"
-	
-	os.system("cp haplotype.txt haplotype_ori.txt")
-	
-	same_to_A = 1
-	i = 0
-	while same_to_A < 6000:
-			
-		remPercent = float(random.randrange(10, 20))/(100.0)
-		#print "remPercent", remPercent
-		refMerger(haplotype_file, chr_name, remPercent)
-				
-		hifi_run(haplotype_file, data_dict.chr_name)
-		mode = "linkage"
-		print "########### linkage expand cycle #########", i	
-		seed_correction(seed_file, chr_name, mode)
-		same_to_A_dict, same_to_B_dict = seed_std_compare(haplotype_file, data_dict.chr_name)
-		
-		same_to_A = len(same_to_A_dict)
-		same_to_B = len(same_to_B_dict)
-		if True:
-			print "new seed updated"
-			#os.system("cp haplotype.txt " + "haplotype.txt_" + str(same_to_A) + "_" + str(same_to_B))
-			hap_bkup = "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict))
-			os.system("cp haplotype.txt " + hap_bkup)
-			os.system("mv " + hap_bkup + " seed_file")
-			os.system("cp haplotype.txt haplotype_ori.txt")
-
-		i += 1
-
 def overall_process_1(seed_file, chr_name, mode):
 	# used to generate the 100-cycle figure, use LD, does not include ref remove
 	sub_cycle = data_dict.cycle_number
@@ -3015,7 +2919,7 @@ def overall_process_1(seed_file, chr_name, mode):
 
 		for j in range(10):
 
-			remPercent = 0 if j == 0 else float(random.randrange(20, 40))/100
+			remPercent = 0 if i == 0 else float(random.randrange(40, 80))/(100.0)
 
 			print "remPercent", remPercent
 			haplotype_file = "haplotype.txt"
@@ -3033,7 +2937,6 @@ def overall_process_1(seed_file, chr_name, mode):
 			print >> record_file, "LD", i, seed_same_to_A+seed_same_to_B, seed_same_to_A, seed_same_to_B, B_in_hetero
 			i += 1
 
-		remPercent = 0
 		refMerger(haplotype_file, chr_name, remPercent)
 
 		mode = "remove"
@@ -3158,23 +3061,6 @@ def overall_process_2_city(seed_file, chr_name, mode):
 			os.system("cp haplotype.txt " + hap_bkup)
 			os.system("mv " + hap_bkup + " seed_file")
 			i += 1
-		"""
-		refMerger(haplotype_file, chr_name, 0)
-
-		mode = "remove"
-		print "########### error remove #########", i
-
-		seed_correction(seed_file, chr_name, mode)
-		os.system("cp haplotype_error_removed.txt " + haplotype_file)
-		os.system("cp haplotype_error_removed.txt haplotype.txt_" + str(i))
-
-		same_to_A_dict, same_to_B_dict = seed_std_compare(haplotype_file, data_dict.chr_name)
-		seed_same_to_A = len(same_to_A_dict)
-		seed_same_to_B = len(same_to_B_dict)
-		B_in_hetero = round((float(seed_same_to_B)/float(seed_same_to_A + seed_same_to_B))*100, 2)
-		print >> record_file, "remove", i, seed_same_to_A+seed_same_to_B, seed_same_to_A, seed_same_to_B, B_in_hetero
-		i += 1
-		"""
 
 	record_file.close()
 
@@ -3211,22 +3097,7 @@ def overall_process_4(seed_file, chr_name, mode):
 			os.system("cp haplotype_expanded.txt " + haplotype_file)
 			os.system("cp haplotype_expanded.txt haplotype.txt_" + str(seed_same_to_A) + "_" + str(seed_same_to_B))
 
-		"""
-		refMerger(haplotype_file, chr_name, 0)
 
-		mode = "remove"
-		print "########### error remove #########", i
-
-		seed_correction(seed_file, chr_name, mode)
-		os.system("cp haplotype_error_removed.txt " + haplotype_file)
-
-		same_to_A_dict, same_to_B_dict = seed_std_compare(haplotype_file, data_dict.chr_name)
-		seed_same_to_A = len(same_to_A_dict)
-		seed_same_to_B = len(same_to_B_dict)
-		os.system("cp haplotype_error_removed.txt haplotype.txt_" + str(seed_same_to_A) + "_" + str(seed_same_to_B))
-		B_in_hetero = round((float(seed_same_to_B)/float(seed_same_to_A + seed_same_to_B))*100, 2)
-		print >> record_file, "REM", i, seed_same_to_A+seed_same_to_B, seed_same_to_A, seed_same_to_B, B_in_hetero
-		"""
 		i += 1
 
 	record_file.close()
@@ -3303,8 +3174,6 @@ def seed_correction(seed_file, chr_name, mode):
 		#overall_process_2(seed_file, chr_name, mode)
 		#overall_process_2_refrem(seed_file, chr_name, mode)
 		overall_process_2_city(seed_file, chr_name, mode)
-	elif mode == "overall3":
-		overall_process_3(seed_file, chr_name, mode)
 	elif mode == "overall4":
 		overall_process_4(seed_file, chr_name, mode)
 
@@ -3403,8 +3272,6 @@ def seed_correction(seed_file, chr_name, mode):
 		#multple_ref_early_stage(seed_file, chr_name, mode)
 		multple_ref_expand_late_stage(seed_file, chr_name, mode)
 
-	elif mode == "mgeno":
-		multple_geno_expand(seed_file, chr_name, mode)
 	elif mode == "cluster":
 		update_cluster()
 		"""

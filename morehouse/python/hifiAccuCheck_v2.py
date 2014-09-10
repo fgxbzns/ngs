@@ -192,7 +192,7 @@ def hifiAccuCheck(hifi_result_file, chr_name):
 	print "AT_GC_dict_number", AT_GC_dict_number
 	print "not_same_AB_total_number", not_same_AB_total_number
 	print "pencentage in common", pencentage_in_common
-	print "coverage", coverage
+	#print "coverage", coverage
 
 	#print "len(same_AB_hetero)", len(same_AB_hetero)
 	#print "len(same_position_hetero)", len(same_position_hetero)

@@ -23,7 +23,7 @@ class data_class():
 
 		self.hap_std_file_name = ""
 
-		self.partition_size = 5000
+		self.partition_size = 1000
 
 		#self.hap_std_file_name = file_path + "ASW_" + self.chr_name + "_child_hap_refed.txt"  # 454,solid NA10847
 
@@ -116,28 +116,31 @@ def seed_calculation(temp_result_dict):
 			elements_hifi = line_hifi
 			hifi_A = elements_hifi[2].strip()
 			hifi_B = elements_hifi[3].strip()
-			M = "L"
+
 
 			if hifi_A == ref_A:
 				if hifi_B == ref_B:
 					hifi_AB_pos = 0
 				else:
 					hifi_A_pos = 0
-			elif hifi_B == ref_B and M == "H":
+			elif hifi_B == ref_B:
 				hifi_B_pos = 0
 				#hifi_error += 1
-			elif (ref_A == "X" or ref_B == "X") and M == "H":
+			elif (ref_A == "X" or ref_B == "X"):
 				hifi_X_pos = 0
 				#hifi_error += 1
-			elif (ref_A == "N" or ref_B == "N") and M == "H":
+			elif (ref_A == "N" or ref_B == "N"):
 				hifi_N_pos = 0
 				#hifi_error += 1
 			else:
-				if not ( (ref_A == "A" and ref_B == "T") or (ref_A == "C" and ref_B == "G") or (
-							ref_A == "T" and ref_B == "A") or (ref_A == "G" and ref_B == "C") ):
+				if (ref_A == "A" and ref_B == "T") or (ref_A == "C" and ref_B == "G") or (
+							ref_A == "T" and ref_B == "A") or (ref_A == "G" and ref_B == "C"):
+					#hifi_error += 1
+					pass
+				else:
 					hifi_error += 1
 
-	print "seed_number, hifi_error", seed_number, hifi_error
+	#print "seed_number, hifi_error", seed_number, hifi_error
 	return round(float(seed_number)/temp_result_dict_size*100, 4), round(float((len(temp_result_dict)-hifi_error))/temp_result_dict_size*100, 2)
 
 def seed_distribution():
@@ -145,7 +148,7 @@ def seed_distribution():
 	#data.seed_file_name = "song_1_prem_chr5_sorted_rmsk_indel_1_called_seed.txt"
 
 	#data.seed_file_name = "NA12878_hg18ch6_A_0.5x_0.04er_indel_0_called_seed.txt"
-	data.hifi_result_file = "imputed_haplotype.txt"
+	#data.hifi_result_file = "imputed_haplotype.txt"
 
 	data.hap_std_file_name = file_path + "ASW_" + data.chr_name + "_child_hap_refed.txt"
 	#data.hap_std_file_name = file_path + "NA12878_hap_new_refed.txt"
@@ -189,9 +192,9 @@ if __name__ == '__main__':
 	data = data_class()
 	data.chr_name = options.chrName
 	data.seed_file_name = options.hifiSeed
-	'''
+
 	data.hifi_result_file = options.hifiResult
-	'''
+
 	seed_distribution()
 
 	#print "run time is: ", round((time.time() - start_time), 3), "s"
