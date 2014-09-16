@@ -30,10 +30,8 @@ class data_class():
 
 def seed_distribution():
 	#data.chr_name = "chr5"
-	#data.seed_file_name = "song_1_prem_chr5_sorted_rmsk_indel_1_called_seed.txt"
 
-	#data.seed_file_name = "NA12878_hg18ch6_A_0.5x_0.04er_indel_0_called_seed.txt"
-	data.hifi_result_file = "imputed_haplotype.txt"
+	#data.hifi_result_file = "imputed_haplotype.txt"
 
 	data.hap_std_file_name = file_path + "ASW_" + data.chr_name + "_child_hap_refed.txt"
 	#data.hap_std_file_name = file_path + "NA12878_hap_new_refed.txt"
@@ -75,7 +73,7 @@ def output_distribution():
 	seed_N = 0
 	seed_not_AB = 0
 
-	error_distribution_output_file_name = "hifi_error_distribution.txt"
+	error_distribution_output_file_name = data.seed_file_name[:-4] + "_error_distribution.txt"
 	error_distribution_output_file = open(currentPath + error_distribution_output_file_name, "w")
 	print >> error_distribution_output_file, "position \t seed_AB \t seed_A \t seed_B \t seed_X \t seed_N \t seed_other \t hifi_AB \t hifi_A \t hifi_B \t hifi_X \t hifi_N \t hifi_error"
 
@@ -129,9 +127,13 @@ def output_distribution():
 			elif ref_A == "N" or ref_B == "N":
 				hifi_N_pos = other_axis_value
 			else:
-				hifi_other_pos = hifi_error_axis_value
-				hifi_other_pos = str(random.randrange(60, 75)) + " \t"
-				not_same_AB_total_number += 1
+				if (ref_A == "A" and ref_B == "T") or (ref_A == "C" and ref_B == "G") or (
+					ref_A == "T" and ref_B == "A") or (ref_A == "G" and ref_B == "C"):
+					pass
+				else:
+					hifi_other_pos = hifi_error_axis_value
+					#hifi_other_pos = str(random.randrange(60, 75)) + " \t"
+					not_same_AB_total_number += 1
 
 			# check hifi seeds, these position need to be in ref too
 			if position in data.seed_dict:
@@ -149,14 +151,14 @@ def output_distribution():
 						seed_AB_pos = seed_correct_axis_value
 					else:
 						seed_same_to_A += 1
-						#seed_A_pos = seed_correct_axis_value
-						#seed_AB_pos = seed_correct_axis_value  # include homo seed in correct seed
-						seed_A_pos = str(random.randrange(30, 40)) + " \t"
-						seed_AB_pos = str(random.randrange(48, 52)) + " \t"  # include homo seed in correct seed
+						seed_A_pos = seed_correct_axis_value
+						seed_AB_pos = seed_correct_axis_value  # include homo seed in correct seed
+						#seed_A_pos = str(random.randrange(30, 40)) + " \t"
+						#seed_AB_pos = str(random.randrange(48, 52)) + " \t"  # include homo seed in correct seed
 				elif seed_A == ref_B:
 					seed_same_to_B += 1
-					#seed_B_pos = seed_error_axis_value
-					seed_B_pos = str(random.randrange(48, 52)) + " \t"
+					seed_B_pos = seed_error_axis_value
+					#seed_B_pos = str(random.randrange(48, 52)) + " \t"
 				elif ref_A == "X" or ref_B == "X":
 					seed_X += 1
 					seed_X_pos = other_axis_value
@@ -164,8 +166,12 @@ def output_distribution():
 					seed_N += 1
 					seed_N_pos = other_axis_value
 				else:
-					seed_not_AB += 1
-					seed_other_pos = other_axis_value
+					if (ref_A == "A" and ref_B == "T") or (ref_A == "C" and ref_B == "G") or (
+								ref_A == "T" and ref_B == "A") or (ref_A == "G" and ref_B == "C"):
+						pass
+					else:
+						seed_not_AB += 1
+						seed_other_pos = other_axis_value
 			#if hifi_A != hifi_B: # keep hete points only
 			#keep all points
 			print >> error_distribution_output_file, str(
@@ -175,7 +181,7 @@ def output_distribution():
 	print "seed_same_to_B", seed_same_to_B
 	print "homo seed", seed_same_to_AB
 	print "seed_not_AB", seed_not_AB
-
+	print "hifi error", not_same_AB_total_number
 
 def get_args():
 	desc = ""
@@ -193,7 +199,6 @@ def get_args():
 	"""
 	return options
 
-
 if __name__ == '__main__':
 	options = get_args()
 	#path = "/home/guoxing/node1/disk2/solid/song_1/prem_rmsk_indel/seed_distribution/"
@@ -204,9 +209,9 @@ if __name__ == '__main__':
 	data = data_class()
 	data.chr_name = options.chrName
 	data.seed_file_name = options.hifiSeed
-	'''
+
 	data.hifi_result_file = options.hifiResult
-	'''
+
 	seed_distribution()
 
 	print "run time is: ", round((time.time() - start_time), 3), "s"

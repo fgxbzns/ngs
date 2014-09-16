@@ -754,7 +754,7 @@ def remove_single_refID():
 	seed_dict_from_hifi = {}
 	for pos in hifi_dict.keys():
 		#if (pos in refID_dict and len(refID_dict[pos][2]) <= 50) or (pos in refID_dict and len(refID_dict[pos][4]) <= 50):
-		refID_cutoff = 5
+		refID_cutoff = 2
 		if (pos in refID_dict and len(refID_dict[pos][2]) <= refID_cutoff) or (pos in refID_dict and len(refID_dict[pos][4]) <= refID_cutoff):
 			pass
 			#a = hifi_dict[pos]
@@ -3031,9 +3031,14 @@ def overall_process_1(seed_file, chr_name, mode):
 			seed_same_to_B = len(same_to_B_dict)
 			B_in_hetero = round((float(seed_same_to_B)/float(seed_same_to_A + seed_same_to_B))*100, 2)
 			print >> record_file, "LD", i, seed_same_to_A+seed_same_to_B, seed_same_to_A, seed_same_to_B, B_in_hetero
-			i += 1
 
-		remPercent = 0
+			hap_bkup = "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict))
+			os.system("cp haplotype.txt " + hap_bkup)
+			os.system("mv " + hap_bkup + " seed_file")
+
+			i += 1
+		"""
+		#remPercent = 0
 		refMerger(haplotype_file, chr_name, remPercent)
 
 		mode = "remove"
@@ -3048,11 +3053,13 @@ def overall_process_1(seed_file, chr_name, mode):
 
 		hap_bkup = "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict))
 		os.system("cp haplotype.txt " + hap_bkup)
+
 		os.system("mv " + hap_bkup + " seed_file")
 
 		B_in_hetero = round((float(seed_same_to_B)/float(seed_same_to_A + seed_same_to_B))*100, 2)
 		print >> record_file, "REV", i, seed_same_to_A+seed_same_to_B, seed_same_to_A, seed_same_to_B, B_in_hetero
 		i += 1
+		"""
 
 	record_file.close()
 

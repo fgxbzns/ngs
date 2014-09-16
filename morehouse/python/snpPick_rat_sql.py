@@ -37,29 +37,49 @@ if __name__ == '__main__':
 
 	parameters.chr_name = options.chrName
 
-	#parameters.quality_score_threshold = options.qscore
-	parameters.quality_score_threshold = 20
-	print "quality_score_threshold: ", parameters.quality_score_threshold
-	parameters.second_largest_allele_depth_cutoff = 2
+	if (mode == "rat"):
+		#parameters.quality_score_threshold = options.qscore
+		parameters.quality_score_threshold = 20
+		print "quality_score_threshold: ", parameters.quality_score_threshold
+		parameters.second_largest_allele_depth_cutoff = 2
 
+		# for jendai mouse data
+		ref_path = "/home/guoxing/storage1/Reference_from_wenzhi/Rat/chr/"
+		parameters.ref_file = ref_path + "rn5_" + parameters.chr_name + ".fa"
+		print "ref file", parameters.ref_file
 
-	# for jendai mouse data
-	ref_path = "/home/guoxing/storage1/Reference_from_wenzhi/Rat/chr/"
-	parameters.ref_file = ref_path + "rn5_" + parameters.chr_name + ".fa"
-	print "ref file", parameters.ref_file
+		if (mode == "rat"):
+			parameters.sam_file = options.samFile
+			parameters.sam_file_name = parameters.sam_file[:parameters.sam_file.find('.')]
+			output_file_name = parameters.sam_file_name + "_qs" + str(parameters.quality_score_threshold) + ".txt"
+			parameters.output_file = open(output_file_name, "w")
 
-	if (mode == "update"):
-		parameters.sam_file = options.samFile
-		parameters.sam_file_name = parameters.sam_file[:parameters.sam_file.find('.')]
-		output_file_name = parameters.sam_file_name + "_qs" + str(parameters.quality_score_threshold) + ".txt"
-		parameters.output_file = open(output_file_name, "w")
+			snpPick(parameters)
+			parameters.output_file.close()
 
-		snpPick(parameters)
+	elif (mode == "exon"):
+		parameters.quality_score_threshold = options.qscore
+		#parameters.quality_score_threshold = 20
+		print "quality_score_threshold: ", parameters.quality_score_threshold
+		parameters.second_largest_allele_depth_cutoff = 2
+
+		# for exon data
+		ref_path = "/home/guoxing/disk2/UCSC_hg18_index_lm/"
+		parameters.ref_file = ref_path + "hg18chr_" + parameters.chr_name + ".fa"
+		print "ref file", parameters.ref_file
+
+		if (mode == "exon"):
+			parameters.sam_file = options.samFile
+			parameters.sam_file_name = parameters.sam_file[:parameters.sam_file.find('.')]
+			output_file_name = parameters.sam_file_name + "_qs" + str(parameters.quality_score_threshold) + ".txt"
+			parameters.output_file = open(output_file_name, "w")
+
+			snpPick(parameters)
+			parameters.output_file.close()
 
 	print "run time: ", round(time.time() - start_time, 3), "s"
 	#print "snp_in_mimi", parameters.snp_in_mimi
 	#print "total_mimi", parameters.total_mimi
-	parameters.output_file.close()
 
 
 

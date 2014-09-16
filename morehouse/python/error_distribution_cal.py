@@ -23,7 +23,7 @@ class data_class():
 
 		self.hap_std_file_name = ""
 
-		self.partition_size = 1000
+		self.partition_size = 2000
 
 		#self.hap_std_file_name = file_path + "ASW_" + self.chr_name + "_child_hap_refed.txt"  # 454,solid NA10847
 
@@ -71,6 +71,8 @@ def seed_calculation(temp_result_dict):
 
 	seed_number = 0
 	hifi_error = 0
+	AT_CG_number = 0
+
 
 	temp_result_dict_size = len(temp_result_dict)
 	#temp_result_pos_list = temp_result_dict.keys()
@@ -125,23 +127,24 @@ def seed_calculation(temp_result_dict):
 					hifi_A_pos = 0
 			elif hifi_B == ref_B:
 				hifi_B_pos = 0
-				#hifi_error += 1
+				#hifi_error -= 1
 			elif (ref_A == "X" or ref_B == "X"):
 				hifi_X_pos = 0
 				#hifi_error += 1
 			elif (ref_A == "N" or ref_B == "N"):
 				hifi_N_pos = 0
-				#hifi_error += 1
+				#hifi_error -= 1
 			else:
 				if (ref_A == "A" and ref_B == "T") or (ref_A == "C" and ref_B == "G") or (
 							ref_A == "T" and ref_B == "A") or (ref_A == "G" and ref_B == "C"):
-					#hifi_error += 1
+					AT_CG_number += 1
+					#hifi_error -= 1
 					pass
 				else:
 					hifi_error += 1
 
 	#print "seed_number, hifi_error", seed_number, hifi_error
-	return round(float(seed_number)/temp_result_dict_size*100, 4), round(float((len(temp_result_dict)-hifi_error))/temp_result_dict_size*100, 2)
+	return round(float(seed_number)/temp_result_dict_size*100, 4), round(float((len(temp_result_dict) - hifi_error))/(temp_result_dict_size - AT_CG_number)*100, 2)
 
 def seed_distribution():
 	#data.chr_name = "chr5"
