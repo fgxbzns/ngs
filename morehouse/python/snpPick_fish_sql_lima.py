@@ -405,7 +405,7 @@ if __name__ == '__main__':
 	db_name = options.dbname
 	db_base_name = db_name
 	mode = options.mode
-	second_largest_allele_depth_cutoff = 3
+	second_largest_allele_depth_cutoff = 15
 
 	# gx
 	#db_name = "/home/guoxing/disk2/lima/mimi_snpPick_db/" + db_name + ".db"    # for hg19 chrX mimi data
@@ -446,7 +446,7 @@ if __name__ == '__main__':
 	"""
 	global quality_score_threshold
 	quality_score_threshold = options.qscore
-	quality_score_threshold = 13
+	quality_score_threshold = 20
 	print "quality_score_threshold: ", quality_score_threshold
 	print "db_base_name: ", db_base_name
 

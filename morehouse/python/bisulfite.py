@@ -23,6 +23,14 @@ def removeCT_ref(ref_file_name):
 				line = line.strip() if line.startswith(">") else re.sub('[ctCT]', '', line).strip()
 				print >> bis_file, line
 
+def removeCT_fastq(fastq_file_name):
+	fastq_file = open(fastq_file_name, "r")
+	fastq_bis_file = open(fastq_file_name[:-3] + "_bis.fastq", "w")
+	line = fastq_file.readline()
+	while line != "":
+		line = fastq_file.readline()
+
+
 def get_args():
 	desc = ""
 	usage = ""

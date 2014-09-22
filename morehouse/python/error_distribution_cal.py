@@ -15,9 +15,13 @@ class data_class():
 		self.seed_file_prefix = ""
 		self.seed_title_info = ""
 		self.seed_dict = {}
+		self.seed_error_list = []
 
 		self.hifi_result_file = ""
 		self.hifi_result_dict = {}
+		self.hifi_error_list = []
+
+		self.seed_hifi_error_dis_list = []
 
 		self.hap_std_dict = {}
 
@@ -25,11 +29,13 @@ class data_class():
 
 		self.partition_size = 2000
 
+		self.bucket_size = 50000
+		self.bucket_number = 0
+		self.bucket_dict = {}
+
 		#self.hap_std_file_name = file_path + "ASW_" + self.chr_name + "_child_hap_refed.txt"  # 454,solid NA10847
 
 		#self.hap_std_file_name = file_path + "NA12878_hap_new_refed.txt"	# simulation data hg18 chr6
-
-
 
 def partition():
 
@@ -100,6 +106,7 @@ def seed_calculation(temp_result_dict):
 					seed_number += 1
 			elif seed_A == ref_B:
 				seed_same_to_B += 1
+				data.seed_error_list.append(position)
 			elif ref_A == "X" or ref_B == "X":
 				seed_X += 1
 				seed_number += 1
@@ -108,6 +115,7 @@ def seed_calculation(temp_result_dict):
 				seed_number += 1
 			else:
 				seed_not_AB += 1
+				data.seed_error_list.append(position)
 
 		if position in data.hap_std_dict:
 			line_ref = data.hap_std_dict[position]
@@ -130,7 +138,7 @@ def seed_calculation(temp_result_dict):
 				#hifi_error -= 1
 			elif (ref_A == "X" or ref_B == "X"):
 				hifi_X_pos = 0
-				#hifi_error += 1
+				#hifi_error += 1vi
 			elif (ref_A == "N" or ref_B == "N"):
 				hifi_N_pos = 0
 				#hifi_error -= 1
@@ -142,6 +150,7 @@ def seed_calculation(temp_result_dict):
 					pass
 				else:
 					hifi_error += 1
+					data.hifi_error_list.append(position)
 
 	#print "seed_number, hifi_error", seed_number, hifi_error
 	return round(float(seed_number)/temp_result_dict_size*100, 4), round(float((len(temp_result_dict) - hifi_error))/(temp_result_dict_size - AT_CG_number)*100, 2)
@@ -166,7 +175,49 @@ def seed_distribution():
 
 	partition()
 
+def calculate_distance_abs():
+	data.seed_error_list.sort()
+	data.hifi_error_list.sort()
 
+	for hifi_error_pos in data.hifi_error_list:
+		data.seed_hifi_error_dis_list.append(min([abs(x - hifi_error_pos) for x in data.seed_error_list]))
+
+def calculate_distance():
+	data.seed_error_list.sort()
+	data.hifi_error_list.sort()
+
+	for hifi_error_pos in data.hifi_error_list:
+		temp_distance_list = [abs(hifi_error_pos - x) for x in data.seed_error_list]
+		index_closest_seed_error = temp_distance_list.index(min(temp_distance_list))
+		data.seed_hifi_error_dis_list.append(hifi_error_pos - data.seed_error_list[index_closest_seed_error])
+
+
+def fill_bucket():
+	data.bucket_number = math.ceil(float(max([abs(x) for x in data.seed_hifi_error_dis_list])/data.bucket_size))
+	print data.bucket_number
+
+	data.bucket_dict = {x: 0 for x in range((-2-int(data.bucket_number)), int(data.bucket_number)+2)}
+	#print data.bucket_dict.keys()
+	for distance in data.seed_hifi_error_dis_list:
+		data.bucket_dict[distance / data.bucket_size] += 1
+		"""
+		if distance == 0:
+			data.bucket_dict[0] += 1
+		elif distance > 0:
+			data.bucket_dict[(distance / data.bucket_size) + 1] += 1
+		else:
+			data.bucket_dict[(distance / data.bucket_size) - 1] += 1
+		"""
+
+	output_dict("bucket_" + str(data.bucket_size) + ".txt", data.bucket_dict)
+
+def output_dict(output_file_name, dict):
+	with open(output_file_name, "w") as output_file:
+		for key in dict.keys():
+			if dict[key] == 0:
+				print >> output_file, key
+			else:
+				print >> output_file, key, dict[key]
 
 def get_args():
 	desc = ""
@@ -187,8 +238,6 @@ def get_args():
 
 if __name__ == '__main__':
 	options = get_args()
-	#path = "/home/guoxing/node1/disk2/solid/song_1/prem_rmsk_indel/seed_distribution/"
-	#os.chdir(path)
 
 	start_time = time.time()
 	global data
@@ -199,5 +248,15 @@ if __name__ == '__main__':
 	data.hifi_result_file = options.hifiResult
 
 	seed_distribution()
+	print len(data.seed_error_list)
+	print len(data.hifi_error_list)
 
-	#print "run time is: ", round((time.time() - start_time), 3), "s"
+	calculate_distance()
+	print len(data.seed_hifi_error_dis_list)
+	#print data.seed_hifi_error_dis_list
+	print get_average(data.seed_hifi_error_dis_list)
+
+	fill_bucket()
+
+
+	print "run time is: ", round((time.time() - start_time), 3), "s"

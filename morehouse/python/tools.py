@@ -170,7 +170,6 @@ def wccount(file_name):
 	).communicate()[0]
 	return int(out.partition(b' ')[0])
 
-
 def getTotalBaseNum(fileName):
 	totalBase = 0
 	f = open(currentPath + fileName, "r")
