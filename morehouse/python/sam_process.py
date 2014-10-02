@@ -3,7 +3,7 @@
 # this is for pre-processing the sam file before snpPick
 # It can process single-end file, pair-end file
 
-import os, glob, subprocess, random, operator, time, sys, math
+import os, glob, subprocess, random, operator, time, sys, math, string
 from optparse import OptionParser
 from tools import *
 from repeatRemove_sorted import *
@@ -933,6 +933,54 @@ def mimi_solid_base_remove(sam_file):
 	print "removed reads: ", total_reads_num-reads_after_process_total_number
 	print "removed percentage: ", round(float(total_reads_num-reads_after_process_total_number)/total_reads_num, 2)
 
+
+def sep_pairend():
+	"""
+	seperate pariend from simulation data
+	:return:
+	"""
+	n = 0
+	with open(parameter.sam_file_name + "_1.txt", "w") as sam_output_first:
+		with open(parameter.sam_file_name + "_2.txt", "w") as sam_output_second:
+			with open(parameter.sam_file, "r") as sam_input:
+				for line in sam_input:
+					n += 1
+					if line.startswith("@"):
+						print >> sam_output_first, line.strip()
+						print >> sam_output_second, line.strip()
+					else:
+						if n % 2 == 0:
+							print >> sam_output_first, line.strip()
+						elif n % 2 == 1:
+							print >> sam_output_second, line.strip()
+
+def add_length():
+	target_length = 101
+	with open(parameter.sam_file_name + "_" + str(target_length) + ".txt", "w") as sam_output:
+		with open(parameter.sam_file, "r") as sam_input:
+			for line in sam_input:
+				if line.startswith("@"):
+					print >> sam_output, line.strip()
+				else:
+					line = line.strip()
+					elements = line.split()
+					cigar = elements[5]
+					ori_seq = elements[9]
+					ori_qs = elements[10]
+					seq = elements[9]
+					qs = elements[10]
+
+					seq_length = len(seq)
+					for i in range(target_length - seq_length):
+						seq += "N"
+						qs += "R"
+					line = string.replace(line, cigar, str(target_length)+"M", 1)
+					line = string.replace(line, ori_seq, seq, 1)
+					line = string.replace(line, ori_qs, qs, 1)
+
+					print >> sam_output, line
+
+
 def sam_process(sam_file, chr_name, mode):
 	if mode == "single":
 		single_end_indel(sam_file, chr_name)
@@ -966,6 +1014,10 @@ def sam_process(sam_file, chr_name, mode):
 		mimi_solid_base_remove(sam_file)
 	elif mode == "ext_single":
 		extract_single_overlapped_read(parameter.sam_file)
+	elif mode == "add_length":
+		add_length()
+	elif mode == "sep_pairend":
+		sep_pairend()
 	elif mode == "mimi":
 		ori_sam_file_name = parameter.sam_file_name
 		"""

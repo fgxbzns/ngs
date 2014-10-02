@@ -73,7 +73,7 @@ if __name__ == '__main__':
 	folder_name = options.folder_name
 
 	start_time = time.time()
-	#print get_size(folder_name)
+	print get_size(folder_name)
 	output_size(folder_name)
 	elapsed_time = time.time() - start_time
 	print "elapsed_time is: ", round(elapsed_time, 2), "s"

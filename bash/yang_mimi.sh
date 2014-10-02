@@ -2,19 +2,25 @@
 ngs_path="/home/guoxing/disk2/ngs/morehouse/python/"
 
 # for hg18 solid mimi data
-project_path="/home/guoxing/disk2/lima/yang/"
-sam_path="/home/guoxing/disk2/lima/yang/mimi_yang_sam/"
-db_path="/home/guoxing/disk2/lima/yang/mimi_yang_snpPick_db/"
+#project_path="/home/guoxing/disk2/lima/yang/"
+#sam_path="/home/guoxing/disk2/lima/yang/mimi_yang_sam/"
+#db_path="/home/guoxing/disk2/lima/yang/mimi_yang_snpPick_db/"
+
+
+project_path="/home/guoxing/storage1/lima/yang/"
+sam_path=$project_path"mimi_yang_sam/"
+db_path=$project_path"mimi_yang_snpPick/"
 
 chr19_length='63811651'
-#cd $sam_path
-cd $db_path
-
 #cd $project_path
+cd $sam_path
+#cd $db_path
+
+
 chr_name="chr19"
 
 #for((i=$1; i<=$2; i++))
-for((i=8; i<=8; i++))
+for((i=1; i<=24; i++))
 	do
 	fastq_file="tag_"$i".fastq"
 	folder_name="tag_"$i
@@ -42,18 +48,18 @@ for((i=8; i<=8; i++))
 	# variation call
 	processed_sam_file="tag_"$i"_seqRem_all_"$chr_name"_XA_sorted_rmsk_single_indel.sam"
 	echo $processed_sam_file
-	db_file="tag_"$i"_"$chr_name"_qs20"
-	#$ngs_path"snpPick_fish_sql_lima.py" -s $processed_sam_file -c $chr_name -m update -d $db_file
+	#db_file="tag_"$i"_"$chr_name"_qs20"
+	$ngs_path"snpPick_all.py" -s $processed_sam_file -c $chr_name -m yang
 
 	# output variation call
 	#snpPick_fish -c chr -m mf -b startLine -e endLine -d db_name
-	$ngs_path"snpPick_fish_sql_lima.py" -c $chr_name -m mf -b 0 -e $chr19_length -d $db_file &
+	#$ngs_path"snpPick_fish_sql_lima.py" -c $chr_name -m mf -b 0 -e $chr19_length -d $db_file &
 
 	wait
-	#rm $fastq_file
 	#cd ..
 	done
 
+mv *.txt $db_path
 
 : '
 # to sort chr in rmsk file by starting position

@@ -27,7 +27,7 @@ class parameter:
 		self.db_name = ""
 		self.db_base_name = ""
 		self.ref_file = ""
-		self.second_largest_allele_depth_cutoff = 5
+		self.second_largest_allele_depth_cutoff = 2
 		self.quality_score_threshold = 30
 
 class position_data:
@@ -39,6 +39,11 @@ class position_data:
 		self.T_depth = 0
 		self.C_depth = 0
 		self.G_depth = 0
+
+		self.A_qs = ""
+		self.T_qs = ""
+		self.C_qs = ""
+		self.G_qs = ""
 
 def get_ref_geno(parameters):
 	chr_seq = ""
@@ -484,6 +489,7 @@ def variant_call_pair_end(parameters):
 	the sequence pair has already been processed
 	now treat the read as single end
 	using temp_dict
+	output qs or not
 	"""
 
 	total_reads_number = wccount(parameters.sam_file)
@@ -545,6 +551,9 @@ def variant_call_pair_end(parameters):
 										parameters.temp_data_dict_counter += 1
 										parameters.total_called_pos += 1
 
+									process_covered_allele(parameters, current_base_position, covered_snp)
+									#process_covered_allele_qs(parameters, current_base_position, covered_snp, quality_score_symbol)
+									"""
 									if covered_snp == "A":
 										parameters.temp_data_dict[current_base_position].A_depth += 1
 									elif covered_snp == "T":
@@ -553,6 +562,7 @@ def variant_call_pair_end(parameters):
 										parameters.temp_data_dict[current_base_position].C_depth += 1
 									elif covered_snp == "G":
 										parameters.temp_data_dict[current_base_position].G_depth += 1
+									"""
 
 								# output the data when it reaches the size limit
 								if parameters.temp_data_dict_counter > parameters.temp_data_dict_max_limit:
@@ -564,6 +574,40 @@ def variant_call_pair_end(parameters):
 		#print "last temp dict size", len(parameters.temp_data_dict)
 		output_temp_dict(parameters)
 	return total_reads_num
+
+
+def process_covered_allele(parameters, current_base_position, covered_snp):
+	if covered_snp == "A":
+		parameters.temp_data_dict[current_base_position].A_depth += 1
+	elif covered_snp == "T":
+		parameters.temp_data_dict[current_base_position].T_depth += 1
+	elif covered_snp == "C":
+		parameters.temp_data_dict[current_base_position].C_depth += 1
+	elif covered_snp == "G":
+		parameters.temp_data_dict[current_base_position].G_depth += 1
+
+def process_covered_allele_qs(parameters, current_base_position, covered_snp, quality_score_symbol):
+	"""
+	output qs for each allele
+	:param current_base_position:
+	:param covered_snp:
+	:param quality_score_symbol:
+	:return:
+	"""
+
+	if covered_snp == "A":
+		parameters.temp_data_dict[current_base_position].A_depth += 1
+		parameters.temp_data_dict[current_base_position].A_qs += quality_score_symbol
+	elif covered_snp == "T":
+		parameters.temp_data_dict[current_base_position].T_depth += 1
+		parameters.temp_data_dict[current_base_position].T_qs += quality_score_symbol
+	elif covered_snp == "C":
+		parameters.temp_data_dict[current_base_position].C_depth += 1
+		parameters.temp_data_dict[current_base_position].C_qs += quality_score_symbol
+	elif covered_snp == "G":
+		parameters.temp_data_dict[current_base_position].G_depth += 1
+		parameters.temp_data_dict[current_base_position].G_qs += quality_score_symbol
+
 
 def output_temp_dict(parameters):
 	#current_time = time.time()
@@ -580,11 +624,83 @@ def output_temp_dict(parameters):
 	for i in range(output_size):
 		temp_pos_data = parameters.temp_data_dict[sorted_pos_list[i]]
 		print >> parameters.output_file, temp_pos_data.pos, temp_pos_data.chr_name, temp_pos_data.ref_allele, \
-				temp_pos_data.A_depth, temp_pos_data.T_depth, temp_pos_data.C_depth, temp_pos_data.G_depth
+				temp_pos_data.A_depth, temp_pos_data.T_depth, temp_pos_data.C_depth, temp_pos_data.G_depth,
+		if temp_pos_data.A_depth > 0:
+			print >> parameters.output_file, "A_qs:", temp_pos_data.A_qs,
+		if temp_pos_data.T_depth > 0:
+			print >> parameters.output_file, "T_qs:", temp_pos_data.T_qs,
+		if temp_pos_data.C_depth > 0:
+			print >> parameters.output_file, "C_qs:", temp_pos_data.C_qs,
+		if temp_pos_data.G_depth > 0:
+			print >> parameters.output_file, "G_qs:", temp_pos_data.G_qs,
+		print >> parameters.output_file, ""
+
 		del parameters.temp_data_dict[sorted_pos_list[i]]
 	parameters.temp_data_dict_counter = 0
 	#print "after output", len(parameters.temp_data_dict)
 	#print "take time: ", round(time.time() - current_time, 3), "s"
+
+
+def data_filter_txt(line, parameters):
+	"""
+	prepare data portion for output_filtered_data_txt
+	"""
+	item = line.strip().split()
+	temp_list = [int(x) for x in item[3:7]]
+	allele_list = [int(x) for x in item[3:7]]
+	# if temp_list.count(0) < 3: # remove homo position
+	number_of_zero = temp_list.count(0)
+	if number_of_zero == 2:
+		# Remove the postions with 3 zeros and filter by the second_largest_allele_depth
+		temp_list.sort()
+		second_largest_allele_depth = temp_list[2]
+		if second_largest_allele_depth >= parameters.second_largest_allele_depth_cutoff:
+			line = list_to_line(list((
+					item[0], item[1], item[2], item[3], item[4], item[5], item[6], (4 - number_of_zero), temp_list[3],
+					temp_list[2], temp_list[1],
+					temp_list[0])))
+			#print line
+			return line
+	return ""
+
+def output_filtered_data_txt_all(parameters):
+	"""
+	to filter data from txt file, all position
+	"""
+	output_file_name = parameters.db_base_name + "_all.txt"
+	print "output in progress: ", parameters.db_name
+	print "second largest allele: ", parameters.second_largest_allele_depth_cutoff
+	with open(output_file_name, "w") as output_file:
+		print >> output_file, "pos", "chr", "ref_allele", "A", "T", "C", "G", \
+			"Allele#", "1st", "2nd", "3rd", "4th", "rs#", "SNP_allele_1", "SNP_allele_2", "mm_snp_overlapping"
+		with open(parameters.db_name, "r") as input_file:
+			for line in input_file:
+				line = data_filter_txt(line, parameters)
+				if line != "":
+					print >> output_file, line
+
+
+def output_filtered_data_txt(start_line, end_line, parameters):
+	"""
+	to filter data from txt file
+	"""
+	output_file_name = parameters.db_base_name + "_" + start_line + "_" + end_line + ".txt"
+
+	start_line = int(start_line)
+	end_line = int(end_line)
+	total_row_number = end_line - start_line
+	with open(output_file_name, "w") as output_file:
+		print >> output_file, "pos", "chr", "ref_allele", "A", "T", "C", "G", \
+			"Allele#", "1st", "2nd", "3rd", "4th", "rs#", "SNP_allele_1", "SNP_allele_2", "mm_snp_overlapping"
+		if total_row_number < 0:
+			print "end point smaller than start point"
+			sys.exit(0)
+		else:
+			with open(parameters.db_name, "r") as input_file:
+				for line in input_file:
+					line = data_filter_txt(line)
+					if line != "":
+						print >> output_file, line
 
 def get_args():
 	desc = "variation call"
@@ -624,7 +740,7 @@ if __name__ == '__main__':
 
 	parameters = parameter()
 	parameters.chr_name = chr_name
-	parameters.second_largest_allele_depth_cutoff = 5
+	parameters.second_largest_allele_depth_cutoff = 2
 
 	parameters.quality_score_threshold = options.qscore
 	#quality_score_threshold = 13

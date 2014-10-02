@@ -694,6 +694,13 @@ def seed_recover_extract_ref_1():
 
 	return revised_seed_dict
 
+def ref_only_extend():
+
+	pass
+
+
+
+
 def remove_single_refID():
 	refID_dict = {}
 
@@ -1142,6 +1149,171 @@ def add_seed_by_linkage_longestLD():
 
 	print len(seed_pos_list)
 
+	new_seed_file_name = "haplotype_link.txt"
+	output_revised_seed(new_seed_file_name, data_dict.seed_dict)
+	same_to_A_dict, same_to_B_dict = seed_std_compare(new_seed_file_name, chr_name)
+
+	#hap_bkup = "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict))
+	#os.system("cp haplotype.txt " + hap_bkup)
+	#os.system("mv " + hap_bkup + " seed_file")
+
+def add_seed_by_linkage_100():
+	"""
+	add bridge if length > 100, otherwise add the longest
+	:return:
+	"""
+	refID_dict = {}
+
+	refID_A_count_dict = {}
+	refID_B_count_dict = {}
+
+	refID_list = data_dict.ref_title_info.strip().split()[2:]
+	print "refID_list", len(refID_list)
+	#print refID_list
+
+	hifi_dict = {}
+	hifi_dict = load_raw_data("imputed_" + data_dict.seed_file)[1]
+	print "hifi_dict", len(hifi_dict)
+
+	window_info_dict = load_raw_data("window_" + data_dict.seed_file)[1]
+	print "window_info_dict", len(window_info_dict)
+
+	for pos, elements in window_info_dict.iteritems():
+		if elements[2] != 'NN' and elements[4] != 'NN':
+			window_info = elements[9:]
+			match_to_A_index_list = range(2, len(refID_list))
+			match_to_B_index_list = range(2, len(refID_list))
+			hifi_seq_A = ""
+			hifi_seq_B = ""
+			for window_pos in window_info:
+				try:
+					window_pos = int(window_pos)
+					hifi_seq_A += hifi_dict[window_pos][2]
+					hifi_seq_B += hifi_dict[window_pos][3]
+
+					match_to_A_index_list = [index for index in match_to_A_index_list if data_dict.hap_ref_dict[window_pos][index] == hifi_dict[window_pos][2]]
+					match_to_B_index_list = [index for index in match_to_B_index_list if data_dict.hap_ref_dict[window_pos][index] == hifi_dict[window_pos][3]]
+				except:
+					pass
+					print window_info
+					sys.exit(1)
+			match_to_A_refID = [refID_list[index] for index in match_to_A_index_list]
+			match_to_B_refID = [refID_list[index] for index in match_to_B_index_list]
+
+			for refID in match_to_A_refID:
+				refID_A_count_dict[refID] = 0 if refID not in refID_A_count_dict else (refID_A_count_dict[refID] + 1)
+			for refID in match_to_B_refID:
+				refID_B_count_dict[refID] = 0 if refID not in refID_B_count_dict else (refID_B_count_dict[refID] + 1)
+			match_to_A_seq = ""
+			match_to_B_seq = ""
+
+			for window_pos in window_info:
+				window_pos = int(window_pos)
+				if window_pos != 0:
+					if len(match_to_A_index_list) > 0 and window_pos in data_dict.hap_ref_dict:
+						match_to_A_seq += data_dict.hap_ref_dict[window_pos][match_to_A_index_list[0]]
+					if len(match_to_B_index_list) > 0 and window_pos in data_dict.hap_ref_dict:
+						match_to_B_seq += data_dict.hap_ref_dict[window_pos][match_to_B_index_list[0]]
+
+			#refID_dict[pos] = (hifi_seq_A, hifi_seq_B, list_to_line(match_to_A_refID), match_to_A_seq, list_to_line(match_to_B_refID), match_to_B_seq)
+			refID_dict[pos] = (hifi_seq_A, hifi_seq_B, match_to_A_refID, match_to_A_seq, match_to_B_refID, match_to_B_seq)
+
+	print "**************** group here"
+	refID_sorted_list = sort_dict_by_key(refID_dict)
+
+	i = 0
+	temp_continus_snp = []
+	n_refID_A_common = []
+	n_refID_B_common = []
+
+	seed_dict_from_linkage = {}
+	linkage_size_dict = {}
+
+	snp_ld_length_dict = {}		# to store the LD block size of each snp
+
+	while i < (len(refID_sorted_list)-1):
+		#last_refID_A_common = []
+		pos = refID_sorted_list[i][0]
+		current_snp_data = refID_sorted_list[i][1]
+		next_snp_data = refID_sorted_list[i+1][1]
+		if len(temp_continus_snp) == 0:
+			n_refID_A_common = [id for id in current_snp_data[2] if id in next_snp_data[2]]
+			n_refID_B_common = [id for id in current_snp_data[4] if id in next_snp_data[4]]
+			# to keep a copy of the last common refID of this group. n_refID_A/B_common may become zero in the last check
+			last_common_refID_A = n_refID_A_common
+			last_common_refID_B = n_refID_B_common
+		else:
+			last_common_refID_A = n_refID_A_common
+			last_common_refID_B = n_refID_B_common
+			n_refID_A_common = [id for id in n_refID_A_common if id in next_snp_data[2]]
+			n_refID_B_common = [id for id in n_refID_B_common if id in next_snp_data[4]]
+
+		if len(n_refID_A_common) > 0 and len(n_refID_B_common) > 0:	# use and to make sure both A and B have common refID
+			temp_continus_snp.append(pos)
+			i += 1
+			last_refID_A_common = n_refID_A_common
+		else:
+			if len(temp_continus_snp) > 0:
+				ld_block_size = len(temp_continus_snp)
+				linkage_size_dict[ld_block_size] = (temp_continus_snp, last_refID_A_common)
+				for pos in temp_continus_snp:
+					if pos not in snp_ld_length_dict:
+						snp_ld_length_dict[pos] = ld_block_size
+					else:
+						print "duplicate pos in snp_ld_length_dict:", pos
+
+			temp_continus_snp = []
+			n_refID_A_common = []
+			n_refID_B_common = []
+			last_common_refID_A = []
+			last_common_refID_B = []
+			i += 1
+			#print >> log_file, ""
+
+	linkage_size_sorted_list = sort_dict_by_key(linkage_size_dict)
+	linkage_size_sorted_list.reverse()
+	print "max linkage size:",  linkage_size_sorted_list[0][0], linkage_size_sorted_list[0][1][1]
+	print "min linkage size:",  linkage_size_sorted_list[-1][0]
+
+	max_linkage_pos_list = []
+	#max_linkage_pos_list = linkage_size_sorted_list[0][1][0]
+
+
+	for list in linkage_size_sorted_list:
+		if list[0] >= 5:
+			#print list[0]
+			max_linkage_pos_list.extend(list[1][0])
+			print "list extended:", len(list[1][0])
+		else:
+			max_linkage_pos_list.extend(list[1][0])
+			print "list extended and stopped:", len(list[1][0])
+			break
+
+	same_to_A_dict, same_to_B_dict = seed_std_compare("imputed_haplotype.txt", data_dict.chr_name)
+
+	print "len(max_linkage_pos_list)", len(max_linkage_pos_list)
+
+	ori_seed_pos_list = data_dict.seed_dict.keys()
+	print len(ori_seed_pos_list)
+
+	seed_pos_list = data_dict.seed_dict.keys()
+	#seed_pos_list.extend([x for x in max_linkage_pos_list if x not in ori_seed_pos_list])
+	#seed_pos_list.sort()
+
+	for pos in max_linkage_pos_list:
+		if pos not in ori_seed_pos_list:
+			seed = seeds()
+			seed.rsID = hifi_dict[pos][0]
+			seed.position = int(hifi_dict[pos][1])
+			seed.allele_ori = hifi_dict[pos][2]
+			seed.allele_new = hifi_dict[pos][2]
+			data_dict.seed_dict[int(pos)] = seed
+		else:
+			#print "pos in linked region and in ori seed: ", pos
+			pass
+
+	print len(seed_pos_list)
+
 	new_seed_file_name = "haplotype.txt"
 	output_revised_seed(new_seed_file_name, data_dict.seed_dict)
 	same_to_A_dict, same_to_B_dict = seed_std_compare(new_seed_file_name, chr_name)
@@ -1149,6 +1321,7 @@ def add_seed_by_linkage_longestLD():
 	#hap_bkup = "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict))
 	#os.system("cp haplotype.txt " + hap_bkup)
 	#os.system("mv " + hap_bkup + " seed_file")
+
 
 def add_seed_by_linkage_Jan212014():
 	refID_dict = {}
@@ -1206,16 +1379,7 @@ def add_seed_by_linkage_Jan212014():
 				
 			#refID_dict[pos] = (hifi_seq_A, hifi_seq_B, list_to_line(match_to_A_refID), match_to_A_seq, list_to_line(match_to_B_refID), match_to_B_seq)
 			refID_dict[pos] = (hifi_seq_A, hifi_seq_B, match_to_A_refID, match_to_A_seq, match_to_B_refID, match_to_B_seq)
-			
-			"""
-			if pos == 21917858:
-				print refID_dict[pos]
-				for window_pos in window_info:
-					window_pos = int(window_pos)
-					print hifi_dict[window_pos][2], hifi_dict[window_pos][3],
-					print list_to_line(data_dict.hap_ref_dict[window_pos]),
-					print " "
-			"""
+
 	print "**************** group here"
 	refID_sorted_list = sort_dict_by_key(refID_dict)
 	
@@ -2433,14 +2597,6 @@ def calculate_seed_group_accuracy():
 	print ">=0.9", (sum(seed_percentage_dict[0.9]) + sum(seed_percentage_dict[1.0]))/(len(seed_percentage_dict[0.9]) + len(seed_percentage_dict[1.0]))
 
 
-
-
-
-
-
-
-	
-	
 def combine_hifi_seed(input_prefix, ori_seed_file):
 	"""
 	combine hifi seed from mutiple run based on consistence
@@ -2452,8 +2608,8 @@ def combine_hifi_seed(input_prefix, ori_seed_file):
 	cycle_number = 2
 	ori_seed_dict = load_seed_data(ori_seed_file)[1]
 
-	for i in range (cycle_number):
-		input_subfile_name = input_prefix + str(i)
+	for i in range(1, cycle_number+1):
+		input_subfile_name = input_prefix + str(i) + ".txt"
 		hifi_dict = load_hifi_result(input_subfile_name, hifi_dict)
 	print "hifi_dict seed total number", len(hifi_dict)
 	
@@ -2463,7 +2619,7 @@ def combine_hifi_seed(input_prefix, ori_seed_file):
 			seed = hifi_dict[position]
 			max_base = keywithmaxval(seed.allele_dict)
 			max_value = seed.allele_dict[max_base]
-			seed.allele_new_percentage = float(max_value)/float(cycle_number)
+			seed.allele_new_percentage = float(max_value)/cycle_number
 			if seed.allele_new_percentage >= 0.9:
 				seed.allele_new = max_base
 				revised_seed_dict[position] = seed
@@ -2480,6 +2636,43 @@ def combine_hifi_seed(input_prefix, ori_seed_file):
 	same_to_A_dict, same_to_B_dict = seed_std_compare(output_filename, data_dict.chr_name)
 	os.system("cp " + output_filename + "_haplotype.txt")
 	os.system("cp " + output_filename + "_haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict)))
+
+def combine_seed(input_file_1, input_file_2):
+	"""
+	combine seed from various tests based on consistence
+	"""
+
+	revised_seed_dict = {}
+	hifi_dict = {}
+
+	hifi_dict = load_hifi_result(input_file_1, hifi_dict)
+	print "hifi_dict seed total number 1", len(hifi_dict)
+	hifi_dict = load_hifi_result(input_file_2, hifi_dict)
+	print "hifi_dict seed total number 2", len(hifi_dict)
+
+	for position, snp in hifi_dict.iteritems():
+		if True:
+			seed = hifi_dict[position]
+			max_base = keywithmaxval(seed.allele_dict)
+			max_value = seed.allele_dict[max_base]
+			seed.allele_new_percentage = float(max_value)/2
+			if seed.allele_new_percentage >= 0.9:
+				seed.allele_new = max_base
+				revised_seed_dict[position] = seed
+			else:
+				#print seed.allele_new_percentage
+				pass
+
+	print "consistent seed total number", len(revised_seed_dict)
+	#revised_seed_dict = dict_add(ori_seed_dict, revised_seed_dict)
+	print "new seed total number", len(revised_seed_dict)
+	output_filename = "haplotype_combined.txt"
+	output_revised_seed(output_filename, revised_seed_dict)
+
+	same_to_A_dict, same_to_B_dict = seed_std_compare(output_filename, data_dict.chr_name)
+	os.system("cp " + output_filename + "_haplotype.txt")
+	os.system("cp " + output_filename + "_haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict)))
+
 
 def multple_ref_expand(seed_file, chr_name, mode):
 	sub_cycle = 2
@@ -2968,6 +3161,60 @@ def output_genohomo(filename):
 		print >> seed_new_file, line
 	seed_new_file.close()
 
+def ref_bridge_corssover(seed_file, chr_name, mode):
+	# used to generate the 100-cycle figure, use LD, does not include ref remove
+	sub_cycle = data_dict.cycle_number
+	haplotype_file = "haplotype.txt"
+
+	os.system("cp haplotype.txt haplotype_ori.txt")
+
+	record_file = open(data_dict.record_file_name, "w")
+	print >> record_file, "id", "total hetero", "A", "B", "B%"
+	i = 1
+	while i <= 5:
+
+		os.system("cp haplotype.txt haplotype_ori.txt")
+
+		# ref
+		remPercent = float(random.randrange(20, 50))/100
+		print "remPercent", remPercent
+		haplotype_file = "haplotype.txt"
+		refMerger(haplotype_file, chr_name, remPercent)
+		hifi_run(haplotype_file, data_dict.chr_name)
+		hifi_result = "imputed_haplotype.txt"
+		refMerger(hifi_result, chr_name, 0)
+		seed_std_compare(haplotype_file, data_dict.chr_name)
+		ref_temp_file = "haplotype_ref_" + str(i) + ".txt"
+		os.system("cp haplotype.txt " + ref_temp_file)
+
+		os.system("cp haplotype_ori.txt haplotype.txt")
+		for j in range(3):
+			hifi_run(haplotype_file, data_dict.chr_name)
+
+			mode = "100"
+			print "########### linkage expand #########", j
+			seed_correction(seed_file, chr_name, mode)
+
+			same_to_A_dict, same_to_B_dict = seed_std_compare(haplotype_file, data_dict.chr_name)
+			seed_same_to_A = len(same_to_A_dict)
+			seed_same_to_B = len(same_to_B_dict)
+			B_in_hetero = round((float(seed_same_to_B)/float(seed_same_to_A + seed_same_to_B))*100, 2)
+			print >> record_file, "LD", i, seed_same_to_A+seed_same_to_B, seed_same_to_A, seed_same_to_B, B_in_hetero
+
+			hap_bkup = "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict))
+			os.system("cp haplotype.txt " + hap_bkup)
+			os.system("mv " + hap_bkup + " seed_file")
+
+		bridge_temp_file = "haplotype_bridge_" + str(i) + ".txt"
+		os.system("cp haplotype.txt " + bridge_temp_file)
+
+		combine_seed(ref_temp_file, bridge_temp_file)
+
+		os.system("cp haplotype_combined.txt haplotype.txt")
+
+		i += 1
+
+
 def overall_process_3(seed_file, chr_name, mode):
 	sub_cycle = data_dict.cycle_number
 	haplotype_file = "haplotype.txt"
@@ -3314,6 +3561,10 @@ def seed_correction(seed_file, chr_name, mode):
 		overall_process_3(seed_file, chr_name, mode)
 	elif mode == "overall4":
 		overall_process_4(seed_file, chr_name, mode)
+	elif mode == "crossover":
+		ref_bridge_corssover(seed_file, chr_name, mode)
+
+
 
 	elif mode == "refid":
 		get_refID()
@@ -3322,6 +3573,8 @@ def seed_correction(seed_file, chr_name, mode):
 	elif mode == "linkage":
 		#add_seed_by_linkage()
 		add_seed_by_linkage_longestLD()
+	elif mode == "100":
+		add_seed_by_linkage_100()
 
 	elif mode == "ref_f":
 		data_dict.load_ref_allele_frequence()
@@ -3449,11 +3702,16 @@ def seed_correction(seed_file, chr_name, mode):
 		seed_std_compare(file_name, chr_name)
 		
 	
-	elif mode == "combine":
+	elif mode == "combine_hifi":
 		#input_prefix = "haplotype_error_removed.txt_"
-		input_prefix = "seed_from_hifi.txt_"
+		#input_prefix = "seed_from_hifi.txt_"
+		input_prefix = "imputed_haplotype_"
 
-		combine_hifi_seed(input_prefix, "haplotype_ori.txt")
+		combine_hifi_seed(input_prefix, "haplotype.txt")
+	elif mode == "combine":
+		input_file_1 = "haplotype_ref.txt"
+		input_file_2 = "haplotype.txt_4220_866"
+		combine_seed(input_file_1, input_file_2)
 	
 	elif mode == "seed_v":
 		seed_verify_reverse()

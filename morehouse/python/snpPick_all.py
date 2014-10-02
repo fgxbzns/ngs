@@ -77,6 +77,32 @@ if __name__ == '__main__':
 			snpPick(parameters)
 			parameters.output_file.close()
 
+	elif (mode == "yang"):
+		# keep all alleles disregarding qs and depth
+		parameters.quality_score_threshold = options.qscore
+		parameters.quality_score_threshold = 30
+		print "quality_score_threshold: ", parameters.quality_score_threshold
+		parameters.second_largest_allele_depth_cutoff = 1
+
+		# for exon data
+		ref_path = "/home/guoxing/disk2/UCSC_hg18_index_lm/"
+		parameters.ref_file = ref_path + "hg18chr_" + parameters.chr_name + ".fa"
+		print "ref file", parameters.ref_file
+
+		if (mode == "yang"):
+			parameters.sam_file = options.samFile
+			parameters.sam_file_name = parameters.sam_file[:parameters.sam_file.find('.')]
+			output_file_name = parameters.sam_file_name + "_qs" + str(parameters.quality_score_threshold) + ".txt"
+			parameters.output_file = open(output_file_name, "w")
+
+			snpPick(parameters)
+			parameters.output_file.close()
+	elif (mode == "output"):
+		parameters.db_name = options.dbname
+		parameters.db_base_name = parameters.db_name[:-4]
+		parameters.second_largest_allele_depth_cutoff = 2
+		output_filtered_data_txt_all(parameters)
+
 	print "run time: ", round(time.time() - start_time, 3), "s"
 	#print "snp_in_mimi", parameters.snp_in_mimi
 	#print "total_mimi", parameters.total_mimi

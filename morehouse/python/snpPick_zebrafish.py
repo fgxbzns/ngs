@@ -38,9 +38,9 @@ if __name__ == '__main__':
 	parameters.chr_name = options.chrName
 
 	#parameters.quality_score_threshold = options.qscore
-	parameters.quality_score_threshold = 30
+	parameters.quality_score_threshold = 0
 	print "quality_score_threshold: ", parameters.quality_score_threshold
-	parameters.second_largest_allele_depth_cutoff = 5
+	parameters.second_largest_allele_depth_cutoff = 1
 
 
 	# for zebra fish mimi data
