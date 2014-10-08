@@ -69,12 +69,16 @@ def process_html(fbo_file_name):
 						next_line = fbo_file.readline().strip()
 						if next_line.startswith("<"):
 							# only one line for DESC
-							line += "<" + label + ">"
+							line += "</" + label + ">"
 							print >> output_file, line
 
-							label = next_line[1:next_line.find(">")]
-							next_line += "<" + label + ">"
-							print >> output_file, next_line
+							if next_line.startswith("</"):
+								# PRESOL follows DESC
+								print >> output_file, next_line
+							else:
+								label = next_line[1:next_line.find(">")]
+								next_line += "</" + label + ">"
+								print >> output_file, next_line
 							line = fbo_file.readline().strip()
 
 						else:
@@ -85,7 +89,7 @@ def process_html(fbo_file_name):
 								# loop over all the lines for DESC
 								next_line = fbo_file.readline().strip()
 								if next_line.startswith("<"):
-									line += "<" + label + ">"
+									line += "</" + label + ">"
 									print >> output_file, line
 									line = next_line.strip()
 								else:
@@ -93,7 +97,7 @@ def process_html(fbo_file_name):
 									line = next_line.strip()
 					else:
 						# for all other tags
-						line += "<" + label + ">"
+						line += "</" + label + ">"
 						print >> output_file, line
 						line = fbo_file.readline().strip()
 			else:
