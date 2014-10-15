@@ -135,18 +135,16 @@ def seed_calculation(temp_result_dict):
 					hifi_A_pos = 0
 			elif hifi_B == ref_B:
 				hifi_B_pos = 0
-				#hifi_error -= 1
+				#hifi_error += 1
 			elif (ref_A == "X" or ref_B == "X"):
 				hifi_X_pos = 0
 				#hifi_error += 1vi
 			elif (ref_A == "N" or ref_B == "N"):
 				hifi_N_pos = 0
-				#hifi_error -= 1
 			else:
 				if (ref_A == "A" and ref_B == "T") or (ref_A == "C" and ref_B == "G") or (
 							ref_A == "T" and ref_B == "A") or (ref_A == "G" and ref_B == "C"):
 					AT_CG_number += 1
-					#hifi_error -= 1
 					pass
 				else:
 					hifi_error += 1

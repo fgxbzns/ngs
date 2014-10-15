@@ -1325,11 +1325,14 @@ def add_seed_by_linkage_100():
 
 def add_seed_by_bridge():
 	# use bridge to impute missing snps in middle
+
+	# a dict to store ref_ID for each position
 	refID_dict = {}
 
 	refID_A_count_dict = {}
 	refID_B_count_dict = {}
 
+	# list to store the ref_ID
 	refID_list = data_dict.ref_title_info.strip().split()[2:]
 	print "refID_list", len(refID_list)
 	#print refID_list
@@ -1453,7 +1456,7 @@ def add_seed_by_bridge():
 
 	same_to_A_dict, same_to_B_dict = seed_std_compare("imputed_haplotype.txt", data_dict.chr_name)
 
-	linkage_dict = {}
+	linkage_dict = {}           # used to store the size of each bridge
 
 	for data in linkage_size_list:
 		if data[0] in linkage_dict:
@@ -1463,8 +1466,156 @@ def add_seed_by_bridge():
 		if data[0] >= 90:
 			print data[0]
 
-	for key in linkage_dict.keys():
-		print key, linkage_dict[key]
+	#for key in linkage_dict.keys():
+		#print key, linkage_dict[key]
+	"""
+	for i in (0, 1):
+		print linkage_size_list[i][0]
+		print linkage_size_list[i][1]
+		print linkage_size_list[i][2]
+	"""
+	ref_ID = "NA12348_A"
+	for data in linkage_size_list:
+		if ref_ID in data[2]:
+			#print data[2]
+			pass
+
+	refID_bridge_dict = {}
+
+	for ref_id in refID_list:
+		for data in linkage_size_list:
+			if ref_id in data[2]:
+				if ref_id not in refID_bridge_dict:
+					refID_bridge_dict[ref_id] = []
+				else:
+					refID_bridge_dict[ref_id].append(data)
+	"""
+	for ref_id in refID_bridge_dict.keys():
+		print ref_id, len(refID_bridge_dict[ref_id])
+	"""
+
+	# to get the refID with longest bridge
+	refID_bridge_length_dict = {}
+
+	for ref_id, bridge_on_one_ref in refID_bridge_dict.iteritems():
+		if ref_id not in refID_bridge_length_dict:
+			refID_bridge_length_dict[ref_id] = 0
+		for bridge in bridge_on_one_ref:
+			#print len(bridge[2])
+			refID_bridge_length_dict[ref_id] += len(bridge[1])
+
+	refID_bridge_length_sorted_list = sort_dict_by_key(refID_bridge_length_dict)
+	print "length ", refID_bridge_length_sorted_list[0]
+
+	refID_longest_bridge = refID_bridge_length_sorted_list[0][0]
+
+
+	bridge_dict = {}    # a matrix to store bridge information
+
+	for data in linkage_size_list:
+		for pos in data[1]:
+			#print data[1]
+			if pos not in bridge_dict:
+				bridge_dict[pos] = []
+			for ref_id in data[2]:
+				bridge_dict[pos].append(ref_id)
+			#print pos, len(bridge_dict[pos])
+	print "bridge_dict ", len(bridge_dict)
+
+
+	#print bridge pattern
+	bridge_dict_sorted_list = sort_dict_by_key(bridge_dict)
+	"""
+	print "\t",
+	for ref_id in refID_list:
+		print ref_id,
+	print ""
+
+	for data in bridge_dict_sorted_list:
+		pos = data[0]
+		print pos,
+		for ref_id in refID_list:
+			if ref_id in data[1]:
+				if bridge_seed_equalsTo_std(pos, hifi_dict[pos][2]):
+					print "1\t",
+				else:
+					print "0\t",
+			else:
+				print "\t",
+		print ""
+	"""
+
+	#bridge_pos = bridge_dict.keys()
+	#bridge_pos.sort()
+	#print bridge_pos
+
+	bridge_pos = window_info_dict.keys()
+	bridge_pos.sort()
+	#print bridge_pos
+
+	print len(bridge_pos)
+
+	correct_pos = 0
+	wront_pos = 0
+
+	seed_in_gap_dict = {}
+
+
+	for ref_id in refID_bridge_dict.keys():
+		imputation_window_in_ref = refID_bridge_dict[ref_id]
+		if len(imputation_window_in_ref) >= 2:
+			for i in range(len(imputation_window_in_ref)-1):
+				first_window_size = imputation_window_in_ref[i][0]
+				second_window_size = imputation_window_in_ref[i+1][0]
+				# check the size of the two bridge anchors
+				if first_window_size >= 20 and second_window_size >= 20:
+					last_pos_in_first_window = imputation_window_in_ref[i][1][-1]
+					first_pos_in_second_window = imputation_window_in_ref[i+1][1][0]
+					size_of_gap_on_bridge = bridge_pos.index(first_pos_in_second_window) - bridge_pos.index(last_pos_in_first_window)
+					if size_of_gap_on_bridge <= 20:
+						#print "gap is ", size_of_gap_on_bridge
+						gap_pos_list = bridge_pos[bridge_pos.index(last_pos_in_first_window)+1 : bridge_pos.index(first_pos_in_second_window)]
+						print gap_pos_list
+						max_linkage_pos_list.extend(gap_pos_list)
+						for pos in gap_pos_list:
+							if pos not in seed_in_gap_dict:
+								seed_in_gap_dict[pos] = seeds()
+
+
+								seed = seeds()
+								seed.rsID = hifi_dict[pos][0]
+								seed.position = int(hifi_dict[pos][1])
+								seed.allele_ori = hifi_dict[pos][2]
+								seed.allele_new = hifi_dict[pos][2]
+								data_dict.seed_dict[int(pos)] = seed
+
+
+						"""
+						for base, value in hap_std_dict[current_base_position].allele_dict.iteritems():
+							if base == covered_snp:
+								hap_std_dict[current_base_position].allele_dict[base] += 1
+						"""
+
+
+
+						for pos in gap_pos_list:
+							if bridge_seed_equalsTo_std(pos, hifi_dict[pos][2]):
+								correct_pos += 1
+							else:
+								wront_pos += 1
+
+	print "accuracy perc*****", float(correct_pos)/(correct_pos+wront_pos)
+
+
+
+	"""
+	# extend bridge on one ref
+	for bridge in refID_bridge_dict[refID_longest_bridge]:
+		print bridge[1]
+		if len(bridge[1]) >= 20:
+			max_linkage_pos_list.extend(list(bridge[1]))
+	"""
+
 
 	"""
 	for list in linkage_size_sorted_list:
@@ -1508,6 +1659,27 @@ def add_seed_by_bridge():
 	#hap_bkup = "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict))
 	#os.system("cp haplotype.txt " + hap_bkup)
 	#os.system("mv " + hap_bkup + " seed_file")
+
+
+def bridge_seed_equalsTo_std(pos, bridge_seed):
+	if pos in data_dict.hap_std_dict:
+		std_A = data_dict.hap_std_dict[pos][2]
+		std_B = data_dict.hap_std_dict[pos][3]
+
+		if bridge_seed == std_A:
+			return True
+		elif std_A == "X" or std_B == "X":
+			return False
+		elif std_A == "N" or std_B == "N":
+			return False
+		else:
+			if (std_A == "A" and std_B == "T") or (std_A == "C" and std_B == "G") or (
+				std_A == "T" and std_B == "A") or (std_A == "G" and std_B == "C"):
+				return True
+			else:
+				return False
+	else:
+		return True
 
 def add_seed_by_linkage_Jan212014():
 	refID_dict = {}
