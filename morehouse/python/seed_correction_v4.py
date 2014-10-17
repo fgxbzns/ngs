@@ -47,6 +47,17 @@ class seeds:
 		self.allele_new = ""
 		self.allele_new_percentage = 0
 		self.allele_dict = {'A':0, 'T':0, 'C':0, 'G':0}
+		self.bridge_info = []
+
+
+class bridge_info:
+	def __init__(self):
+		self.refID = ""
+		self.ref_allele = ""
+		self.first_window = 0
+		self.second_window = 0
+		self.first_second_size = 0
+		self.gap_size = 0
 
 def output_revised_seed(filename, revised_seed_dict):
 	seed_new_file = open(currentPath + filename, "w")
@@ -1468,6 +1479,39 @@ def add_seed_by_bridge():
 
 	#for key in linkage_dict.keys():
 		#print key, linkage_dict[key]
+
+	# check the accuracy based on bridge size, output data for every bridge
+	for data in linkage_size_list:
+		bridge_size = data[0]
+		correct_seed = 0
+		for pos in data[1]:
+			if bridge_seed_equalsTo_std(pos, hifi_dict[pos][2]):
+				correct_seed += 1
+		bridge_accuracy = round(float(correct_seed)/len(data[1]), 3)
+		#print "~~~~~", bridge_size, bridge_accuracy
+
+	# check the accuracy based on bridge size, group bridge by size
+	bridge_accuracy_dict = {}
+
+	for data in linkage_size_list:
+		bridge_size = data[0]
+		if bridge_size not in bridge_accuracy_dict:
+			bridge_accuracy_dict[bridge_size] = (0, 0)
+		correct_seed = 0
+		for pos in data[1]:
+			if bridge_seed_equalsTo_std(pos, hifi_dict[pos][2]):
+				correct_seed += 1
+		temp_tuple = (bridge_accuracy_dict[bridge_size][0]+correct_seed, bridge_accuracy_dict[bridge_size][1]+len(data[1]))
+		bridge_accuracy_dict[bridge_size] = temp_tuple
+
+	bridge_accuracy_sorted_list = sort_dict_by_key(bridge_accuracy_dict)
+	for data in bridge_accuracy_sorted_list:
+		print "size, accuracy", data[0], round(float(data[1][0])/data[1][1], 3)
+
+
+
+
+
 	"""
 	for i in (0, 1):
 		print linkage_size_list[i][0]
@@ -1556,65 +1600,123 @@ def add_seed_by_bridge():
 	print len(bridge_pos)
 
 	correct_pos = 0
-	wront_pos = 0
+	wrong_pos = 0
 
-	seed_in_gap_dict = {}
+	seed_in_gap_dict = {}   # to store the pos between two bridge anchors
 
+	refID_list_withrs_pos = data_dict.ref_title_info.strip().split()    # used to locate the index of the allele at certain position with refID
 
 	for ref_id in refID_bridge_dict.keys():
 		imputation_window_in_ref = refID_bridge_dict[ref_id]
-		if len(imputation_window_in_ref) >= 2:
+		if True:
+		#if len(imputation_window_in_ref) >= 2:
 			for i in range(len(imputation_window_in_ref)-1):
 				first_window_size = imputation_window_in_ref[i][0]
 				second_window_size = imputation_window_in_ref[i+1][0]
 				# check the size of the two bridge anchors
-				if first_window_size >= 20 and second_window_size >= 20:
+				if True:
+				#if first_window_size >= 10 and second_window_size >= 10:
 					last_pos_in_first_window = imputation_window_in_ref[i][1][-1]
 					first_pos_in_second_window = imputation_window_in_ref[i+1][1][0]
 					size_of_gap_on_bridge = bridge_pos.index(first_pos_in_second_window) - bridge_pos.index(last_pos_in_first_window)
-					if size_of_gap_on_bridge <= 20:
+					if True:
+					#if size_of_gap_on_bridge <= 10:
 						#print "gap is ", size_of_gap_on_bridge
 						gap_pos_list = bridge_pos[bridge_pos.index(last_pos_in_first_window)+1 : bridge_pos.index(first_pos_in_second_window)]
-						print gap_pos_list
-						max_linkage_pos_list.extend(gap_pos_list)
+						#print gap_pos_list
+						#max_linkage_pos_list.extend(gap_pos_list)
 						for pos in gap_pos_list:
+							refID_index = refID_list_withrs_pos.index(ref_id)
+							#print "refID_index", refID_index
+							ref_allele = data_dict.hap_ref_dict[pos][refID_index]
+							#print "allele", ref_allele
+
 							if pos not in seed_in_gap_dict:
-								seed_in_gap_dict[pos] = seeds()
-
-
 								seed = seeds()
 								seed.rsID = hifi_dict[pos][0]
-								seed.position = int(hifi_dict[pos][1])
+								seed.position = int(pos)
 								seed.allele_ori = hifi_dict[pos][2]
 								seed.allele_new = hifi_dict[pos][2]
-								data_dict.seed_dict[int(pos)] = seed
 
+								bridge_info_t = bridge_info()
+								bridge_info_t.refID = ref_id
+								bridge_info_t.ref_allele = ref_allele
+								bridge_info_t.first_window = first_window_size
+								bridge_info_t.second_window = second_window_size
+								bridge_info_t.first_second_size = first_window_size + second_window_size
+								#print "first_second_size", bridge_info_t.first_second_size
+								bridge_info_t.gap_size = size_of_gap_on_bridge
 
-						"""
-						for base, value in hap_std_dict[current_base_position].allele_dict.iteritems():
-							if base == covered_snp:
-								hap_std_dict[current_base_position].allele_dict[base] += 1
-						"""
+								seed.bridge_info.append(bridge_info_t)
+								seed_in_gap_dict[pos] = seed
 
-
+							for base in seed_in_gap_dict[pos].allele_dict.keys():
+								if base == ref_allele:
+									seed_in_gap_dict[pos].allele_dict[base] += 1
 
 						for pos in gap_pos_list:
 							if bridge_seed_equalsTo_std(pos, hifi_dict[pos][2]):
 								correct_pos += 1
 							else:
-								wront_pos += 1
-
-	print "accuracy perc*****", float(correct_pos)/(correct_pos+wront_pos)
-
-
+								wrong_pos += 1
 
 	"""
+	# to output the seed in river
+	for pos, seed in seed_in_gap_dict.iteritems():
+		std = data_dict.hap_std_dict[pos][2] if pos in data_dict.hap_std_dict else "NA"
+		print pos, seed.rsID, seed.position, "imputation", seed.allele_ori, "std", std,
+		for base, value in seed.allele_dict.iteritems():
+			print base, value, ";",
+
+		print ""
+	"""
+	print "accuracy perc*****", float(correct_pos)/(correct_pos+wrong_pos)
+
+
+	# check the accuracy based on bridge anchor and river size
+	bridge_anchor_accuracy_dict = {}
+
+	for pos, seed in seed_in_gap_dict.iteritems():
+		for bridge_info_t in seed.bridge_info:
+			if bridge_info_t.first_second_size not in bridge_anchor_accuracy_dict:
+				bridge_anchor_accuracy_dict[bridge_info_t.first_second_size] = (0, 0)
+			if bridge_seed_equalsTo_std(pos, bridge_info_t.ref_allele):
+				bridge_anchor_accuracy_dict[bridge_info_t.first_second_size] = (bridge_anchor_accuracy_dict[bridge_info_t.first_second_size][0]+1,
+				                              bridge_anchor_accuracy_dict[bridge_info_t.first_second_size][1]+1)
+			else:
+				bridge_anchor_accuracy_dict[bridge_info_t.first_second_size] = (bridge_anchor_accuracy_dict[bridge_info_t.first_second_size][0],
+				                              bridge_anchor_accuracy_dict[bridge_info_t.first_second_size][1]+1)
+
+	bridge_river_accuracy_sorted_list = sort_dict_by_key(bridge_anchor_accuracy_dict)
+	for data in bridge_river_accuracy_sorted_list:
+		print "bridge anchor size, accuracy", data[0], data[1][0], data[1][1], round(float(data[1][0])/data[1][1], 3)
+
+
+	# check the accuracy based on bridge anchor and river size
+	river_accuracy_dict = {}
+
+	for pos, seed in seed_in_gap_dict.iteritems():
+		for bridge_info_t in seed.bridge_info:
+			if bridge_info_t.gap_size not in river_accuracy_dict:
+				river_accuracy_dict[bridge_info_t.gap_size] = (0, 0)
+			if bridge_seed_equalsTo_std(pos, bridge_info_t.ref_allele):
+				river_accuracy_dict[bridge_info_t.gap_size] = (river_accuracy_dict[bridge_info_t.gap_size][0]+1,
+				                              river_accuracy_dict[bridge_info_t.gap_size][1]+1)
+			else:
+				river_accuracy_dict[bridge_info_t.gap_size] = (river_accuracy_dict[bridge_info_t.gap_size][0],
+				                              river_accuracy_dict[bridge_info_t.gap_size][1]+1)
+
+	river_accuracy_sorted_list = sort_dict_by_key(river_accuracy_dict)
+	for data in river_accuracy_sorted_list:
+		print "river size, accuracy", data[0], data[1][0], data[1][1], round(float(data[1][0])/data[1][1], 3)
+
+
+
 	# extend bridge on one ref
 	for bridge in refID_bridge_dict[refID_longest_bridge]:
-		print bridge[1]
-		if len(bridge[1]) >= 20:
+		#print bridge[1]
+		if len(bridge[1]) >= 15:
 			max_linkage_pos_list.extend(list(bridge[1]))
-	"""
 
 
 	"""
@@ -1652,7 +1754,7 @@ def add_seed_by_bridge():
 
 	print len(seed_pos_list)
 
-	new_seed_file_name = "haplotype_link.txt"
+	new_seed_file_name = "haplotype.txt"
 	output_revised_seed(new_seed_file_name, data_dict.seed_dict)
 	same_to_A_dict, same_to_B_dict = seed_std_compare(new_seed_file_name, chr_name)
 
@@ -1669,9 +1771,9 @@ def bridge_seed_equalsTo_std(pos, bridge_seed):
 		if bridge_seed == std_A:
 			return True
 		elif std_A == "X" or std_B == "X":
-			return False
+			return True
 		elif std_A == "N" or std_B == "N":
-			return False
+			return True
 		else:
 			if (std_A == "A" and std_B == "T") or (std_A == "C" and std_B == "G") or (
 				std_A == "T" and std_B == "A") or (std_A == "G" and std_B == "C"):
@@ -3613,10 +3715,9 @@ def overall_process_1(seed_file, chr_name, mode):
 	record_file = open(data_dict.record_file_name, "w")
 	print >> record_file, "id", "total hetero", "A", "B", "B%"
 	i = 1
-	#for i in range(2):
-	while i <= 100:
+	while i <= 1:
 
-		for j in range(10):
+		for j in range(5):
 
 			remPercent = 0 if j == 0 else float(random.randrange(20, 40))/100
 
@@ -3625,7 +3726,8 @@ def overall_process_1(seed_file, chr_name, mode):
 			refMerger(haplotype_file, chr_name, remPercent)
 
 			hifi_run(haplotype_file, data_dict.chr_name)
-			mode = "linkage"
+			#mode = "linkage"
+			mode = "bridge"
 			print "########### linkage expand #########", i
 			seed_correction(seed_file, chr_name, mode)
 
