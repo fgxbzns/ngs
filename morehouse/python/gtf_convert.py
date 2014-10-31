@@ -41,6 +41,8 @@ def covert_line(line):
 			+ "\"; " + "gene_product \"" + gene_product  \
 			+ "\"; " + "GO_number \"" + go_number + "\"; " \
 			+ "gene_function \"" + gene_function + "\"; "
+			# for sugar beet only. save t_id as gene name
+			#+ "gene_name_ori \"" + gene_name + "\"; "
 
 	except:
 		print "error in ", line
