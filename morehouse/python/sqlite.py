@@ -23,92 +23,92 @@ def check_version(db_name):
 	"""
 	con = None
 	try:
-	    con = lite.connect(db_name)
-	    cur = con.cursor()    
-	    cur.execute('SELECT SQLITE_VERSION()')
-	    data = cur.fetchone()	    
-	    print "SQLite version: %s" % data                	    
+		con = lite.connect(db_name)
+		cur = con.cursor()
+		cur.execute('SELECT SQLITE_VERSION()')
+		data = cur.fetchone()
+		print "SQLite version: %s" % data
 	except lite.Error, e:	    
-	    print "Error %s:" % e.args[0]
-	    sys.exit(1)	    
+		print "Error %s:" % e.args[0]
+		sys.exit(1)
 	finally:
-	    if con:
-	        con.close()
+		if con:
+			con.close()
 	"""  
 	con = lite.connect(db_name)
 	with con:
-	    cur = con.cursor()    
-	    cur.execute('SELECT SQLITE_VERSION()')    
-	    data = cur.fetchone()
-	    print "SQLite version: %s" % data 
+		cur = con.cursor()
+		cur.execute('SELECT SQLITE_VERSION()')
+		data = cur.fetchone()
+		print "SQLite version: %s" % data
 	
 
 def creat_table(db_name, table_name, attribute):
 	try:
-	    con = lite.connect(db_name)
-	    cur = con.cursor()    
-	    cur.execute("DROP TABLE IF EXISTS " + table_name)
-	    cur.execute("CREATE TABLE IF NOT EXISTS "+table_name+" ("+attribute+")")
-	    #con.commit()    
+		con = lite.connect(db_name)
+		cur = con.cursor()
+		cur.execute("DROP TABLE IF EXISTS " + table_name)
+		cur.execute("CREATE TABLE IF NOT EXISTS "+table_name+" ("+attribute+")")
+		#con.commit()
 	except lite.Error, e:
-	    if con:
-	        con.rollback()
-	    print "Error %s:" % e.args[0]
-	    sys.exit(1)
+		if con:
+			con.rollback()
+		print "Error %s:" % e.args[0]
+		sys.exit(1)
 	finally:
-	    if con:
-	        con.close() 
+		if con:
+			con.close()
 
 def execute_querry(con, querry):
 	#con = lite.connect(db_name)
 	with con:    
-	    cur = con.cursor()    
-	    cur.execute(querry)
+		cur = con.cursor()
+		cur.execute(querry)
 
 def execute_querry_0(db_name, querry):
 	con = lite.connect(db_name)
 	with con:    
-	    cur = con.cursor()    
-	    cur.execute(querry)
-	    #rows = cur.fetchall()
-	    #rows = [[str(item) for item in results] for results in cur.fetchall()]
-	    #for row in rows:
-	    #   print row
+		cur = con.cursor()
+		cur.execute(querry)
+		#rows = cur.fetchall()
+		#rows = [[str(item) for item in results] for results in cur.fetchall()]
+		#for row in rows:
+		#   print row
 
 def write_data(db_name, table_name, value):
 	"""
 	try:
-	    con = lite.connect(db_name , isolation_level=None)
-	    cur = con.cursor()
-	    cur.execute("INSERT INTO "+table_name+" VALUES (" + value + ")")    
-	    #con.execute("INSERT INTO zebra_fish (position, chr, read_ID) \
-      #VALUES (1001, 'chr', '1234')");
-	    con.commit()    
+		con = lite.connect(db_name , isolation_level=None)
+		cur = con.cursor()
+		cur.execute("INSERT INTO "+table_name+" VALUES (" + value + ")")
+		#con.execute("INSERT INTO zebra_fish (position, chr, read_ID) \
+	  #VALUES (1001, 'chr', '1234')");
+		con.commit()
 	except lite.Error, e:
-	    if con:
-	        con.rollback()
-	    print "Error %s:" % e.args[0]
-	    sys.exit(1)
+		if con:
+			con.rollback()
+		print "Error %s:" % e.args[0]
+		sys.exit(1)
 	finally:
-	    if con:
-	        con.close()
+		if con:
+			con.close()
 	"""
 	
 	con = lite.connect(db_name)
 	with con:
-	    cur = con.cursor()    
-	    cur.execute("INSERT INTO "+table_name+" VALUES (" + value + ")")    
+		cur = con.cursor()
+		cur.execute("INSERT INTO "+table_name+" VALUES (" + value + ")")
 
 def retrive_data(db_name, table_name):
 	con = lite.connect(db_name)
 	with con:    
-	    cur = con.cursor()    
-	    cur.execute("SELECT * FROM " + table_name)
-	    #rows = cur.fetchall()
-	    rows = [[str(item) for item in results] for results in cur.fetchall()]
-	    return rows
-	    #for row in rows:
-	    #    print row
+		cur = con.cursor()
+		cur.execute("SELECT * FROM " + table_name)
+		#rows = cur.fetchall()
+		rows = [[str(item) for item in results] for results in cur.fetchall()]
+		return rows
+		#for row in rows:
+		#    print row
 
 def select_data(db_name, table_name, querry):
 	con = lite.connect(db_name)
@@ -130,7 +130,7 @@ def check_existing_data(db_name, table_name, pos):
 			return True
 		else:
 			return False
-	        
+
 def get_args():
 	desc="variation call"
 	usage = "snpPick_fish -s sam_file" 
@@ -146,7 +146,7 @@ def get_args():
 
 
 	
-
+"""
 def sam_process():
 	options = get_args()
 	sam_file = options.samFile
@@ -159,7 +159,7 @@ def sam_process():
 		pair_end_indel_multiple()
 	elif mode == "sep":
 		seperate_by_chr(sam_file)
-	
+"""
 	
 if __name__=='__main__':
 	

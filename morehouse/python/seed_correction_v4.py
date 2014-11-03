@@ -54,8 +54,8 @@ class bridge_info:
 	def __init__(self):
 		self.refID = ""
 		self.ref_allele = ""
-		self.first_window = 0
-		self.second_window = 0
+		self.first_window_size = 0
+		self.second_window_size = 0
 		self.first_second_size = 0
 		self.gap_size = 0
 
@@ -1531,12 +1531,11 @@ def add_seed_by_bridge():
 			if ref_id in data[2]:
 				if ref_id not in refID_bridge_dict:
 					refID_bridge_dict[ref_id] = []
-				else:
-					refID_bridge_dict[ref_id].append(data)
-	"""
+				refID_bridge_dict[ref_id].append(data)
+
 	for ref_id in refID_bridge_dict.keys():
 		print ref_id, len(refID_bridge_dict[ref_id])
-	"""
+
 
 	# to get the refID with longest bridge
 	refID_bridge_length_dict = {}
@@ -1553,7 +1552,6 @@ def add_seed_by_bridge():
 
 	refID_longest_bridge = refID_bridge_length_sorted_list[0][0]
 
-
 	bridge_dict = {}    # a matrix to store bridge information
 
 	for data in linkage_size_list:
@@ -1565,7 +1563,6 @@ def add_seed_by_bridge():
 				bridge_dict[pos].append(ref_id)
 			#print pos, len(bridge_dict[pos])
 	print "bridge_dict ", len(bridge_dict)
-
 
 	#print bridge pattern
 	bridge_dict_sorted_list = sort_dict_by_key(bridge_dict)
@@ -1641,8 +1638,11 @@ def add_seed_by_bridge():
 								bridge_info_t = bridge_info()
 								bridge_info_t.refID = ref_id
 								bridge_info_t.ref_allele = ref_allele
-								bridge_info_t.first_window = first_window_size
-								bridge_info_t.second_window = second_window_size
+								bridge_info_t.first_window_size = first_window_size
+
+								bridge_info_t.second_window_size = second_window_size
+								#print "first_second_size", bridge_info_t.first_window_size
+								#print "second_window_size", bridge_info_t.second_window_size
 								bridge_info_t.first_second_size = first_window_size + second_window_size
 								#print "first_second_size", bridge_info_t.first_second_size
 								bridge_info_t.gap_size = size_of_gap_on_bridge
@@ -1678,6 +1678,7 @@ def add_seed_by_bridge():
 
 	for pos, seed in seed_in_gap_dict.iteritems():
 		for bridge_info_t in seed.bridge_info:
+			#print "bridge_info_t.first_second_size", bridge_info_t.first_second_size
 			if bridge_info_t.first_second_size not in bridge_anchor_accuracy_dict:
 				bridge_anchor_accuracy_dict[bridge_info_t.first_second_size] = (0, 0)
 			if bridge_seed_equalsTo_std(pos, bridge_info_t.ref_allele):
@@ -1690,6 +1691,7 @@ def add_seed_by_bridge():
 	bridge_river_accuracy_sorted_list = sort_dict_by_key(bridge_anchor_accuracy_dict)
 	for data in bridge_river_accuracy_sorted_list:
 		print "bridge anchor size, accuracy", data[0], data[1][0], data[1][1], round(float(data[1][0])/data[1][1], 3)
+
 
 
 	# check the accuracy based on bridge anchor and river size
@@ -1708,7 +1710,8 @@ def add_seed_by_bridge():
 
 	river_accuracy_sorted_list = sort_dict_by_key(river_accuracy_dict)
 	for data in river_accuracy_sorted_list:
-		print "river size, accuracy", data[0], data[1][0], data[1][1], round(float(data[1][0])/data[1][1], 3)
+		#print "river size, accuracy", data[0], data[1][0], data[1][1], round(float(data[1][0])/data[1][1], 3)
+		pass
 
 
 
@@ -2603,7 +2606,6 @@ def error_seed_distance(seed_dict, same_to_B_dict):
 			print seed_sorted_list[index-1][0], position - seed_sorted_list[index-1][0],
 			print seed_sorted_list[index+1][0], seed_sorted_list[index+1][0] - position
 
-
 def seed_verify():
 		
 	experiment_seed_file_name = "haplotype_expanded.txt_1822_100"	#original seed from experiment, hifh accuracy
@@ -3486,8 +3488,7 @@ def get_maf(position, allele):
 	else:
 		print "revised allele not in ref_allele please check", position
 		sys.exit(1)
-	
-			
+
 def update_cluster():
 	print "****update_cluster running*****"
 	revised_seed_dict = {}
@@ -3671,7 +3672,6 @@ def ref_bridge_corssover(seed_file, chr_name, mode):
 		os.system("cp haplotype_combined.txt haplotype.txt")
 
 		i += 1
-
 
 def overall_process_3(seed_file, chr_name, mode):
 	sub_cycle = data_dict.cycle_number

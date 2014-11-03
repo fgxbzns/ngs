@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #######################################################################################
-# Guoxing Fu Aug 29, 2013
+# Author: Guoxing Fu Aug 29, 2013
 # find enzyme cut seq in dna seq
 #######################################################################################
 
@@ -46,22 +46,22 @@ def load_dna_seq(file_name):
 	fp1=open(file_name, 'r')
 	seq_list = []
 	for line in fp1:
-	    elements = line.strip().split()
-	    pos=elements[0]
-	    seq=elements[1]
-	    recseq=elements[2]
-	    seq_list.append((pos,seq,recseq))
+		elements = line.strip().split()
+		pos=elements[0]
+		seq=elements[1]
+		recseq=elements[2]
+		seq_list.append((pos,seq,recseq))
 	fp1.close()
 	return seq_list
 
 def check_dna_seq(en_list, seq_list):
-	output3=open('output.txt','w') 
+	output3 = open('output.txt','w')
 	for pos, seq, recseq in seq_list:
-	    for enzyme_name, enzyme_cut in en_list:
-	    	cut_in_seq, matched_seq = enzyme_search(enzyme_cut, seq)
-	    	cut_in_recseq, matched_recseq = enzyme_search(enzyme_cut, recseq)
-	    	if (cut_in_seq and not cut_in_recseq) or (not cut_in_seq and cut_in_recseq):
-	            print >> output3, pos, seq, recseq, enzyme_name, enzyme_cut, "matched_seq: ",matched_seq, "matched_recseq: ", matched_recseq
+		for enzyme_name, enzyme_cut in en_list:
+			cut_in_seq, matched_seq = enzyme_search(enzyme_cut, seq)
+			cut_in_recseq, matched_recseq = enzyme_search(enzyme_cut, recseq)
+			if (cut_in_seq and not cut_in_recseq) or (not cut_in_seq and cut_in_recseq):
+				print >> output3, pos, seq, recseq, enzyme_name, enzyme_cut, "matched_seq: ",matched_seq, "matched_recseq: ", matched_recseq
 	output3.close()
 
 def get_args():
