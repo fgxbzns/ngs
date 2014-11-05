@@ -667,7 +667,7 @@ def output_filtered_data_txt_all(parameters):
 	"""
 	to filter data from txt file, all position
 	"""
-	output_file_name = parameters.db_base_name + "_all.txt"
+	output_file_name = parameters.db_base_name + "_2nd_" + str(parameters.second_largest_allele_depth_cutoff) + ".txt"
 	print "output in progress: ", parameters.db_name
 	print "second largest allele: ", parameters.second_largest_allele_depth_cutoff
 	with open(output_file_name, "w") as output_file:

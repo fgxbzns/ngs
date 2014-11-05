@@ -49,10 +49,16 @@ def compare_data(cons_dict, davis_dict, nature_pos_dict, nature_geneid_dict):
 
 	print "num", num
 
-
+def find_common(list1, list2, snp_list_dict):
+	common_list = [x for x in snp_list_dict[list1] if x in snp_list_dict[list2]]
+	print list1 + " in " + list2, len(common_list)
+	#print common_list
+	for rs in common_list:
+		print rs,
+	print ""
 
 def get_args():
-	desc = "./18to19.py -e hg18 -n hg19 -d delete"
+	desc = ""
 	usage = ""
 	parser = OptionParser(usage=usage, description=desc)
 	parser.add_option("-f", "--folder", type="string", dest="folder_name", help="Input folder name", default="null")
@@ -73,6 +79,32 @@ if __name__ == '__main__':
 	path = "/home/guoxing/disk2/snp_test/"
 	start_time = time.time()
 
+	snp_list_dict = {}
+
+	sun_list = "sun_list"
+	igene = "igene"
+	cancer_list = "cancer_list"
+	k500_list = "k500_list"
+
+	snp_list_dict[sun_list] = read_data(path + "sun.txt", -1)
+	snp_list_dict[igene] = read_data(path + "igene.txt", -1)
+	snp_list_dict[cancer_list] = read_data(path + "Cancer_SNP_Panel_Annotation.txt", 0)
+	snp_list_dict[k500_list] = read_data(path + "OncoArray-500K_B_GeneAnnotation.txt", 0)
+
+	print "sun_list", len(snp_list_dict[sun_list])
+	print "igene", len(snp_list_dict[igene])
+	print "cancer_list", len(snp_list_dict[cancer_list])
+	print "k500_list", len(snp_list_dict[k500_list])
+
+	#find_common(sun_list, igene, snp_list_dict)
+	#find_common(sun_list, igene, snp_list_dict)
+	#for list1 in (sun_list, igene, cancer_list, k500_list):
+	list1 = sun_list
+	for list2 in (sun_list, igene, cancer_list, k500_list):
+		if list1 != list2:
+			find_common(list1, list2, snp_list_dict)
+
+	"""
 	sun_list = read_data(path + "sun.txt", -1)
 	print "sun size", len(sun_list)
 	print sun_list
@@ -98,6 +130,7 @@ if __name__ == '__main__':
 
 	cancer_in_fk = [x for x in cancer_list if x in fk_list]
 	print "cancer_in_fk size", len(cancer_in_fk)
+	"""
 
 
 

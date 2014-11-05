@@ -60,11 +60,6 @@ def convert_file(file):
 					if not chr_name == "chr_":
 						print >> output_file, gtf_line
 
-def convert_ref_transcriptome():
-	"""
-	convert transcriptome from refbeet-1.2 to refbeet-1.1
-	"""
-
 def get_args():
 	desc = "./18to19.py -e hg18 -n hg19 -d delete"
 	usage = ""

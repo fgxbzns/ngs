@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
 	parameters.chr_name = options.chrName
 
-	if (mode == "rat"):
+	if mode == "rat":
 		#parameters.quality_score_threshold = options.qscore
 		parameters.quality_score_threshold = 20
 		print "quality_score_threshold: ", parameters.quality_score_threshold
@@ -57,7 +57,7 @@ if __name__ == '__main__':
 			snpPick(parameters)
 			parameters.output_file.close()
 
-	elif (mode == "exon"):
+	elif mode == "exon":
 		parameters.quality_score_threshold = options.qscore
 		#parameters.quality_score_threshold = 20
 		print "quality_score_threshold: ", parameters.quality_score_threshold
@@ -77,7 +77,7 @@ if __name__ == '__main__':
 			snpPick(parameters)
 			parameters.output_file.close()
 
-	elif (mode == "yang"):
+	elif mode == "yang":
 		# keep all alleles disregarding qs and depth
 		parameters.quality_score_threshold = options.qscore
 		parameters.quality_score_threshold = 30
@@ -97,10 +97,31 @@ if __name__ == '__main__':
 
 			snpPick(parameters)
 			parameters.output_file.close()
-	elif (mode == "output"):
+
+	elif mode == "rnaseq":
+
+		parameters.quality_score_threshold = 20
+		print "quality_score_threshold: ", parameters.quality_score_threshold
+		parameters.second_largest_allele_depth_cutoff = 1
+
+		# for rnaseq data
+		ref_path = "/home/guoxing/disk3/sugarbeet_ref_1_1/"
+		parameters.ref_file = ref_path + "sugarbeet_ref_1_1_" + parameters.chr_name + ".fa"
+		print "ref file", parameters.ref_file
+
+		if (mode == "rnaseq"):
+			parameters.sam_file = options.samFile
+			parameters.sam_file_name = parameters.sam_file[:parameters.sam_file.find('.')]
+			output_file_name = parameters.sam_file_name + "_qs" + str(parameters.quality_score_threshold) + ".txt"
+			parameters.output_file = open(output_file_name, "w")
+
+			snpPick(parameters)
+			parameters.output_file.close()
+
+	elif mode == "output":
 		parameters.db_name = options.dbname
 		parameters.db_base_name = parameters.db_name[:-4]
-		parameters.second_largest_allele_depth_cutoff = 2
+		parameters.second_largest_allele_depth_cutoff = 1
 		output_filtered_data_txt_all(parameters)
 
 	print "run time: ", round(time.time() - start_time, 3), "s"

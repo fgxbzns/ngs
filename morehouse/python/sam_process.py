@@ -15,6 +15,14 @@ class parameters:
 		self.insert_size_lower_bond = 0
 		self.insert_size_upper_bond = 1000
 
+class indel:
+	def __init__(self):
+		self.pos = 0
+		self.chr_name = ""
+		self.ref_allele = ""
+		self.deletion = {}
+		self.insertion = {}
+
 def is_multiple_maping(elements):
 	multiple_maping = False
 	XA = elements[-1].strip()
@@ -609,11 +617,11 @@ def indel_correction(read_seq, qual_line, indel_info):
 		qual_line_final = qual_line
 	return (read_seq_final, qual_line_final)
 
-def indel_process(sam_file):
+def indel_process_rnaseq(sam_file):
+	# for rna seq data, to process indel information
+
 	sam_file_name = sam_file[:(len(sam_file)-4)]
 	print "indel_process: ", sam_file_name
-	#inputFile_sam = open(currentPath + sam_file, "r")
-	#outputFile_sam = open(currentPath + sam_file_name + "_indel.sam", "w")
 	total_reads_num = 0
 	with open(currentPath + sam_file_name + "_indel.sam", "w") as outputFile_sam:
 		with open(currentPath + sam_file, "r") as inputFile_sam:
@@ -622,10 +630,13 @@ def indel_process(sam_file):
 					total_reads_num += 1	
 					elements_first = read.strip().split()
 					try:
-						indel_info = elements_first[5].strip()
+						chr_name = elements_first[2]
+						start_pos = elements_first[3]
+
+						cigar = elements_first[5].strip()
 						read_seq = elements_first[9].strip()
 						qual_line = elements_first[10].strip()
-						read_qual = indel_correction(read_seq, qual_line, indel_info)
+						read_qual = indel_correction(read_seq, qual_line, cigar)
 						read = read.replace(read_seq, read_qual[0])
 						read = read.replace(qual_line, read_qual[1])
 						print >> outputFile_sam, read.strip()		
@@ -633,8 +644,30 @@ def indel_process(sam_file):
 						#print "error in line: ", line
 						pass
 	print "total_reads_num: ", total_reads_num
-	#inputFile_sam.close()
-	#outputFile_sam.close()
+
+def indel_process(sam_file):
+	sam_file_name = sam_file[:(len(sam_file)-4)]
+	print "indel_process: ", sam_file_name
+	total_reads_num = 0
+	with open(currentPath + sam_file_name + "_indel.sam", "w") as outputFile_sam:
+		with open(currentPath + sam_file, "r") as inputFile_sam:
+			for read in inputFile_sam:
+				if not read.startswith("@"):
+					total_reads_num += 1
+					elements_first = read.strip().split()
+					try:
+						indel_info = elements_first[5].strip()
+						read_seq = elements_first[9].strip()
+						qual_line = elements_first[10].strip()
+						read_qual = indel_correction(read_seq, qual_line, indel_info)
+						read = read.replace(read_seq, read_qual[0])
+						read = read.replace(qual_line, read_qual[1])
+						print >> outputFile_sam, read.strip()
+					except:
+						#print "error in line: ", line
+						pass
+	print "total_reads_num: ", total_reads_num
+
 
 def pair_end_indel_multiple():
 	"""problem cannot call itself"""
