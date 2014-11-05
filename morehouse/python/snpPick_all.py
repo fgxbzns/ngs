@@ -118,6 +118,18 @@ if __name__ == '__main__':
 			snpPick(parameters)
 			parameters.output_file.close()
 
+	elif mode == "indel":
+
+		parameters.sam_file = options.samFile
+
+		# for rnaseq data
+		ref_path = "/home/guoxing/disk3/sugarbeet_ref_1_1/"
+		parameters.ref_file = ref_path + "sugarbeet_ref_1_1_" + parameters.chr_name + ".fa"
+		print "ref file", parameters.ref_file
+
+		output_indel(parameters)
+
+
 	elif mode == "output":
 		parameters.db_name = options.dbname
 		parameters.db_base_name = parameters.db_name[:-4]

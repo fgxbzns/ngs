@@ -15,14 +15,6 @@ class parameters:
 		self.insert_size_lower_bond = 0
 		self.insert_size_upper_bond = 1000
 
-class indel:
-	def __init__(self):
-		self.pos = 0
-		self.chr_name = ""
-		self.ref_allele = ""
-		self.deletion = {}
-		self.insertion = {}
-
 def is_multiple_maping(elements):
 	multiple_maping = False
 	XA = elements[-1].strip()

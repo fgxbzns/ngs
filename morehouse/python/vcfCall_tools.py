@@ -30,6 +30,9 @@ class parameter:
 		self.second_largest_allele_depth_cutoff = 2
 		self.quality_score_threshold = 30
 
+		self.indel_dict = {}
+		self.ref_chr_seq = ""
+
 class position_data:
 	def __init__(self):
 		self.pos = 0
@@ -44,6 +47,14 @@ class position_data:
 		self.T_qs = ""
 		self.C_qs = ""
 		self.G_qs = ""
+
+class indel:
+	def __init__(self):
+		self.pos = 0
+		self.chr_name = ""
+		self.ref_allele = ""
+		self.deletion = {}
+		self.insertion = {}
 
 def get_ref_geno(parameters):
 	chr_seq = ""
@@ -701,6 +712,155 @@ def output_filtered_data_txt(start_line, end_line, parameters):
 					line = data_filter_txt(line)
 					if line != "":
 						print >> output_file, line
+
+def output_indel(parameters):
+	"""
+	the sequence pair has already been processed
+	now treat the read as single end
+	using temp_dict
+	to get the indel info
+	"""
+
+	total_reads_number = wccount(parameters.sam_file)
+	percentage_of_total_file = 0
+
+	#chr_seq = get_ref_geno(parameters)
+	parameters.ref_chr_seq = get_ref_geno(parameters)
+	total_reads_num = 0
+
+	with open(parameters.sam_file, "r") as inputfile_sam:
+		for sam_line_first in inputfile_sam:
+
+			insert_size_lower_bond = 0
+			insert_size_upper_bond = 1000
+
+			if not sam_line_first.startswith("@"):
+				current_percent = int(float(total_reads_number * percentage_of_total_file) / 100)
+				if total_reads_num == current_percent:
+					print "current progress: ", percentage_of_total_file
+					percentage_of_total_file += 10
+
+				total_reads_num += 1
+				elements_first = sam_line_first.strip().split()
+				try:
+					read_ID_first = elements_first[0].strip()
+					chrName_first = elements_first[2].strip()
+					insert_size_first = abs(int(elements_first[8].strip()))  # insert_size for second read is negative
+				except:
+					print "error in first read:", sam_line_first
+				if (insert_size_first >= insert_size_lower_bond) and (insert_size_first <= insert_size_upper_bond):
+					if True:  # this is for pair-end verification. Not needed at this moment.
+						if chrName_first.startswith(parameters.chr_name):
+							# first read
+							qName_first = elements_first[0].strip()
+							flag_first = elements_first[1].strip()
+							start_position_first = int(elements_first[3].strip())
+							read_sequence_first = elements_first[9].strip()
+							read_length_first = len(read_sequence_first)
+							quality_score_sequence_first = elements_first[10].strip()
+
+							cigar = elements_first[5].strip()
+
+							if is_indel(cigar):
+								#print sam_line_first
+								#print cigar
+
+								cigar_process(chrName_first, start_position_first, read_sequence_first, cigar, parameters)
+								total_reads_num += 1
+
+	print "del info *******"
+	for pos in parameters.indel_dict.keys():
+		indel = parameters.indel_dict[pos]
+		print pos, indel.chr_name, indel.ref_allele
+		for seq in indel.deletion.keys():
+			print seq, indel.deletion[seq]
+
+	print "insertion info *******"
+	for pos in parameters.indel_dict.keys():
+		indel = parameters.indel_dict[pos]
+		if len(indel.insertion) > 0:
+			print pos, indel.chr_name, indel.ref_allele
+			for seq in indel.insertion.keys():
+				print seq, indel.insertion[seq]
+
+	print "total_del_num", len(parameters.indel_dict)
+	print "total_insertion_num", len([x for x in parameters.indel_dict.keys() if len(parameters.indel_dict[x].insertion) > 0])
+
+	print "total indel number", total_reads_num
+	return total_reads_num
+
+def is_indel(cigar):
+	num_indel = cigar.count("I") + cigar.count("D")
+	num_N = cigar.count("N")
+	is_indel = True if num_indel > 0 and num_N == 0 else False
+	return is_indel
+
+def cigar_process(chr_name, start_pos, read_seq, cigar, parameters):
+
+	current_index = 0
+	indel_length = ""
+	indel_type = ""
+	for info in cigar:
+		try:
+			int(info)
+			indel_length += info
+		except:
+			indel_type = info
+			indel_length = int(indel_length)
+			if indel_type == "M":
+				current_index += indel_length
+			elif indel_type == "D":	# deletion, get ref seq
+				deletion_pos = start_pos + current_index
+				deletion_seq = parameters.ref_chr_seq[deletion_pos: deletion_pos + indel_length]
+				"""
+				print "deletion_pos, deletion_seq", deletion_pos, deletion_seq
+				print "start_pos, current_index", start_pos, current_index
+				print "read", read_seq
+				print "orir", parameters.ref_chr_seq[start_pos - 1 : start_pos + len(read_seq) - 1]
+				"""
+				if deletion_pos not in parameters.indel_dict:
+					temp_indel = indel()
+					temp_indel.pos = deletion_pos
+					temp_indel.chr_name = chr_name
+					temp_indel.deletion[deletion_seq] = 1
+					parameters.indel_dict[deletion_pos] = temp_indel
+				else:
+					if deletion_seq not in parameters.indel_dict[deletion_pos].deletion:
+						parameters.indel_dict[deletion_pos].deletion[deletion_seq] = 1
+					else:
+						parameters.indel_dict[deletion_pos].deletion[deletion_seq] += 1
+
+			elif indel_type == "I": # insertion, get inserted seq
+				insertion_pos = start_pos + current_index
+				insertion_seq = read_seq[current_index : current_index + indel_length]
+				current_index += indel_length
+				"""
+				print "insertion_pos", insertion_seq
+				print "start_pos, current_index", start_pos, current_index
+				print "read", read_seq
+				print "orir", parameters.ref_chr_seq[start_pos - 1 : start_pos + len(read_seq) - 1]
+				"""
+
+				if insertion_pos not in parameters.indel_dict:
+					temp_indel = indel()
+					temp_indel.pos = insertion_pos
+					temp_indel.chr_name = chr_name
+					temp_indel.insertion[insertion_seq] = 1
+					parameters.indel_dict[insertion_pos] = temp_indel
+				else:
+					if insertion_seq not in parameters.indel_dict[insertion_pos].insertion:
+						parameters.indel_dict[insertion_pos].insertion[insertion_seq] = 1
+					else:
+						parameters.indel_dict[insertion_pos].insertion[insertion_seq] += 1
+			else:
+				print indel_length, indel_type
+			indel_length = ""
+			indel_type = ""
+
+
+
+
+
 
 def get_args():
 	desc = "variation call"
