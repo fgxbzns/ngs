@@ -30,7 +30,8 @@ class parameter:
 		self.second_largest_allele_depth_cutoff = 2
 		self.quality_score_threshold = 30
 
-		self.indel_dict = {}
+		self.deletion_dict = {}
+		self.insertion_dict ={}
 		self.ref_chr_seq = ""
 
 class position_data:
@@ -52,9 +53,8 @@ class indel:
 	def __init__(self):
 		self.pos = 0
 		self.chr_name = ""
-		self.ref_allele = ""
-		self.deletion = {}
-		self.insertion = {}
+		self.ref_seq = ""
+		self.alt_seq_dict = {}
 
 def get_ref_geno(parameters):
 	chr_seq = ""
@@ -509,6 +509,8 @@ def variant_call_pair_end(parameters):
 	chr_seq = get_ref_geno(parameters)
 	total_reads_num = 0
 
+	#print >> parameters.output_file, "pos", "chr", "ref_allele", "A", "T", "C", "G"
+
 	with open(parameters.sam_file, "r") as inputfile_sam:
 		for sam_line_first in inputfile_sam:
 
@@ -636,6 +638,8 @@ def output_temp_dict(parameters):
 		temp_pos_data = parameters.temp_data_dict[sorted_pos_list[i]]
 		print >> parameters.output_file, temp_pos_data.pos, temp_pos_data.chr_name, temp_pos_data.ref_allele, \
 				temp_pos_data.A_depth, temp_pos_data.T_depth, temp_pos_data.C_depth, temp_pos_data.G_depth,
+		"""
+		# for qs data
 		if temp_pos_data.A_depth > 0:
 			print >> parameters.output_file, "A_qs:", temp_pos_data.A_qs,
 		if temp_pos_data.T_depth > 0:
@@ -644,6 +648,7 @@ def output_temp_dict(parameters):
 			print >> parameters.output_file, "C_qs:", temp_pos_data.C_qs,
 		if temp_pos_data.G_depth > 0:
 			print >> parameters.output_file, "G_qs:", temp_pos_data.G_qs,
+		"""
 		print >> parameters.output_file, ""
 
 		del parameters.temp_data_dict[sorted_pos_list[i]]
@@ -657,8 +662,11 @@ def data_filter_txt(line, parameters):
 	prepare data portion for output_filtered_data_txt
 	"""
 	item = line.strip().split()
-	temp_list = [int(x) for x in item[3:7]]
-	allele_list = [int(x) for x in item[3:7]]
+	try:
+		temp_list = [int(x) for x in item[3:7]]
+		allele_list = [int(x) for x in item[3:7]]
+	except:
+		print line
 	# if temp_list.count(0) < 3: # remove homo position
 	number_of_zero = temp_list.count(0)
 	if number_of_zero == 2:
@@ -727,6 +735,7 @@ def output_indel(parameters):
 	#chr_seq = get_ref_geno(parameters)
 	parameters.ref_chr_seq = get_ref_geno(parameters)
 	total_reads_num = 0
+	total_indel_reads_num = 0
 
 	with open(parameters.sam_file, "r") as inputfile_sam:
 		for sam_line_first in inputfile_sam:
@@ -766,28 +775,51 @@ def output_indel(parameters):
 								#print cigar
 
 								cigar_process(chrName_first, start_position_first, read_sequence_first, cigar, parameters)
-								total_reads_num += 1
-
+								total_indel_reads_num += 1
+	"""
 	print "del info *******"
-	for pos in parameters.indel_dict.keys():
-		indel = parameters.indel_dict[pos]
-		print pos, indel.chr_name, indel.ref_allele
-		for seq in indel.deletion.keys():
-			print seq, indel.deletion[seq]
+	for pos in parameters.deletion_dict.keys():
+		indel = parameters.deletion_dict[pos]
+		print pos, indel.chr_name, indel.ref_seq,
+		for seq in indel.alt_seq_dict.keys():
+			print seq, indel.alt_seq_dict[seq]
 
 	print "insertion info *******"
-	for pos in parameters.indel_dict.keys():
-		indel = parameters.indel_dict[pos]
-		if len(indel.insertion) > 0:
-			print pos, indel.chr_name, indel.ref_allele
-			for seq in indel.insertion.keys():
-				print seq, indel.insertion[seq]
+	for pos in parameters.insertion_dict.keys():
+		indel = parameters.insertion_dict[pos]
+		if len(indel.alt_seq_dict) > 0:
+			print pos, indel.chr_name, indel.ref_seq,
+			for seq in indel.alt_seq_dict.keys():
+				print seq, indel.alt_seq_dict[seq]
+	"""
 
-	print "total_del_num", len(parameters.indel_dict)
-	print "total_insertion_num", len([x for x in parameters.indel_dict.keys() if len(parameters.indel_dict[x].insertion) > 0])
+	print "total_del_num", len(parameters.deletion_dict)
+	print "total_ins_num", len(parameters.insertion_dict)
+	#print "total_insertion_num", len([x for x in parameters.indel_dict.keys() if len(parameters.indel_dict[x].insertion) > 0])
 
 	print "total indel number", total_reads_num
-	return total_reads_num
+	output_indel_dict(parameters, "insertion")
+	output_indel_dict(parameters, "deletion")
+	return total_indel_reads_num
+
+def output_indel_dict(parameters, file_type):
+	dict = parameters.insertion_dict if file_type == "insertion" else parameters.deletion_dict
+	pos_list = dict.keys()
+	#total_indel_pos_list.extend([x for x in parameters.insertion_dict.keys()])
+	pos_list.sort()
+	#print len(total_indel_pos_list), total_indel_pos_list
+
+	with open(parameters.sam_file_name + "_" + file_type + ".txt", "w") as info_output:
+		print >> info_output, "##fileformat=VCFv4.0"
+		print >> info_output, "##FORMAT=<ID=DP, Number=1, Type=Integer, Description='Read Depth'>"
+		print >> info_output, "##" + file_type + ":" + len(pos_list)
+		print >> info_output, "#CHROM POS ID REF ALT DP"
+		for pos in pos_list:
+				indel = dict[pos]
+				print >> info_output, indel.chr_name[3:], pos, ".", indel.ref_seq,
+				for seq in indel.alt_seq_dict.keys():
+					print >> info_output, seq,
+				print >> info_output, indel.alt_seq_dict[seq]
 
 def is_indel(cigar):
 	num_indel = cigar.count("I") + cigar.count("D")
@@ -796,6 +828,17 @@ def is_indel(cigar):
 	return is_indel
 
 def cigar_process(chr_name, start_pos, read_seq, cigar, parameters):
+	"""
+	:param chr_name:
+	:param start_pos:
+	:param read_seq:
+	:param cigar:
+	:param parameters:
+	:return:
+
+	for vcf format, keep one base before the indel, report that one base and
+	the missing or inserted base
+	"""
 
 	current_index = 0
 	indel_length = ""
@@ -810,56 +853,68 @@ def cigar_process(chr_name, start_pos, read_seq, cigar, parameters):
 			if indel_type == "M":
 				current_index += indel_length
 			elif indel_type == "D":	# deletion, get ref seq
-				deletion_pos = start_pos + current_index
-				deletion_seq = parameters.ref_chr_seq[deletion_pos: deletion_pos + indel_length]
+				deletion_pos = start_pos + current_index - 1
+				ref_seq = parameters.ref_chr_seq[deletion_pos-1: deletion_pos + indel_length]
+				alt_seq = parameters.ref_chr_seq[deletion_pos-1: deletion_pos]
+
+				#print "deletion_pos, deletion_seq", deletion_pos - 1, deletion_seq
+				#print "start_pos, current_index", start_pos, current_index
+
+				# displayed position is one larger than the index
+				display_pos = deletion_pos + 1
 				"""
-				print "deletion_pos, deletion_seq", deletion_pos, deletion_seq
-				print "start_pos, current_index", start_pos, current_index
+				print "deletion_display_pos, REF, ALT", display_pos, ref_seq, alt_seq
 				print "read", read_seq
-				print "orir", parameters.ref_chr_seq[start_pos - 1 : start_pos + len(read_seq) - 1]
+				print "orir", parameters.ref_chr_seq[start_pos - 1: start_pos + len(read_seq) - 1]
 				"""
-				if deletion_pos not in parameters.indel_dict:
+				if display_pos not in parameters.deletion_dict:
 					temp_indel = indel()
 					temp_indel.pos = deletion_pos
 					temp_indel.chr_name = chr_name
-					temp_indel.deletion[deletion_seq] = 1
-					parameters.indel_dict[deletion_pos] = temp_indel
+					temp_indel.ref_seq = ref_seq
+					temp_indel.alt_seq_dict[alt_seq] = 1
+					parameters.deletion_dict[display_pos] = temp_indel
 				else:
-					if deletion_seq not in parameters.indel_dict[deletion_pos].deletion:
-						parameters.indel_dict[deletion_pos].deletion[deletion_seq] = 1
+					if alt_seq not in parameters.deletion_dict[display_pos].alt_seq_dict:
+						parameters.deletion_dict[display_pos].alt_seq_dict[alt_seq] = 1
 					else:
-						parameters.indel_dict[deletion_pos].deletion[deletion_seq] += 1
+						parameters.deletion_dict[display_pos].alt_seq_dict[alt_seq] += 1
 
 			elif indel_type == "I": # insertion, get inserted seq
-				insertion_pos = start_pos + current_index
-				insertion_seq = read_seq[current_index : current_index + indel_length]
+				insertion_pos = start_pos + current_index - 1
+				ref_seq = parameters.ref_chr_seq[insertion_pos - 1: insertion_pos]
+				alt_seq = read_seq[current_index - 1: current_index + indel_length]
 				current_index += indel_length
+
+				display_pos = insertion_pos + 1
 				"""
+				print "insertion_display_pos, REF, ALT", display_pos, ref_seq, alt_seq
+				print "read", read_seq
+				print "orir", parameters.ref_chr_seq[start_pos - 1: start_pos + len(read_seq) - 1]
+
+
 				print "insertion_pos", insertion_seq
 				print "start_pos, current_index", start_pos, current_index
 				print "read", read_seq
 				print "orir", parameters.ref_chr_seq[start_pos - 1 : start_pos + len(read_seq) - 1]
 				"""
 
-				if insertion_pos not in parameters.indel_dict:
+				if display_pos not in parameters.insertion_dict:
 					temp_indel = indel()
 					temp_indel.pos = insertion_pos
 					temp_indel.chr_name = chr_name
-					temp_indel.insertion[insertion_seq] = 1
-					parameters.indel_dict[insertion_pos] = temp_indel
+					temp_indel.ref_seq = ref_seq
+					temp_indel.alt_seq_dict[alt_seq] = 1
+					parameters.insertion_dict[display_pos] = temp_indel
 				else:
-					if insertion_seq not in parameters.indel_dict[insertion_pos].insertion:
-						parameters.indel_dict[insertion_pos].insertion[insertion_seq] = 1
+					if alt_seq not in parameters.insertion_dict[display_pos].alt_seq_dict:
+						parameters.insertion_dict[display_pos].alt_seq_dict[alt_seq] = 1
 					else:
-						parameters.indel_dict[insertion_pos].insertion[insertion_seq] += 1
+						parameters.insertion_dict[display_pos].alt_seq_dict[alt_seq] += 1
 			else:
 				print indel_length, indel_type
 			indel_length = ""
 			indel_type = ""
-
-
-
-
 
 
 def get_args():

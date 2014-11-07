@@ -1,12 +1,11 @@
 #!/usr/bin/python
 #######################################################################################
-# Guoxing Fu July 7, 2013
+# Guoxing Fu Nov 6, 2014
 # for rna-seq data
 #######################################################################################
 
 import os, glob, subprocess, random, operator, time, sys, copy
 from optparse import OptionParser
-from tools import *
 
 def read_nature_data(file):
 	nature_pos_dict = {}

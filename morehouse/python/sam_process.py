@@ -141,9 +141,15 @@ def pair_end_indel(sam_file, chr_name):
 	#return total_reads_num
 
 def single_end_indel(sam_file, chr_name):
-	""" process the reads by both single_end and indel"""
+	"""
+	:param sam_file:
+	:param chr_name:
+	:return:
+	process the reads by both single_end and indel
+	remove reads with "N" in cigar and correct "ID"
+	"""
 	print "single_end_indel: ", parameter.sam_file_name
-	output_file = open(parameter.sam_file_name + "_single_indel.sam", "w")
+	output_file = open(parameter.sam_file_name + "_indel.sam", "w")
 	inputfile_sam = open(currentPath + sam_file, "r")
 	sam_line_first = inputfile_sam.readline() # the first read line in a pair
 	total_reads_num = 0
@@ -166,11 +172,17 @@ def single_end_indel(sam_file, chr_name):
 			# process all chr or one particular chr
 			check_chr_name = chrName_first.startswith("chr") if (chr_name == "chr") else (chr_name == chrName_first)
 			if check_chr_name:					# only keep the reads mapped to chr
-				reads_after_process_total_number += 1
-				read_qual_first = indel_correction(read_seq_first, qual_line_first, indel_info_first)
-				sam_line_first = sam_line_first.replace(read_seq_first, read_qual_first[0])
-				sam_line_first = sam_line_first.replace(qual_line_first, read_qual_first[1])
-				print >> output_file, sam_line_first.strip()
+
+				if is_indel(indel_info_first):
+					if indel_info_first.count("N") == 0:
+						reads_after_process_total_number += 1
+						read_qual_first = indel_correction(read_seq_first, qual_line_first, indel_info_first)
+						sam_line_first = sam_line_first.replace(read_seq_first, read_qual_first[0])
+						sam_line_first = sam_line_first.replace(qual_line_first, read_qual_first[1])
+						print >> output_file, sam_line_first.strip()
+				else:
+					reads_after_process_total_number += 1
+					print >> output_file, sam_line_first.strip()
 									
 		sam_line_first = inputfile_sam.readline()
 	inputfile_sam.close()
@@ -929,6 +941,12 @@ def samtools_sort(sam_file):
 	#os.system("rm " + sort_input + ".bam")
 	#os.system("rm " + sort_input + "_sorted.bam")
 
+def os_sort(sam_file):
+	print "sorting", sam_file
+	cmd = "sort -k 3,3 -k 4,4n " + parameter.sam_file + " > " + parameter.sam_file_name + "_sorted.sam"
+	os.system(cmd)
+	print "done"
+
 def mimi_solid_base_remove(sam_file):
 	# for solid data, to remove 10 bases after the primer, which are not accurate.
 
@@ -1005,6 +1023,17 @@ def add_length():
 
 					print >> sam_output, line
 
+def meth_pos_process():
+	with open(currentPath + parameter.sam_file, "r") as inputfile_sam:
+		with open(parameter.sam_file_name + "_pos_adjusted.sam", "w") as output_file:
+			for line in inputfile_sam:
+				line = line.strip()
+				elements = line.split()
+				start_pos = int(elements[3].strip())
+				read_seq = elements[9].strip()
+				new_start_pos = start_pos - len(read_seq) + 1
+				line = line.replace(str(start_pos), str(new_start_pos))
+				print >> output_file, line
 
 def sam_process(sam_file, chr_name, mode):
 	if mode == "single":
@@ -1034,6 +1063,8 @@ def sam_process(sam_file, chr_name, mode):
 	elif mode == "sort":
 		#add_header(sam_file)
 		samtools_sort(sam_file)
+	elif mode == "ossort":
+		os_sort(sam_file)
 	elif mode == "base_remove":
 		# to remove bases following primer in solid data
 		mimi_solid_base_remove(sam_file)
@@ -1043,6 +1074,8 @@ def sam_process(sam_file, chr_name, mode):
 		add_length()
 	elif mode == "sep_pairend":
 		sep_pairend()
+	elif mode == "meth_pos":
+		meth_pos_process()
 	elif mode == "mimi":
 		ori_sam_file_name = parameter.sam_file_name
 		"""
