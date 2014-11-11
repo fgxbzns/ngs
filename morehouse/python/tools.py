@@ -28,6 +28,8 @@ chr_length_dict = {"chr1": 247249719, "chr2": 242951149, "chr3": 199501827, "chr
 solid_chr = {1: "chr5", 2: "chrX", 3: "chr9", 4: "chr1", 5: "chr11", 6: "chr7", 7: "chr17", 8: "chr13", 9: "chrX",
 			 10: "chr3", 11: "chr11"}
 
+base_pair = {"A": "T", "T": "A", "C": "G", "G": "C", "N": "N"}
+
 file_path = "/home/guoxing/disk2/solid/common_files/"
 program_path = "/home/guoxing/disk2/ngs/morehouse/python/"
 bash_path = "/home/guoxing/disk2/ngs/bash/"
@@ -211,6 +213,12 @@ def group_seed(seed_dict, geno_dict):
 			seed_hetero_dict[position] = snp
 	return (seed_homo_dict, seed_hetero_dict)
 
+def reverse_complementary(seq):
+	reversed_seq = seq[::-1]
+	complement_seq = ""
+	for base in reversed_seq:
+		complement_seq += base_pair[base]
+	return complement_seq
 
 """
 def time():

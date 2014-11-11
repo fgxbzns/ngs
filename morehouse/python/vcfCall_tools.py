@@ -27,12 +27,15 @@ class parameter:
 		self.db_name = ""
 		self.db_base_name = ""
 		self.ref_file = ""
+		self.sequencing_depth_threshold = 5
 		self.second_largest_allele_depth_cutoff = 2
 		self.quality_score_threshold = 30
 
 		self.deletion_dict = {}
 		self.insertion_dict ={}
 		self.ref_chr_seq = ""
+
+		self.base_list = ["A", "T", "C", "G"]
 
 class position_data:
 	def __init__(self):
@@ -636,6 +639,14 @@ def output_temp_dict(parameters):
 
 	for i in range(output_size):
 		temp_pos_data = parameters.temp_data_dict[sorted_pos_list[i]]
+		"""
+		# keep this
+		# treat snop_call with depth < sequencing depth threshold as 0 to remove noise
+		temp_pos_data.A_depth = temp_pos_data.A_depth if temp_pos_data.A_depth > parameters.sequencing_depth_threshold else 0
+		temp_pos_data.T_depth = temp_pos_data.T_depth if temp_pos_data.T_depth > parameters.sequencing_depth_threshold else 0
+		temp_pos_data.C_depth = temp_pos_data.C_depth if temp_pos_data.C_depth > parameters.sequencing_depth_threshold else 0
+		temp_pos_data.G_depth = temp_pos_data.G_depth if temp_pos_dalsta.G_depth > parameters.sequencing_depth_threshold else 0
+		"""
 		print >> parameters.output_file, temp_pos_data.pos, temp_pos_data.chr_name, temp_pos_data.ref_allele, \
 				temp_pos_data.A_depth, temp_pos_data.T_depth, temp_pos_data.C_depth, temp_pos_data.G_depth,
 		"""
@@ -697,7 +708,6 @@ def output_filtered_data_txt_all(parameters):
 				line = data_filter_txt(line, parameters)
 				if line != "":
 					print >> output_file, line
-
 
 def output_filtered_data_txt(start_line, end_line, parameters):
 	"""
@@ -916,6 +926,134 @@ def cigar_process(chr_name, start_pos, read_seq, cigar, parameters):
 			indel_length = ""
 			indel_type = ""
 
+class snp_data:
+	def __init__(self):
+		self.pos = 0
+		self.chr_name = ""
+		self.ref_seq = ""
+		self.alt_seq_dict = {}      # to store vcf call data from each file
+
+def combine_vcf_call(file_list):
+	# files not filtered by second largest threshold
+	snp_dict = {}
+	file_dict = {}
+	line_dict = {}
+	for file in file_list:
+		#snp_dict[file] = {}
+		file_dict[file] = open(file, "r")
+		#line_dict[file] = file_dict[file].readline()
+
+	max_dict_size = 200
+	for i in range(max_dict_size):
+		for file in file_list:
+			line_dict[file] = file_dict[file].readline()
+			if line_dict[file] != "":
+				elements = line_dict[file].strip().split()
+				pos = elements[0]
+				if pos not in snp_dict:
+					temp_snp = snp_data()
+					temp_snp.pos = pos
+					temp_snp.chr_name = elements[1]
+					temp_snp.ref_seq = elements[2]
+					snp_dict[pos] = temp_snp
+				snp_dict[pos].alt_seq_dict[file] = elements[3:]
+
+		if len(snp_dict) > 20:
+			pos_list = snp_dict.keys()
+			pos_list.sort()
+
+			for pos in pos_list:
+				current_snp = snp_dict[pos]
+				#print type(current_snp)
+				#print current_snp.pos
+				if is_snp(current_snp):
+
+					print current_snp.pos, current_snp.ref_seq,
+					for file in current_snp.alt_seq_dict.keys():
+						print current_snp.alt_seq_dict[file],
+					print ""
+					del snp_dict[pos]
+
+					pass
+
+def is_snp(current_snp):
+	is_snp = False
+	base_list = ["A", "T", "C", "G"]
+	ref_index = [base_list.index(current_snp.ref_seq)]
+	for file, snp_call_list in current_snp.alt_seq_dict.iteritems():
+		snp_call_index = []
+		for i in range(len(snp_call_list)):
+			if snp_call_list[i] != str(0):
+				snp_call_index.append(i)
+		if ref_index != snp_call_index:
+			#print ref_index, snp_call_index
+			return True
+	return False
+
+def combine_vcf_call_2nd(file_list):
+	# files filtered by second largest threshold
+	snp_dict = {}
+
+	for file in file_list:
+		with open (file, "r") as input_file:
+			for line in input_file:
+				if not line.startswith("pos"):
+					elements = line.strip().split()
+					pos = elements[0]
+					if pos not in snp_dict:
+						temp_snp = snp_data()
+						temp_snp.pos = pos
+						temp_snp.chr_name = elements[1]
+						temp_snp.ref_seq = elements[2]
+						snp_dict[pos] = temp_snp
+					snp_dict[pos].alt_seq_dict[file] = elements[3:7]
+
+	for file in file_list:
+		raw_file = file[:-10] + ".txt"
+		print raw_file
+		with open(raw_file, "r") as input_file:
+			for line in input_file:
+				if not line.startswith("pos"):
+					elements = line.strip().split()
+					pos = elements[0]
+					if pos in snp_dict:
+						snp_dict[pos].alt_seq_dict[file] = elements[3:7]
+
+	pos_list = snp_dict.keys()
+	pos_list.sort()
+	base_list = ["A", "T", "C", "G"]
+	with open("combined_snp.txt", "w") as output_file:
+		for pos in pos_list:
+			current_snp = snp_dict[pos]
+			#print type(current_snp)
+			#print current_snp.pos
+			if is_snp(current_snp):
+
+				print >> output_file, current_snp.pos + "," + current_snp.chr_name + "," + current_snp.ref_seq + ",",
+				for file in file_list:
+					snp_line = ""
+					if file in current_snp.alt_seq_dict:
+						for i, base in enumerate(base_list):
+							if current_snp.alt_seq_dict[file][i] != str(0) and int(current_snp.alt_seq_dict[file][i]) >= 5:
+								snp_line += base_list[i] + ":" + str(current_snp.alt_seq_dict[file][i]) + ";"
+						print >> output_file, snp_line + ",",
+					else:
+						print >> output_file, ",",
+			print >> output_file, ""
+			del snp_dict[pos]
+
+def extract_pos_from_vcf_call(pos_file, vcf_call_file):
+	pos_dict = {}
+	with open(pos_file, "r") as pos_input:
+		for line in pos_input:
+			if not line.startswith("pos"):
+				pos_dict[line.strip()] = ""
+
+	with open(vcf_call_file, "r") as vcf_input:
+		for line in vcf_input:
+			pos = line.strip().split()[0]
+			if pos in pos_dict:
+				print line.strip()
 
 def get_args():
 	desc = "variation call"

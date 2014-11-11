@@ -1024,6 +1024,7 @@ def add_length():
 					print >> sam_output, line
 
 def meth_pos_process():
+	# adjust position in crick read
 	with open(currentPath + parameter.sam_file, "r") as inputfile_sam:
 		with open(parameter.sam_file_name + "_pos_adjusted.sam", "w") as output_file:
 			for line in inputfile_sam:
@@ -1033,6 +1034,24 @@ def meth_pos_process():
 				read_seq = elements[9].strip()
 				new_start_pos = start_pos - len(read_seq) + 1
 				line = line.replace(str(start_pos), str(new_start_pos))
+				print >> output_file, line
+
+def meth_crick_process():
+	# adjust position in crick read and reverse complement the read seq, reverse the qual
+	with open(currentPath + parameter.sam_file, "r") as inputfile_sam:
+		with open(parameter.sam_file_name + "_crick_processed.sam", "w") as output_file:
+			for line in inputfile_sam:
+				line = line.strip()
+				elements = line.split()
+				start_pos = int(elements[3].strip())
+				read_seq = elements[9].strip()
+				qual_line = elements[10].strip()
+				new_start_pos = start_pos - len(read_seq) + 1
+				new_read_seq = reverse_complementary(read_seq)
+				new_qual_line = qual_line[::-1]
+				line = line.replace(str(start_pos), str(new_start_pos))
+				line = line.replace(read_seq, new_read_seq)
+				line = line.replace(qual_line, new_qual_line)
 				print >> output_file, line
 
 def sam_process(sam_file, chr_name, mode):
@@ -1074,8 +1093,8 @@ def sam_process(sam_file, chr_name, mode):
 		add_length()
 	elif mode == "sep_pairend":
 		sep_pairend()
-	elif mode == "meth_pos":
-		meth_pos_process()
+	elif mode == "meth_crick":
+		meth_crick_process()
 	elif mode == "mimi":
 		ori_sam_file_name = parameter.sam_file_name
 		"""

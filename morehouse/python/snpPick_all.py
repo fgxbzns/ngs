@@ -100,9 +100,9 @@ if __name__ == '__main__':
 
 	elif mode == "rnaseq":
 
-		parameters.quality_score_threshold = 0
+		parameters.quality_score_threshold = 30
 		print "quality_score_threshold: ", parameters.quality_score_threshold
-		parameters.second_largest_allele_depth_cutoff = 1
+		parameters.second_largest_allele_depth_cutoff = 5
 
 		# for rnaseq data
 		ref_path = "/home/guoxing/disk3/sugarbeet_ref_1_1/"
@@ -153,12 +153,34 @@ if __name__ == '__main__':
 			snpPick(parameters)
 			parameters.output_file.close()
 
+	elif mode == "combine_snp":
+		snp_file_path = "/home/guoxing/disk3/rna_seq/var_cal/"
+		snp_file_name = "chr1_unique_indel_sorted_qs30_2nd_5.txt"
+		file_list = []
+		for i in (1, 2, 3, 7, 8, 9):
+			file_list.append(snp_file_path + str(i) + "/chr1/" + snp_file_name)
+
+		print file_list
+		combine_vcf_call_2nd(file_list)
+
+
+
+
 
 	elif mode == "output":
 		parameters.db_name = options.dbname
 		parameters.db_base_name = parameters.db_name[:-4]
 		parameters.second_largest_allele_depth_cutoff = 3
 		output_filtered_data_txt_all(parameters)
+
+	elif mode == "test":
+
+		pos_file = "posnew.txt"
+		#vcf_call_file = "chr8_w_indel_sorted_qs30.txt"
+		vcf_call_file = "s6_chr8_indel_sorted_qs30.txt"
+
+
+		extract_pos_from_vcf_call(pos_file, vcf_call_file)
 
 	print "run time: ", round(time.time() - start_time, 3), "s"
 	#print "snp_in_mimi", parameters.snp_in_mimi
