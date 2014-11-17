@@ -27,7 +27,7 @@ class parameter:
 		self.db_name = ""
 		self.db_base_name = ""
 		self.ref_file = ""
-		self.sequencing_depth_threshold = 5
+		self.sequencing_depth_threshold = 3
 		self.second_largest_allele_depth_cutoff = 2
 		self.quality_score_threshold = 30
 
@@ -495,7 +495,8 @@ def variant_call_pair_end_old(parameters):
 		inputfile_sam.close()
 	if len(parameters.temp_data_dict) > 0:
 		#print "last temp dict size", len(parameters.temp_data_dict)
-		output_temp_dict(parameters)
+		output_temp_dict(parameters)    # without depth filter
+
 	return total_reads_num
 
 def variant_call_pair_end(parameters):
@@ -582,15 +583,17 @@ def variant_call_pair_end(parameters):
 
 								# output the data when it reaches the size limit
 								if parameters.temp_data_dict_counter > parameters.temp_data_dict_max_limit:
-									output_temp_dict(parameters)
+									output_temp_dict(parameters)     # without depth filter
+									#output_temp_dict_with_sd_filter(parameters)  # with depth filter
 
 					else:
 						print "first and second read ID do not match", read_ID_first
 	if len(parameters.temp_data_dict) > 0:
 		#print "last temp dict size", len(parameters.temp_data_dict)
-		output_temp_dict(parameters)
-	return total_reads_num
+		output_temp_dict(parameters)        # without depth filter
+		#output_temp_dict_with_sd_filter(parameters)  # with depth filter
 
+	return total_reads_num
 
 def process_covered_allele(parameters, current_base_position, covered_snp):
 	if covered_snp == "A":
@@ -661,6 +664,56 @@ def output_temp_dict(parameters):
 			print >> parameters.output_file, "G_qs:", temp_pos_data.G_qs,
 		"""
 		print >> parameters.output_file, ""
+
+		del parameters.temp_data_dict[sorted_pos_list[i]]
+	parameters.temp_data_dict_counter = 0
+	#print "after output", len(parameters.temp_data_dict)
+	#print "take time: ", round(time.time() - current_time, 3), "s"
+
+def output_temp_dict_with_sd_filter(parameters):
+	"""
+	filter the read depth with sequencing_depth_threshold
+	:param parameters:
+	:return:
+	"""
+
+	#current_time = time.time()
+	#print "before output", len(parameters.temp_data_dict)
+	sorted_pos_list = parameters.temp_data_dict.keys()
+	sorted_pos_list.sort()
+	output_size = len(sorted_pos_list) - parameters.temp_data_dict_min_limit \
+		if len(sorted_pos_list) >= parameters.temp_data_dict_min_limit else len(sorted_pos_list)
+
+	if len(parameters.temp_data_dict) < parameters.temp_data_dict_max_limit:
+		output_size = len(sorted_pos_list)
+		#print sorted_pos_list[-1]
+
+	for i in range(output_size):
+		temp_pos_data = parameters.temp_data_dict[sorted_pos_list[i]]
+
+		# keep this
+		# treat snop_call with depth < sequencing depth threshold as 0 to remove noise
+		temp_pos_data.A_depth = temp_pos_data.A_depth if temp_pos_data.A_depth >= parameters.sequencing_depth_threshold else 0
+		temp_pos_data.T_depth = temp_pos_data.T_depth if temp_pos_data.T_depth >= parameters.sequencing_depth_threshold else 0
+		temp_pos_data.C_depth = temp_pos_data.C_depth if temp_pos_data.C_depth >= parameters.sequencing_depth_threshold else 0
+		temp_pos_data.G_depth = temp_pos_data.G_depth if temp_pos_data.G_depth >= parameters.sequencing_depth_threshold else 0
+
+		if [temp_pos_data.A_depth, temp_pos_data.T_depth, temp_pos_data.C_depth, temp_pos_data.G_depth].count(0) < 4:
+			print >> parameters.output_file, temp_pos_data.pos, temp_pos_data.chr_name, temp_pos_data.ref_allele, \
+					temp_pos_data.A_depth, temp_pos_data.T_depth, temp_pos_data.C_depth, temp_pos_data.G_depth,
+			print >> parameters.output_file, ""
+		"""
+		# for qs data
+		if temp_pos_data.A_depth > 0:
+			print >> parameters.output_file, "A_qs:", temp_pos_data.A_qs,
+		if temp_pos_data.T_depth > 0:
+			print >> parameters.output_file, "T_qs:", temp_pos_data.T_qs,
+		if temp_pos_data.C_depth > 0:
+			print >> parameters.output_file, "C_qs:", temp_pos_data.C_qs,
+		if temp_pos_data.G_depth > 0:
+			print >> parameters.output_file, "G_qs:", temp_pos_data.G_qs,
+		"""
+
 
 		del parameters.temp_data_dict[sorted_pos_list[i]]
 	parameters.temp_data_dict_counter = 0
@@ -1054,6 +1107,62 @@ def extract_pos_from_vcf_call(pos_file, vcf_call_file):
 			pos = line.strip().split()[0]
 			if pos in pos_dict:
 				print line.strip()
+
+def combine_watson_crick(w_file, c_file):
+
+	total_common_pos = 0
+	different_pos_dict = {}
+
+	w_pos_dict = {}
+	with open("/home/guoxing/storage1/lima/12878_chr8_meth/watson/chr8_w_indel_sorted_qs30_2nd_3.txt") as w_pos_file:
+		for line in w_pos_file:
+			if not line.startswith("pos"):
+				w_pos_dict[int(line.strip().split()[0])] = ""
+
+	c_pos_dict = {}
+	with open("/home/guoxing/storage1/lima/12878_chr8_meth/crick/chr8_c_indel_sorted_qs30_2nd_3.txt") as c_pos_file:
+		for line in c_pos_file:
+			if not line.startswith("pos"):
+				c_pos_dict[int(line.strip().split()[0])] = ""
+
+	w_input = open(w_file, "r")
+	c_input = open(c_file, "r")
+
+	w_line = w_input.readline().strip()
+	c_line = c_input.readline().strip()
+
+	with open("wc_compare.txt", "w") as output:
+		while w_line != "" and c_line != "":
+			w_elements = w_line.split()
+			c_elements = c_line.split()
+			w_pos = int(w_elements[0])
+			c_pos = int(c_elements[0])
+
+			if w_pos > c_pos:
+				c_line = c_input.readline().strip()
+			elif w_pos < c_pos:
+				w_line = w_input.readline().strip()
+			else:
+				#print >> output, w_line, c_line
+
+				w_index = [x for x, depth in enumerate(w_elements[3:7]) if int(depth) > 0]
+				c_index = [x for x, depth in enumerate(c_elements[3:7]) if int(depth) > 0]
+				if w_index != c_index:
+
+					#print >> output, w_line, c_elements[3], c_elements[4], c_elements[5], c_elements[6], w_index, c_index
+					if w_pos in w_pos_dict or w_pos in c_pos_dict:
+						print w_line, c_line
+						total_common_pos += 1
+					else:
+						if 3 not in w_index and 3 not in c_index:
+							print >> output, w_line, c_line
+				w_line = w_input.readline().strip()
+				c_line = c_input.readline().strip()
+
+	w_input.close()
+	c_input.close()
+
+	print "total_common_pos", total_common_pos
 
 def get_args():
 	desc = "variation call"

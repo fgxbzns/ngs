@@ -163,10 +163,6 @@ if __name__ == '__main__':
 		print file_list
 		combine_vcf_call_2nd(file_list)
 
-
-
-
-
 	elif mode == "output":
 		parameters.db_name = options.dbname
 		parameters.db_base_name = parameters.db_name[:-4]
@@ -174,13 +170,16 @@ if __name__ == '__main__':
 		output_filtered_data_txt_all(parameters)
 
 	elif mode == "test":
-
+		"""
+		# extract pos from vcf call
 		pos_file = "posnew.txt"
 		#vcf_call_file = "chr8_w_indel_sorted_qs30.txt"
 		vcf_call_file = "s6_chr8_indel_sorted_qs30.txt"
-
-
 		extract_pos_from_vcf_call(pos_file, vcf_call_file)
+		"""
+		w_file = "chr8_w_indel_sorted_qs30.txt"
+		c_file = "chr8_c_indel_sorted_qs30.txt"
+		combine_watson_crick(w_file, c_file)
 
 	print "run time: ", round(time.time() - start_time, 3), "s"
 	#print "snp_in_mimi", parameters.snp_in_mimi
