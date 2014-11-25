@@ -1,9 +1,10 @@
 #!/usr/bin/python
 #######################################################################################
-# Guoxing Fu July 7, 2013
-# for rna-seq data
+# Guoxing Fu Nov 24, 2013
+# sun pei data
 #######################################################################################
 
+import gzip
 import os, glob, subprocess, random, operator, time, sys, copy
 from optparse import OptionParser
 from tools import *
@@ -76,6 +77,78 @@ def output_common(list1, list2, snp_list_dict):
 					else:
 						print >> not_rs, snp_list_dict[list1][rsID]
 
+def load_frequency(file_name):
+	"""
+	this one load all data into dict
+	"""
+	maf_chr_dict = {}
+	with gzip.open(file_name, "rb") as input_file:
+		for line in input_file:
+			elements = line.strip().split()
+			rs = elements[0]
+			#chr = elements[1]
+			#pos = elements[2]
+			#frequence = elements[-7:]
+			#if rs not in maf_chr_dict:
+			maf_chr_dict[rs] = line.strip()
+	return maf_chr_dict
+
+def load_frequency(file_name, rs_list):
+	"""
+	this one only load the rs in rs_list into dict
+	"""
+	maf_chr_dict = {}
+	with gzip.open(file_name, "rb") as input_file:
+		for line in input_file:
+			elements = line.strip().split()
+			rs = elements[0]
+			#chr = elements[1]
+			#pos = elements[2]
+			#frequence = elements[-7:]
+			#if rs not in maf_chr_dict:
+			if rs in rs_list:
+				maf_chr_dict[rs] = line.strip()
+	#print len(maf_chr_dict)
+	return maf_chr_dict
+
+def get_maf(rs_file):
+	order_list = [] # to keep the order of snps
+	chr_rs_dict = {}
+
+	# to load snp data
+	with open(rs_file, "r") as input_file:
+		for line in input_file:
+			if not line.startswith("id"):
+				elements = line.strip().split()
+				chr = elements[1]
+				if chr not in chr_rs_dict:
+					chr_rs_dict[chr] = {}
+				rs = elements[2]
+				order_list.append((chr, rs))
+				if rs not in chr_rs_dict[chr]:
+					chr_rs_dict[chr][rs] = ""
+
+	maf_path = "/home/guoxing/disk2/sunpei/chb_chs/"
+	#file_name = "allele_freqs_chr1_CHB_phase3.2_nr.b36_fwd.txt.gz"
+
+	maf_dict = {}
+	for data in order_list:
+		chr, rs = data[0], data[1]
+		if chr not in maf_dict:
+			file_name = maf_path + "allele_freqs_chr" + chr +"_CHB_phase3.2_nr.b36_fwd.txt.gz"
+			#print file_name
+			maf_dict[chr] = load_frequency(file_name, chr_rs_dict[chr].keys())
+
+		if rs in chr_rs_dict[chr]:
+			print chr, rs,
+			if rs in maf_dict[chr]:
+				elements = maf_dict[chr][rs].split()
+				print elements[2], list_to_line(elements[-7:])
+			else:
+				print ""
+
+
+
 def get_args():
 	desc = ""
 	usage = ""
@@ -98,6 +171,12 @@ if __name__ == '__main__':
 	path = "/home/guoxing/disk2/snp_test/"
 	start_time = time.time()
 
+
+	get_maf("/home/guoxing/disk2/sunpei/cancer_panel20141124.txt")
+
+
+
+	"""
 	snp_list_dict = {}
 
 	sun_list = "sun_list"
@@ -112,14 +191,14 @@ if __name__ == '__main__':
 	snp_list_dict[cancer_list] = read_data_list(path + "Cancer_SNP_Panel_Annotation.txt", 0)
 	snp_list_dict[k500_list] = read_data_dict(path + "OncoArray-500K_B_GeneAnnotation.txt", 0)
 
-	"""
+
 	snp_list_dict[gwas_dcit] = read_data_dict(path + "gwascatalog_all.txt", 0)
 	#print "dict", len(snp_list_dict[gwas_list])
 	snp_list_dict[gwas_list] = read_data_list(path + "gwascatalog_all.txt", 0)
 	#print "list", len(snp_list_dict[gwas_list])
 	"""
 
-
+	"""
 	with open("gwascatalog_all.txt", "r") as input:
 		with open("gwas_in_k500.txt", "w") as common:
 			with open("gwas_notin_k500.txt", "w") as not_common:
@@ -152,6 +231,7 @@ if __name__ == '__main__':
 			#find_common(list1, list2, snp_list_dict)
 			pass
 	#output_common(gwas_list, k500_list, snp_list_dict)
+	"""
 
 	elapsed_time = time.time() - start_time
 	print "elapsed_time is: ", round(elapsed_time, 2), "s"
