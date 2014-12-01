@@ -74,7 +74,7 @@ def introduceError(error_number, paired_end_first_read_list, paired_end_second_r
 
 # start time
 start = time.time()		
-		
+
 # Reading options
 usage = "usage: %prog [options] arg1" 
 parser = OptionParser(usage = usage) 
@@ -168,7 +168,7 @@ while line != "":
 		fragment_leftover_sequence_size = len(fragment_leftover_sequence)
 		fragment_leftover_sequence = ""
 		window_end += window_size
-		fragment_ini = random.randrange(0,(fragment_leftover_sequence_size+window_size-fragment_size))
+		fragment_ini = random.randrange(0, (fragment_leftover_sequence_size+window_size-fragment_size))
 		fragment_size = random.randrange(lower_bound,upper_bound)
 		fragment_end = fragment_ini + fragment_size	
 

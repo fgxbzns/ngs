@@ -148,6 +148,28 @@ def get_maf(rs_file):
 				print ""
 
 
+def find_index(file_1, file_2):
+	id_list = []
+	with open(file_2, "r") as input_file:
+		for line in input_file:
+			id_list = line.strip().split()
+	print "len(id_list)", len(id_list)
+
+	population_list = []
+	with open(file_1, "r") as input_file:
+		for line in input_file:
+			population_list.append(line.strip().split()[0])
+	print "len(population_list)", len(population_list)
+
+	id_wo_genotype_list = []
+	for id in population_list:
+		if id in id_list:
+			print id_list.index(id),
+		else:
+			id_wo_genotype_list.append(id)
+	print ""
+	print id_wo_genotype_list
+
 
 def get_args():
 	desc = ""
@@ -172,8 +194,17 @@ if __name__ == '__main__':
 	start_time = time.time()
 
 
-	get_maf("/home/guoxing/disk2/sunpei/cancer_panel20141124.txt")
+	#get_maf("/home/guoxing/disk2/sunpei/cancer_panel20141124.txt")
 
+	path = "/home/guoxing/disk2/sunpei/1000g/"
+	chb_file = path + "chb.txt"
+	chs_file = path + "chs.txt"
+	id_file = path + "id_chr1.txt"
+	print "chb id index"
+	find_index(chb_file, id_file)
+
+	print "chs id index"
+	find_index(chs_file, id_file)
 
 
 	"""

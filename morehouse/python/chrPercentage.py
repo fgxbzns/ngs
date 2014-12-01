@@ -37,6 +37,7 @@ def chr_percentage(a_file_name):
 					print >> output_file, str(chr[0]) + "\t" + str(chr[1]) + "\t" + str(round(float(chr[1])*100/total_reads_number, 4))
 				print >> output_file, "total_reads_number", total_reads_number
 
+	print "chr6", chr_dict["chr6"]
 	print "total_reads_number", total_reads_number
 
 def get_args():

@@ -1616,8 +1616,8 @@ def add_seed_by_bridge():
 					last_pos_in_first_window = imputation_window_in_ref[i][1][-1]
 					first_pos_in_second_window = imputation_window_in_ref[i+1][1][0]
 					size_of_gap_on_bridge = bridge_pos.index(first_pos_in_second_window) - bridge_pos.index(last_pos_in_first_window)
-					if True:
-					#if size_of_gap_on_bridge <= 10:
+					#if True:
+					if size_of_gap_on_bridge <= 50:
 						#print "gap is ", size_of_gap_on_bridge
 						gap_pos_list = bridge_pos[bridge_pos.index(last_pos_in_first_window)+1 : bridge_pos.index(first_pos_in_second_window)]
 						#print gap_pos_list
@@ -1690,7 +1690,8 @@ def add_seed_by_bridge():
 
 	bridge_river_accuracy_sorted_list = sort_dict_by_key(bridge_anchor_accuracy_dict)
 	for data in bridge_river_accuracy_sorted_list:
-		print "bridge anchor size, accuracy", data[0], data[1][0], data[1][1], round(float(data[1][0])/data[1][1], 3)
+		#print "bridge anchor size, accuracy", data[0], data[1][0], data[1][1], round(float(data[1][0])/data[1][1], 3)
+		print "bridge anchor", data[0], round(float(data[1][0])/data[1][1], 3)
 
 
 
