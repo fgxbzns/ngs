@@ -332,7 +332,7 @@ def get_called_seed_dict():
 			if snp.max_allele_percentage >= max_allele_percentage_threshold and max_allele_number > parameter.depth_threshold:
 				prefiltered_seed_dict[position] = snp
 				# check genotype to remove called base that does not in genotype
-				if max_allele in geno_dict[position][2]:
+				if position in geno_dict and max_allele in geno_dict[position][2]:
 					called_seed_dict[position] = snp
 	return called_seed_dict, prefiltered_seed_dict
 
@@ -536,15 +536,15 @@ def snpPick_solid(sam_file, depth_threshold, chr_name):
 	#haplotype_file = "ASW_" + chr_name + "_child_hap_refed.txt"  # for solid and 454 NA10847
 	#genotype_file = "genotype_NA10847_" + chr_name + ".txt"  # for solid and 454 NA10847
 
-	haplotype_file = "NA12878_chr4_haplotype_std_hg18.txt"	# for illumina hg18 NA12878 chr4
-	genotype_file = "genotype_NA12878_"+chr_name+".txt"	# for illumina hg18 NA12878 chr4
+	#haplotype_file = "NA12878_chr4_haplotype_std_hg18.txt"	# for illumina hg18 NA12878 chr4
+	#genotype_file = "genotype_NA12878_"+chr_name+".txt"	# for illumina hg18 NA12878 chr4
 
-	"""
+
 	haplotype_file = "NA12878_hap_new_refed.txt"	# for simulation hg18 NA12878 chr6
 	genotype_file = "genotype_NA12878_"+chr_name+".txt"	# for simulation
-	haplotype_file = "NA12878_hap_new_refed.txt" # for quake data
-	genotype_file = "genotype_NA12878_chr6.txt"	# for quake data
-	"""
+	#haplotype_file = "NA12878_hap_new_refed.txt" # for quake data
+	#genotype_file = "genotype_NA12878_chr6.txt"	# for quake data
+
 
 	sam_file_name = sam_file[:(len(sam_file) - 4)] + "_" + str(parameter.depth_threshold)
 
