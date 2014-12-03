@@ -2016,7 +2016,6 @@ def add_seed_by_linkage_Jan212014():
 				ld_block_size = snp_ld_length_dict[pos] if pos in snp_ld_length_dict else 0
 				num_x = len([position for position in window_info if int(position) in window_info_dict and window_info_dict[int(position)][2] == "XX"])
 				x_over_window_size = format(float(num_x)/float(window_size), "0.3f")
-				#if int(pos) == 59226724:
 				#	print data
 				print >> log_file, rs_id, pos, allele_freq_A, allele_freq_B, minor_allele_frequence, \
 				hap_std, imputed_allele, imputed_allele_frequence,\

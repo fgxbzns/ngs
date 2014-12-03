@@ -23,10 +23,6 @@ for i in {1..22}
 		zfgrep -w --file=rsID.txt $filename >> chr_rsID.txt
 
 
-
-
-
-
 	done
 
 
