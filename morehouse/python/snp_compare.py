@@ -1,5 +1,5 @@
 #!/usr/bin/python
-#######################################################################################
+# ######################################################################################
 # Guoxing Fu Nov 24, 2013
 # sun pei data
 #######################################################################################
@@ -9,23 +9,26 @@ import os, glob, subprocess, random, operator, time, sys, copy
 from optparse import OptionParser
 from tools import *
 
+
 def read_data_list(file, index):
 	list = []
 	with open(file, "r") as input_file:
-			for line in input_file:
-				elements = line.strip().split()
-				rs = elements[index]
-				list.append(rs)
+		for line in input_file:
+			elements = line.strip().split()
+			rs = elements[index]
+			list.append(rs)
 	return list
+
 
 def read_data_dict(file, index):
 	dict = {}
 	with open(file, "r") as input_file:
-			for line in input_file:
-				elements = line.strip().split()
-				rs = elements[index]
-				dict[rs] = line.strip()
+		for line in input_file:
+			elements = line.strip().split()
+			rs = elements[index]
+			dict[rs] = line.strip()
 	return dict
+
 
 def compare_data(cons_dict, davis_dict, nature_pos_dict, nature_geneid_dict):
 	geneid_not_in_nature = []
@@ -56,6 +59,7 @@ def compare_data(cons_dict, davis_dict, nature_pos_dict, nature_geneid_dict):
 
 	print "num", num
 
+
 def find_common(list1, list2, snp_list_dict):
 	common_list = [x for x in snp_list_dict[list1] if x in snp_list_dict[list2]]
 	print list1 + " in " + list2, len(common_list)
@@ -63,6 +67,7 @@ def find_common(list1, list2, snp_list_dict):
 	for rs in common_list:
 		print rs,
 	print ""
+
 
 def output_common(list1, list2, snp_list_dict):
 	with open(list1 + "_in_" + list2 + ".txt", "w") as common:
@@ -76,6 +81,7 @@ def output_common(list1, list2, snp_list_dict):
 							print >> not_common, snp_list_dict[list1][rsID]
 					else:
 						print >> not_rs, snp_list_dict[list1][rsID]
+
 
 def load_frequency(file_name):
 	"""
@@ -92,6 +98,7 @@ def load_frequency(file_name):
 			#if rs not in maf_chr_dict:
 			maf_chr_dict[rs] = line.strip()
 	return maf_chr_dict
+
 
 def load_frequency(file_name, rs_list):
 	"""
@@ -111,8 +118,12 @@ def load_frequency(file_name, rs_list):
 	#print len(maf_chr_dict)
 	return maf_chr_dict
 
+
 def get_maf(rs_file):
-	order_list = [] # to keep the order of snps
+	"""
+	get af from hapmap data
+	"""
+	order_list = []  # to keep the order of snps
 	chr_rs_dict = {}
 
 	# to load snp data
@@ -135,7 +146,7 @@ def get_maf(rs_file):
 	for data in order_list:
 		chr, rs = data[0], data[1]
 		if chr not in maf_dict:
-			file_name = maf_path + "allele_freqs_chr" + chr +"_CHB_phase3.2_nr.b36_fwd.txt.gz"
+			file_name = maf_path + "allele_freqs_chr" + chr + "_CHB_phase3.2_nr.b36_fwd.txt.gz"
 			#print file_name
 			maf_dict[chr] = load_frequency(file_name, chr_rs_dict[chr].keys())
 
@@ -147,8 +158,10 @@ def get_maf(rs_file):
 			else:
 				print ""
 
-
 def find_index(file_1, file_2):
+	"""
+	find index of population id from 1000g data
+	"""
 	id_list = []
 	with open(file_2, "r") as input_file:
 		for line in input_file:
@@ -170,6 +183,45 @@ def find_index(file_1, file_2):
 	print ""
 	print id_wo_genotype_list
 
+def get_rsID_order(rsID_file):
+	"""
+	get a list of rsID in its original order
+	"""
+	order_list = []  # to keep the order of snps rsID
+	with open(rsID_file, "r") as input_file:
+		for line in input_file:
+			if line.strip() != "":
+				order_list.append(line.strip().split()[0])
+	return order_list
+
+def get_af(vcf_file, rsID_file):
+	"""
+    for 1000g chb chs data
+    :return:
+    """
+	vcf_dict = {}
+
+	with open(vcf_file, "r") as input_file:
+		for line in input_file:
+			if not line.startswith("id"):
+				elements = line.strip().split()
+				data = list_to_line(elements[9:])
+				num_0 = data.count("0")
+				num_1 = data.count("1") if data.count("1") != 0 else data.count("2")
+
+				#print elements[0], elements[1], elements[2], elements[3], num_0, round(float(num_0) / (num_0 + num_1),4), \
+				#	elements[4], num_1, round(float(num_1) / (num_0 + num_1), 4), num_0 + num_1
+				vcf_dict[elements[2]] = [elements[0], elements[1], elements[2], elements[3], num_0, round(float(num_0) / (num_0 + num_1),4), \
+					elements[4], num_1, round(float(num_1) / (num_0 + num_1), 4), num_0 + num_1]
+
+	print "chr \t pos \t rsID \t ref_allele \t ref_num \t ref_AF \t other_allele \t other_num \t other_AF \t total_sample"
+
+	rsID_order_list = get_rsID_order(rsID_file)
+	for rsID in rsID_order_list:
+		if rsID in vcf_dict:
+			print list_to_line(vcf_dict[rsID])
+		else:
+			print ""
 
 def get_args():
 	desc = ""
@@ -187,13 +239,16 @@ def get_args():
 	"""
 	return options
 
+
 if __name__ == '__main__':
 	options = get_args()
 	#file = options.folder_name
 	path = "/home/guoxing/disk2/snp_test/"
 	start_time = time.time()
 
+	get_af("chr_rsID.txt", "cancer_SNP_20141203_dup_not_removed.txt")
 
+	"""
 	#get_maf("/home/guoxing/disk2/sunpei/cancer_panel20141124.txt")
 
 	path = "/home/guoxing/disk2/sunpei/1000g/"
@@ -205,7 +260,7 @@ if __name__ == '__main__':
 
 	print "chs id index"
 	find_index(chs_file, id_file)
-
+	"""
 
 	"""
 	snp_list_dict = {}
@@ -266,9 +321,9 @@ if __name__ == '__main__':
 
 	elapsed_time = time.time() - start_time
 	print "elapsed_time is: ", round(elapsed_time, 2), "s"
-	
-	
-	
-	
-	
+
+
+
+
+
 
