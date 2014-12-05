@@ -1615,11 +1615,11 @@ def add_seed_by_bridge():
 				#if first_window_size >= 10 and second_window_size >= 10:
 					last_pos_in_first_window = imputation_window_in_ref[i][1][-1]
 					first_pos_in_second_window = imputation_window_in_ref[i+1][1][0]
-					size_of_gap_on_bridge = bridge_pos.index(first_pos_in_second_window) - bridge_pos.index(last_pos_in_first_window)
+					size_of_gap_on_bridge = bridge_pos.index(first_pos_in_second_window) - bridge_pos.index(last_pos_in_first_window) - 1
 					if True:
 					#if size_of_gap_on_bridge <= 50:
 						#print "gap is ", size_of_gap_on_bridge
-						gap_pos_list = bridge_pos[bridge_pos.index(last_pos_in_first_window)+1 : bridge_pos.index(first_pos_in_second_window)]
+						gap_pos_list = bridge_pos[bridge_pos.index(last_pos_in_first_window)+1: bridge_pos.index(first_pos_in_second_window)]
 						"""
 						# to print the accuracy of gap, and window size of each bridge anchor.
 						"""
@@ -1637,7 +1637,29 @@ def add_seed_by_bridge():
 								total_snp_in_gap += 1
 						gap_accuracy = round(float(correct_snp_in_gap)/total_snp_in_gap, 3)
 
-						print "gap info", first_window_size, second_window_size, size_of_gap_on_bridge, gap_accuracy
+						#print "gap info", first_window_size, second_window_size, size_of_gap_on_bridge, gap_accuracy
+
+						if first_window_size == 1 and second_window_size == 1 and gap_accuracy == 0 and len(gap_pos_list) >= 2:
+							#and (gap_accuracy == 1 or gap_accuracy == 0):
+							first_w_pos = imputation_window_in_ref[i][1][0]
+							second_w_pos = imputation_window_in_ref[i+1][1][0]
+							#gap_pos_1 = gap_pos_list[0]
+							#gap_pos_2 = gap_pos_list[1]
+							print pos, "****", len(gap_pos_list)
+							print "std_data A", data_dict.hap_std_dict[first_w_pos][2],
+							for gap_pos in gap_pos_list:
+								print data_dict.hap_std_dict[gap_pos][2],
+							print data_dict.hap_std_dict[second_w_pos][2]
+
+							print "std_data B", data_dict.hap_std_dict[first_w_pos][3],
+							for gap_pos in gap_pos_list:
+								print data_dict.hap_std_dict[gap_pos][3],
+							print data_dict.hap_std_dict[second_w_pos][3]
+
+							print "hifi_data", hifi_dict[first_w_pos][2],
+							for gap_pos in gap_pos_list:
+								print hifi_dict[gap_pos][2],
+							print hifi_dict[second_w_pos][2]
 
 						#print gap_pos_list
 						#max_linkage_pos_list.extend(gap_pos_list)
@@ -2015,7 +2037,7 @@ def add_seed_by_linkage_Jan212014():
 				window_distance = int(window_info[-1]) - int(window_info[0])
 				ld_block_size = snp_ld_length_dict[pos] if pos in snp_ld_length_dict else 0
 				num_x = len([position for position in window_info if int(position) in window_info_dict and window_info_dict[int(position)][2] == "XX"])
-				x_over_window_size = format(float(num_x)/float(window_size), "0.3f")
+				x_over_window_size = format(float(num_x)/window_size, "0.3f")
 				#	print data
 				print >> log_file, rs_id, pos, allele_freq_A, allele_freq_B, minor_allele_frequence, \
 				hap_std, imputed_allele, imputed_allele_frequence,\
