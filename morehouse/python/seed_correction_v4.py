@@ -1637,29 +1637,48 @@ def add_seed_by_bridge():
 								total_snp_in_gap += 1
 						gap_accuracy = round(float(correct_snp_in_gap)/total_snp_in_gap, 3)
 
-						#print "gap info", first_window_size, second_window_size, size_of_gap_on_bridge, gap_accuracy
-
-						if first_window_size == 1 and second_window_size == 1 and gap_accuracy == 0 and len(gap_pos_list) >= 2:
+						#print "gap_info", first_window_size, second_window_size, len(gap_pos_list), gap_accuracy
+						#if True:
+						if first_window_size <= 2 and second_window_size <= 2 and gap_accuracy == 0 and len(gap_pos_list) >= 2:
+							print "gap_info", first_window_size, second_window_size, len(gap_pos_list), gap_accuracy
+							print list_to_line(gap_pos_list)
 							#and (gap_accuracy == 1 or gap_accuracy == 0):
-							first_w_pos = imputation_window_in_ref[i][1][0]
-							second_w_pos = imputation_window_in_ref[i+1][1][0]
-							#gap_pos_1 = gap_pos_list[0]
-							#gap_pos_2 = gap_pos_list[1]
-							print pos, "****", len(gap_pos_list)
-							print "std_data A", data_dict.hap_std_dict[first_w_pos][2],
+							first_w_pos_list = imputation_window_in_ref[i][1]
+							second_w_pos_list = imputation_window_in_ref[i+1][1]
+							#print pos, "****", len(gap_pos_list)
+
+							print "std_data_A",
+							for first_pos in first_w_pos_list:
+								print data_dict.hap_std_dict[first_pos][2],
+							print ";",
 							for gap_pos in gap_pos_list:
 								print data_dict.hap_std_dict[gap_pos][2],
-							print data_dict.hap_std_dict[second_w_pos][2]
+							print ";",
+							for second_pos in second_w_pos_list:
+								print data_dict.hap_std_dict[second_pos][2],
+							print ""
 
-							print "std_data B", data_dict.hap_std_dict[first_w_pos][3],
+							print "std_data_B",
+							for first_pos in first_w_pos_list:
+								print data_dict.hap_std_dict[first_pos][3],
+							print ";",
 							for gap_pos in gap_pos_list:
 								print data_dict.hap_std_dict[gap_pos][3],
-							print data_dict.hap_std_dict[second_w_pos][3]
+							print ";",
+							for second_pos in second_w_pos_list:
+								print data_dict.hap_std_dict[second_pos][3],
+							print ""
 
-							print "hifi_data", hifi_dict[first_w_pos][2],
+							print "lowDepth_data",
+							for first_pos in first_w_pos_list:
+								print hifi_dict[first_pos][2],
+							print ";",
 							for gap_pos in gap_pos_list:
 								print hifi_dict[gap_pos][2],
-							print hifi_dict[second_w_pos][2]
+							print ";",
+							for second_pos in second_w_pos_list:
+								print data_dict.hap_std_dict[second_pos][2],
+							print ""
 
 						#print gap_pos_list
 						#max_linkage_pos_list.extend(gap_pos_list)
@@ -1734,8 +1753,6 @@ def add_seed_by_bridge():
 		#print "bridge anchor size, accuracy", data[0], data[1][0], data[1][1], round(float(data[1][0])/data[1][1], 3)
 		#print "bridge anchor", data[0], round(float(data[1][0])/data[1][1], 3)
 		pass
-
-
 
 	# check the accuracy based on bridge anchor and river size
 	river_accuracy_dict = {}
