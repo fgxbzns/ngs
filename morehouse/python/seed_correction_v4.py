@@ -772,7 +772,7 @@ def remove_single_refID():
 	seed_dict_from_hifi = {}
 	for pos in hifi_dict.keys():
 		#if (pos in refID_dict and len(refID_dict[pos][2]) <= 50) or (pos in refID_dict and len(refID_dict[pos][4]) <= 50):
-		refID_cutoff = 2
+		refID_cutoff = 10
 		if (pos in refID_dict and len(refID_dict[pos][2]) <= refID_cutoff) or (pos in refID_dict and len(refID_dict[pos][4]) <= refID_cutoff):
 			pass
 			#a = hifi_dict[pos]
@@ -1506,7 +1506,8 @@ def add_seed_by_bridge():
 
 	bridge_accuracy_sorted_list = sort_dict_by_key(bridge_accuracy_dict)
 	for data in bridge_accuracy_sorted_list:
-		print "size, accuracy", data[0], round(float(data[1][0])/data[1][1], 3)
+		#print "size, accuracy", data[0], round(float(data[1][0])/data[1][1], 3)
+		pass
 
 
 
@@ -1533,8 +1534,10 @@ def add_seed_by_bridge():
 					refID_bridge_dict[ref_id] = []
 				refID_bridge_dict[ref_id].append(data)
 
+	# print the number of bridge on each ref
 	for ref_id in refID_bridge_dict.keys():
-		print ref_id, len(refID_bridge_dict[ref_id])
+		#print ref_id, len(refID_bridge_dict[ref_id])
+		pass
 
 
 	# to get the refID with longest bridge
@@ -1598,6 +1601,8 @@ def add_seed_by_bridge():
 
 	correct_pos = 0
 	wrong_pos = 0
+	window_s = 30
+	bridge_s = 20
 
 	seed_in_gap_dict = {}   # to store the pos between two bridge anchors
 
@@ -1612,12 +1617,12 @@ def add_seed_by_bridge():
 				second_window_size = imputation_window_in_ref[i+1][0]
 				# check the size of the two bridge anchors
 				if True:
-				#if first_window_size >= 10 and second_window_size >= 10:
+				#if first_window_size >= window_s or second_window_size >= window_s:
 					last_pos_in_first_window = imputation_window_in_ref[i][1][-1]
 					first_pos_in_second_window = imputation_window_in_ref[i+1][1][0]
 					size_of_gap_on_bridge = bridge_pos.index(first_pos_in_second_window) - bridge_pos.index(last_pos_in_first_window) - 1
 					if True:
-					#if size_of_gap_on_bridge <= 50:
+					#if size_of_gap_on_bridge <= bridge_s:
 						#print "gap is ", size_of_gap_on_bridge
 						gap_pos_list = bridge_pos[bridge_pos.index(last_pos_in_first_window)+1: bridge_pos.index(first_pos_in_second_window)]
 						"""
@@ -1639,34 +1644,44 @@ def add_seed_by_bridge():
 
 						#print "gap_info", first_window_size, second_window_size, len(gap_pos_list), gap_accuracy
 						#if True:
-						if first_window_size <= 2 and second_window_size <= 2 and gap_accuracy == 0 and len(gap_pos_list) >= 2:
-							print "gap_info", first_window_size, second_window_size, len(gap_pos_list), gap_accuracy
-							print list_to_line(gap_pos_list)
-							#and (gap_accuracy == 1 or gap_accuracy == 0):
+						if gap_accuracy >= 0.9:
+						#if first_window_size >= 60 and second_window_size >= 60 and gap_accuracy == 0 and len(gap_pos_list) >= 2:
+
+
 							first_w_pos_list = imputation_window_in_ref[i][1]
 							second_w_pos_list = imputation_window_in_ref[i+1][1]
-							#print pos, "****", len(gap_pos_list)
 
+							print "gap_info", first_window_size, second_window_size, len(gap_pos_list), gap_accuracy
+							#print list_to_line(first_w_pos_list) + ";", list_to_line(gap_pos_list) + ";", list_to_line(second_w_pos_list)
+							#and (gap_accuracy == 1 or gap_accuracy == 0):
+							#print pos, "****", len(gap_pos_list)
+							"""
 							print "std_data_A",
 							for first_pos in first_w_pos_list:
-								print data_dict.hap_std_dict[first_pos][2],
+								if first_pos in data_dict.hap_std_dict:
+									print data_dict.hap_std_dict[first_pos][2],
 							print ";",
 							for gap_pos in gap_pos_list:
-								print data_dict.hap_std_dict[gap_pos][2],
+								if gap_pos in data_dict.hap_std_dict:
+									print data_dict.hap_std_dict[gap_pos][2],
 							print ";",
 							for second_pos in second_w_pos_list:
-								print data_dict.hap_std_dict[second_pos][2],
+								if second_pos in data_dict.hap_std_dict:
+									print data_dict.hap_std_dict[second_pos][2],
 							print ""
 
 							print "std_data_B",
 							for first_pos in first_w_pos_list:
-								print data_dict.hap_std_dict[first_pos][3],
+								if first_pos in data_dict.hap_std_dict:
+									print data_dict.hap_std_dict[first_pos][3],
 							print ";",
 							for gap_pos in gap_pos_list:
-								print data_dict.hap_std_dict[gap_pos][3],
+								if gap_pos in data_dict.hap_std_dict:
+									print data_dict.hap_std_dict[gap_pos][3],
 							print ";",
 							for second_pos in second_w_pos_list:
-								print data_dict.hap_std_dict[second_pos][3],
+								if second_pos in data_dict.hap_std_dict:
+									print data_dict.hap_std_dict[second_pos][3],
 							print ""
 
 							print "lowDepth_data",
@@ -1677,8 +1692,11 @@ def add_seed_by_bridge():
 								print hifi_dict[gap_pos][2],
 							print ";",
 							for second_pos in second_w_pos_list:
-								print data_dict.hap_std_dict[second_pos][2],
+								print hifi_dict[second_pos][2],
 							print ""
+							"""
+
+							print len(gap_pos_list), size_of_gap_on_bridge
 
 						#print gap_pos_list
 						#max_linkage_pos_list.extend(gap_pos_list)
@@ -1732,7 +1750,6 @@ def add_seed_by_bridge():
 	"""
 	print "accuracy perc*****", float(correct_pos)/(correct_pos+wrong_pos)
 
-
 	# check the accuracy based on bridge anchor and river size
 	bridge_anchor_accuracy_dict = {}
 
@@ -1773,14 +1790,11 @@ def add_seed_by_bridge():
 		#print "river size, accuracy", data[0], data[1][0], data[1][1], round(float(data[1][0])/data[1][1], 3)
 		pass
 
-
-
 	# extend bridge on one ref
 	for bridge in refID_bridge_dict[refID_longest_bridge]:
 		#print bridge[1]
 		if len(bridge[1]) >= 15:
 			max_linkage_pos_list.extend(list(bridge[1]))
-
 
 	"""
 	for list in linkage_size_sorted_list:
@@ -3491,7 +3505,6 @@ def multple_geno_expand(seed_file, chr_name, mode):
 		same_to_A_dict, same_to_B_dict = seed_std_compare(exp_file_name, chr_name)
 		os.system("cp haplotype_expanded.txt haplotype.txt")
 		os.system("cp haplotype.txt " + "haplotype.txt_" + str(same_to_A) + "_" + str(same_to_B))
-		
 
 def verify_expanded_seed_by_cluster(revised_seed_dict):
 	"""
@@ -3776,13 +3789,13 @@ def overall_process_1(seed_file, chr_name, mode):
 	i = 1
 	while i <= 1:
 
-		for j in range(5):
+		for j in range(1):
 
 			remPercent = 0 if j == 0 else float(random.randrange(20, 40))/100
 
 			print "remPercent", remPercent
 			haplotype_file = "haplotype.txt"
-			refMerger(haplotype_file, chr_name, remPercent)
+			#refMerger(haplotype_file, chr_name, remPercent)
 
 			hifi_run(haplotype_file, data_dict.chr_name)
 			#mode = "linkage"
@@ -3824,6 +3837,8 @@ def overall_process_1(seed_file, chr_name, mode):
 		print >> record_file, "REV", i, seed_same_to_A+seed_same_to_B, seed_same_to_A, seed_same_to_B, B_in_hetero
 		i += 1
 		"""
+		remove_single_refID()
+
 
 	record_file.close()
 

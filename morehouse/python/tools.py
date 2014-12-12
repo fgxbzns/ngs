@@ -164,7 +164,6 @@ def sort_dict_by_value(input_dict):
 	sorted_list.reverse()
 	return sorted_list
 
-
 def wccount(file_name):
 	out = subprocess.Popen(['wc', '-l', file_name],
 						   stdout=subprocess.PIPE,
