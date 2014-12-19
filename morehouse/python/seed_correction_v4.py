@@ -1603,6 +1603,8 @@ def add_seed_by_bridge():
 	wrong_pos = 0
 	window_s = 30
 	bridge_s = 20
+	select_gap_a = 1
+	selected_gap_pos_list = []
 
 	seed_in_gap_dict = {}   # to store the pos between two bridge anchors
 
@@ -1643,15 +1645,18 @@ def add_seed_by_bridge():
 						gap_accuracy = round(float(correct_snp_in_gap)/total_snp_in_gap, 3)
 
 						#print "gap_info", first_window_size, second_window_size, len(gap_pos_list), gap_accuracy
-						#if True:
-						if gap_accuracy >= 0.9:
+						if True:
 						#if first_window_size >= 60 and second_window_size >= 60 and gap_accuracy == 0 and len(gap_pos_list) >= 2:
+
+							for gap_pos in gap_pos_list:
+								#selected_gap_pos_list.append(gap_pos)
+								max_linkage_pos_list.append(gap_pos)
 
 
 							first_w_pos_list = imputation_window_in_ref[i][1]
 							second_w_pos_list = imputation_window_in_ref[i+1][1]
 
-							print "gap_info", first_window_size, second_window_size, len(gap_pos_list), gap_accuracy
+							#print "gap_info", first_window_size, second_window_size, len(gap_pos_list), gap_accuracy
 							#print list_to_line(first_w_pos_list) + ";", list_to_line(gap_pos_list) + ";", list_to_line(second_w_pos_list)
 							#and (gap_accuracy == 1 or gap_accuracy == 0):
 							#print pos, "****", len(gap_pos_list)
@@ -1696,11 +1701,12 @@ def add_seed_by_bridge():
 							print ""
 							"""
 
-							print len(gap_pos_list), size_of_gap_on_bridge
+							#print len(gap_pos_list), size_of_gap_on_bridge
+							#print "***********", len(selected_gap_pos_list)
 
 						#print gap_pos_list
 						#max_linkage_pos_list.extend(gap_pos_list)
-						for pos in gap_pos_list:
+						for pos in max_linkage_pos_list:
 							refID_index = refID_list_withrs_pos.index(ref_id)
 							#print "refID_index", refID_index
 							ref_allele = data_dict.hap_ref_dict[pos][refID_index]
@@ -1748,7 +1754,7 @@ def add_seed_by_bridge():
 
 		print ""
 	"""
-	print "accuracy perc*****", float(correct_pos)/(correct_pos+wrong_pos)
+	print "accuracy perc*****", float(correct_pos)/(correct_pos + wrong_pos)
 
 	# check the accuracy based on bridge anchor and river size
 	bridge_anchor_accuracy_dict = {}
@@ -1831,7 +1837,7 @@ def add_seed_by_bridge():
 
 	print len(seed_pos_list)
 
-	new_seed_file_name = "haplotype.txt"
+	new_seed_file_name = "haplotype_river.txt"
 	output_revised_seed(new_seed_file_name, data_dict.seed_dict)
 	same_to_A_dict, same_to_B_dict = seed_std_compare(new_seed_file_name, chr_name)
 
@@ -3799,6 +3805,8 @@ def overall_process_1(seed_file, chr_name, mode):
 
 			hifi_run(haplotype_file, data_dict.chr_name)
 			#mode = "linkage"
+
+			"""
 			mode = "bridge"
 			print "########### linkage expand #########", i
 			seed_correction(seed_file, chr_name, mode)
@@ -3812,6 +3820,7 @@ def overall_process_1(seed_file, chr_name, mode):
 			hap_bkup = "haplotype.txt_" + str(len(same_to_A_dict)) + "_" + str(len(same_to_B_dict))
 			os.system("cp haplotype.txt " + hap_bkup)
 			os.system("mv " + hap_bkup + " seed_file")
+			"""
 
 			i += 1
 		"""
