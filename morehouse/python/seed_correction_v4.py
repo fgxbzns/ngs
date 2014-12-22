@@ -3923,7 +3923,6 @@ def overall_process_2_city(seed_file, chr_name, mode):
 	sub_cycle = data_dict.cycle_number
 	haplotype_file = "haplotype.txt"
 
-
 	os.system("cp haplotype.txt haplotype_ori.txt")
 
 	record_file = open(data_dict.record_file_name, "w")
@@ -4242,8 +4241,7 @@ def seed_correction(seed_file, chr_name, mode):
 		seed_geno_extract()
 		file_name = "haplotype_expanded.txt"
 		seed_std_compare(file_name, chr_name)
-		
-	
+
 	elif mode == "combine_hifi":
 		#input_prefix = "haplotype_error_removed.txt_"
 		#input_prefix = "seed_from_hifi.txt_"
@@ -4289,9 +4287,7 @@ def seed_correction(seed_file, chr_name, mode):
 		get_seed_group_index()
 	elif mode == "city_accu":
 		calculate_seed_group_accuracy()
-	
 
-			
 	else:
 		clean_up()
 		"""check error seed"""
@@ -4365,8 +4361,6 @@ def seed_correction(seed_file, chr_name, mode):
 		error_seed_distance(data_dict.seed_hetero_dict, same_to_B_dict)
 		"""
 		
-		
-		
 		"""
 		output_revised_seed_without_error(revised_seed_dict, same_to_B_dict)
 		seed_std_compare("haplotype_without_error.txt", chr_name)
@@ -4374,7 +4368,7 @@ def seed_correction(seed_file, chr_name, mode):
 		"""
 	#clean_up()
 
-if __name__=='__main__':
+if __name__ == '__main__':
 	options = get_args()
 	seed_file = options.seedFile
 	chr_name = options.chrName
@@ -4398,6 +4392,4 @@ if __name__=='__main__':
 	
 	
 	
-	
-		
 	

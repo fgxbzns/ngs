@@ -55,6 +55,9 @@ def compare_std_result(hifi_result_dict, hifi_std_dict):
 	not_same_to_AB_dict = {}
 	same_position_dict = {}
 	different_position_dict = {}
+	hifi_result_x_dict = {}
+	std_x_dict = {}
+
 	same_position_total_number = 0
 	different_position_total_number = 0
 	similarity = allele_similarity(hifi_result_dict, hifi_std_dict)
@@ -63,8 +66,8 @@ def compare_std_result(hifi_result_dict, hifi_std_dict):
 		if position in hifi_std_dict:
 			hifi_A = elements_hifi[2].strip()
 			hifi_B = elements_hifi[3].strip()
-			if hifi_A != 'X' and hifi_B != 'X' and hifi_A != 'N' and hifi_B != 'N':
-				#if True:
+			#if hifi_A != 'X' and hifi_B != 'X' and hifi_A != 'N' and hifi_B != 'N':
+			if True:
 				elements_std = hifi_std_dict[position]
 				std_A = elements_std[2].strip()
 				std_B = elements_std[3].strip()
@@ -85,9 +88,19 @@ def compare_std_result(hifi_result_dict, hifi_std_dict):
 					if (std_A == "A" and std_B == "T") or (std_A == "C" and std_B == "G") or (
 							std_A == "T" and std_B == "A") or (std_A == "G" and std_B == "C"):
 						AT_GC_dict[position] = elements_hifi
+						hifi_result_x_dict[position] = elements_hifi
+					elif hifi_A == "X" or hifi_B == "X":
+						#same_to_AB_dict[position] = elements_hifi
+						pass
 					else:
 						not_same_to_AB_dict[position] = elements_hifi
 				same_position_dict[position] = elements_hifi
+
+			if hifi_A == "X" or hifi_B == "X":
+				hifi_result_x_dict[position] = elements_hifi
+			if std_A == "X" or std_B == "X" or std_A == "N" or std_B == "N":
+				std_x_dict[position] = elements_hifi
+
 			#same_position_total_number += 1
 		else:
 			#different_position_total_number += 1
@@ -95,7 +108,7 @@ def compare_std_result(hifi_result_dict, hifi_std_dict):
 
 	return (
 	same_to_A_dict, same_to_B_dict, same_to_AB_dict, not_same_to_AB_dict, same_position_dict, different_position_dict,
-	AT_GC_dict)
+	AT_GC_dict, hifi_result_x_dict, std_x_dict)
 
 
 def output_dict(file_name, dict, hifi_std_dict):
@@ -126,7 +139,6 @@ def hifiAccuCheck(hifi_result_file, chr_name):
 
 	hifi_std_dict = removeN(hifi_std_dict)
 
-
 	hifi_result_dict = load_raw_data(hifi_result_file, raw_data_format)[1]
 	hifi_result_total_number = len(hifi_result_dict)
 
@@ -144,7 +156,7 @@ def hifiAccuCheck(hifi_result_file, chr_name):
 	AT_GC_dict = compare_tuple[6]
 	'''
 	same_to_A_dict, same_to_B_dict, same_to_AB_dict, not_same_to_AB_dict, same_position_dict, different_position_dict, \
-	AT_GC_dict = compare_std_result(hifi_result_dict, hifi_std_dict)
+	AT_GC_dict, hifi_result_x_dict, std_x_dict = compare_std_result(hifi_result_dict, hifi_std_dict)
 
 	"""
 	output_dict("same_to_A_dict.txt", same_to_A_dict, hifi_std_dict)
@@ -159,11 +171,16 @@ def hifiAccuCheck(hifi_result_file, chr_name):
 	same_position_total_number = len(same_position_dict)
 	different_position_total_number = len(different_position_dict)
 	AT_GC_dict_number = len(AT_GC_dict)
+	hifi_result_x_number = len(hifi_result_x_dict)
+	std_x_number = len(std_x_dict)
 
 	pencentage_in_common = round(float(same_position_total_number) / hifi_result_total_number * 100, 3)
 	#error_rate = round(float(not_same_AB_total_number)/(hifi_result_total_number - AT_GC_dict_number )*100, 3)
 	error_rate = round(float(not_same_AB_total_number)/(hifi_result_total_number)*100, 3)
-	accuracy = round(100-error_rate, 3)
+
+	accuracy = round((same_A_total_number + same_B_total_number + same_AB_total_number + AT_GC_dict_number)/float(same_position_total_number - hifi_result_x_number), 3)
+	#accuracy = round((hifi_result_total_number - not_same_AB_total_number)/float(same_position_total_number), 3)
+
 	same_AB_homo, same_AB_hetero = seperate_homo_hetero(same_to_AB_dict)
 	not_same_AB_homo, not_same_AB_hetero = seperate_homo_hetero(not_same_to_AB_dict)
 	different_AB_homo, different_AB_hetero = seperate_homo_hetero(different_position_dict)
@@ -198,8 +215,11 @@ def hifiAccuCheck(hifi_result_file, chr_name):
 	#print "len(same_AB_hetero)", len(same_AB_hetero)
 	#print "len(same_position_hetero)", len(same_position_hetero)
 	#print "len(AT_GC_hetero)", len(AT_GC_hetero)
-	print "hetero_accuracy", hetero_accuracy
+	#print "hetero_accuracy", hetero_accuracy
 	#print "homo_accuracy", homo_accuracy
+	print "hifi_result_x_number", hifi_result_x_number
+	print "std_x_number", std_x_number
+
 	print "accuracy", accuracy
 
 	accuracy_output_file_name = "hifi_accuracy.txt"
