@@ -178,7 +178,7 @@ def hifiAccuCheck(hifi_result_file, chr_name):
 	#error_rate = round(float(not_same_AB_total_number)/(hifi_result_total_number - AT_GC_dict_number )*100, 3)
 	error_rate = round(float(not_same_AB_total_number)/(hifi_result_total_number)*100, 3)
 
-	accuracy = round((same_A_total_number + same_B_total_number + same_AB_total_number + AT_GC_dict_number)/float(same_position_total_number - hifi_result_x_number), 3)
+	accuracy = round((same_A_total_number + same_B_total_number + same_AB_total_number + AT_GC_dict_number)/float(same_position_total_number - hifi_result_x_number), 4)
 	#accuracy = round((hifi_result_total_number - not_same_AB_total_number)/float(same_position_total_number), 3)
 
 	same_AB_homo, same_AB_hetero = seperate_homo_hetero(same_to_AB_dict)
@@ -197,9 +197,7 @@ def hifiAccuCheck(hifi_result_file, chr_name):
 		                                                                               - AT_GC_dict_number) * 100, 2)
 	#homo_accuracy = round(float(len(same_AB_homo)) / float(len(same_position_homo)) * 100, 3)
 
-	#coverage = round(float(same_position_total_number)/(hap_std_total_number-different_position_total_number)*100, 3)
 	coverage = round(float(same_position_total_number)/(hifi_result_total_number)*100, 2)
-	#coverage = round(float(hifi_result_total_number)/(hap_std_total_number)*100, 2)
 	coverage = round(float(same_position_total_number)/(hap_std_total_number)*100, 2)
 
 	print "same_position_total_number", same_position_total_number

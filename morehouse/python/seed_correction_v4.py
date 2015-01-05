@@ -705,13 +705,6 @@ def seed_recover_extract_ref_1():
 
 	return revised_seed_dict
 
-def ref_only_extend():
-
-	pass
-
-
-
-
 def remove_single_refID():
 	refID_dict = {}
 
@@ -772,7 +765,7 @@ def remove_single_refID():
 	seed_dict_from_hifi = {}
 	for pos in hifi_dict.keys():
 		#if (pos in refID_dict and len(refID_dict[pos][2]) <= 50) or (pos in refID_dict and len(refID_dict[pos][4]) <= 50):
-		refID_cutoff = 10
+		refID_cutoff = 15
 		if (pos in refID_dict and len(refID_dict[pos][2]) <= refID_cutoff) or (pos in refID_dict and len(refID_dict[pos][4]) <= refID_cutoff):
 			pass
 			#a = hifi_dict[pos]
@@ -1645,7 +1638,7 @@ def add_seed_by_bridge():
 						gap_accuracy = round(float(correct_snp_in_gap)/total_snp_in_gap, 3)
 
 						#print "gap_info", first_window_size, second_window_size, len(gap_pos_list), gap_accuracy
-						if True:
+						if gap_accuracy == 1:
 						#if first_window_size >= 60 and second_window_size >= 60 and gap_accuracy == 0 and len(gap_pos_list) >= 2:
 
 							for gap_pos in gap_pos_list:

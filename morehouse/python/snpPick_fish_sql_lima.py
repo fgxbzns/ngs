@@ -382,7 +382,7 @@ def get_args():
 	parser.add_option("-b", "--startLine", type="string", dest="startLine", help="start line", default="null")
 	parser.add_option("-e", "--endLine", type="string", dest="endLine", help="end line", default="null")
 	parser.add_option("-d", "--dbname", type="string", dest="dbname", help="db name", default="null")
-	parser.add_option("-q", "--qscore", type="int", dest="qscore", help="qscore", default="40")
+	parser.add_option("-q", "--qscore", type="int", dest="qscore", help="qscore", default="30")
 	parser.add_option("-p", "--pos", type="string", dest="posList", help="Input position list Name", default="null")
 	(options, args) = parser.parse_args()
 	if options.mode == "null" or options.chrName == "null":

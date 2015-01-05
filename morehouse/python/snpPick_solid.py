@@ -10,9 +10,7 @@ import os, glob, subprocess, random, operator, time, sys
 from optparse import OptionParser
 
 from tools import *
-from hifiAccuCheck_v2 import hifiAccuCheck
 from seed_std_compare import seed_std_compare
-from refMerger_v5 import refMerger
 
 # A from Father, B from Mother
 class snps:
