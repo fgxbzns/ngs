@@ -74,7 +74,8 @@ def parents_to_children():
 				f_geno = parameter.person_dict[person.father].genotype_dict[pos]
 				m_geno = parameter.person_dict[person.mather].genotype_dict[pos]
 
-				if ID == "1NAC1001" and pos == '10065514':
+				if True:
+				#if ID == "1NAC1001" and pos == '10065514':
 					print c_geno, f_geno, m_geno, set(f_geno)
 
 					f_set = set(f_geno)
@@ -85,7 +86,6 @@ def parents_to_children():
 						parameter.person_dict[ID].haplotype[pos] = (c_geno[0], c_geno[1])
 					else:
 						if f_geno != "NN":
-
 							if m_geno != "NN":
 								if c_geno != "NN":
 									if len(f_set) == 1:
@@ -105,23 +105,56 @@ def parents_to_children():
 											parameter.person_dict[ID].haplotype[pos] = ("X", "X")
 
 								elif c_geno == "NN":
-									pass
-
+									if len(f_set) == 1:
+										if len(m_set) == 1:
+											parameter.person_dict[ID].haplotype[pos] = (f_geno[0], m_geno[1])
+										elif len(m_set) != 1:
+											parameter.person_dict[ID].haplotype[pos] = (f_geno[0], "N")
+									elif len(f_set) != 1:
+										if len(m_set) == 1:
+											parameter.person_dict[ID].haplotype[pos] = ("N", m_geno[0])
+										elif len(m_set) != 1:
+											parameter.person_dict[ID].haplotype[pos] = ("N", "N")
 								else:
 									pass
 
-							elif m_geno != "NN":
-								pass
+							elif m_geno == "NN":
+								if c_geno != "NN":
+									if len(f_set) == 1:
+										cf_hap = f_geno[0]
+										cm_hap = c_geno[1] if c_geno[0] == f_geno[0] else c_geno[0]
+										parameter.person_dict[ID].haplotype[pos] = (cf_hap, cm_hap)
+									elif len(f_set) != 1:
+										parameter.person_dict[ID].haplotype[pos] = ("N", "N")
+								elif c_geno == "NN":
+									if len(f_set) == 1:
+										parameter.person_dict[ID].haplotype[pos] = (f_geno[0], "N")
+									elif len(f_set) != 1:
+										parameter.person_dict[ID].haplotype[pos] = ("N", "N")
 							else:
 								pass
 
-
 						elif f_geno == "NN":
+							if m_geno != "NN":
+								if c_geno != "NN":
+									if len(m_set) == 1:
+										cf_hap = c_geno[1] if c_geno[0] == m_geno[0] else c_geno[0]
+										cm_hap = m_geno[0]
+										parameter.person_dict[ID].haplotype[pos] = (cf_hap, cm_hap)
+									elif len(m_set) != 1:
+											parameter.person_dict[ID].haplotype[pos] = ("N", "N")
+								if c_geno == "NN":
+									if len(m_set) == 1:
+										parameter.person_dict[ID].haplotype[pos] = ("N", m_geno[0])
+
+
+
+
 							pass
 						else:
 							pass
 
-					print parameter.person_dict[ID].haplotype[pos]
+						print parameter.person_dict[ID].haplotype[pos]
 
 
 					"""
