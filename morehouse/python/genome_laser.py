@@ -12,9 +12,10 @@ class parameters:
 	def __init__(self):
 		self.person_dict = {}
 		self.rsID_dict = {}
-		self.mather = ""
-		self.children = {}
-		self.genotype_dict = {}
+		self.father_list = []
+		self.mather_list = []
+		self.children_list = []
+		self.children_dict = {}
 
 class persons:
 	def __init__(self):
@@ -45,7 +46,6 @@ def load_pedi(pedi_name):
 						parameter.person_dict[person.ID] = person
 				except:
 					print "error in ", line, pedi_name
-					#pass
 
 def load_geno(geno_name):
 	with open(geno_name, "r") as geno_file:
@@ -69,21 +69,36 @@ def parents_to_children():
 	for ID in parameter.person_dict:
 		person = parameter.person_dict[ID]
 		if person.father != "N/A" and person.mather != "N/A":
-			for pos in person.genotype_dict.keys():
+
+			pos_list = person.genotype_dict.keys()
+			pos_list.sort()
+			for pos in pos_list:
 				c_geno = person.genotype_dict[pos]
 				f_geno = parameter.person_dict[person.father].genotype_dict[pos]
 				m_geno = parameter.person_dict[person.mather].genotype_dict[pos]
 
 				if True:
-				#if ID == "1NAC1001" and pos == '10065514':
-					print c_geno, f_geno, m_geno, set(f_geno)
-
 					f_set = set(f_geno)
 					m_set = set(m_geno)
 					c_set = set(c_geno)
 
 					if len(c_set) == 1 and c_geno != "NN":
-						parameter.person_dict[ID].haplotype[pos] = (c_geno[0], c_geno[1])
+						if (c_geno[0] == f_geno[0] or c_geno[0] == f_geno[1]) and (c_geno[0] == m_geno[0] or c_geno[0] == m_geno[1]):
+							parameter.person_dict[ID].haplotype[pos] = (c_geno[0], c_geno[1])
+						"""
+						# keep this part. for non-NN c_geno, has discrepancy with f_geno or m_geno. uesful for future.
+						else:
+							if f_geno == "NN" and m_geno == "NN":
+								parameter.person_dict[ID].haplotype[pos] = (c_geno[0], c_geno[1])
+							elif f_geno == "NN" and m_geno != "NN" and (c_geno[0] == m_geno[0] or c_geno[0] == m_geno[1]):
+								parameter.person_dict[ID].haplotype[pos] = (c_geno[0], c_geno[1])
+							elif f_geno != "NN" and m_geno == "NN" and (c_geno[0] == f_geno[0] or c_geno[0] == f_geno[1]):
+								parameter.person_dict[ID].haplotype[pos] = (c_geno[0], c_geno[1])
+							else:
+								#pass
+								print "child geno not in parent geno", ID, pos, f_geno, m_geno, c_geno
+								#sys.exit(1)
+						"""
 					else:
 						if f_geno != "NN":
 							if m_geno != "NN":
@@ -92,13 +107,13 @@ def parents_to_children():
 										if len(m_set) == 1:
 											parameter.person_dict[ID].haplotype[pos] = (f_geno[0], m_geno[1])
 										elif len(m_set) != 1:
-												cf_hap = c_geno[0] if c_geno[0] == f_geno[0] else c_geno[1]
+												cf_hap = f_geno[0]
 												cm_hap = c_geno[1] if c_geno[0] == f_geno[0] else c_geno[0]
 												parameter.person_dict[ID].haplotype[pos] = (cf_hap, cm_hap)
 									elif len(f_set) != 1:
 										if len(m_set) == 1:
-											cf_hap = c_geno[0] if c_geno[0] == m_geno[0] else c_geno[1]
-											cm_hap = c_geno[1] if c_geno[0] == m_geno[0] else c_geno[0]
+											cf_hap = c_geno[1] if c_geno[0] == m_geno[0] else c_geno[0]
+											cm_hap = m_geno[0]
 											parameter.person_dict[ID].haplotype[pos] = (cf_hap, cm_hap)
 										elif len(m_set) != 1:
 											# all hetero, cannot determine
@@ -116,7 +131,7 @@ def parents_to_children():
 										elif len(m_set) != 1:
 											parameter.person_dict[ID].haplotype[pos] = ("N", "N")
 								else:
-									pass
+									print "error 1", pos
 
 							elif m_geno == "NN":
 								if c_geno != "NN":
@@ -132,7 +147,7 @@ def parents_to_children():
 									elif len(f_set) != 1:
 										parameter.person_dict[ID].haplotype[pos] = ("N", "N")
 							else:
-								pass
+								print "2", pos
 
 						elif f_geno == "NN":
 							if m_geno != "NN":
@@ -142,43 +157,39 @@ def parents_to_children():
 										cm_hap = m_geno[0]
 										parameter.person_dict[ID].haplotype[pos] = (cf_hap, cm_hap)
 									elif len(m_set) != 1:
-											parameter.person_dict[ID].haplotype[pos] = ("N", "N")
+										parameter.person_dict[ID].haplotype[pos] = ("N", "N")
 								if c_geno == "NN":
 									if len(m_set) == 1:
 										parameter.person_dict[ID].haplotype[pos] = ("N", m_geno[0])
-
-
-
-
-							pass
+									elif len(m_set) != 1:
+										parameter.person_dict[ID].haplotype[pos] = ("N", "N")
+							if m_geno == "NN":
+								parameter.person_dict[ID].haplotype[pos] = ("N", "N")
 						else:
-							pass
-
-						print parameter.person_dict[ID].haplotype[pos]
-
-
-					"""
-					if f_geno != "NN" and m_geno != "NN" and c_geno != "NN":
-						if f_geno == m_geno and f_geno == c_geno:
-							parameter.person_dict[ID].haplotype[pos] = (c_geno[0], c_geno[1])
-
-						if len(set(f_geno)) == 1 and len(set(m_geno)) == 1 and len(set(c_geno)) == 1:
-							parameter.person_dict[ID].haplotype[pos] = (set(f_geno)[0], set(m_geno)[0])
-							print parameter.person_dict[ID].haplotype[pos]
-
+							print "3", pos
+					try:
+						#if len(c_set) != 1:
+						#print f_geno, m_geno, c_geno, parameter.person_dict[ID].haplotype[pos][0], parameter.person_dict[ID].haplotype[pos][1]
 						pass
+					except:
+						#pass
+						#print "error 4", pos, ID, f_geno, m_geno, c_geno
+						print "child geno not in parent geno", ID, pos, f_geno, m_geno, c_geno
+						#sys.exit(1)
 
-					elif m_geno != "NN" and c_geno != "NN":
-						pass
+def output_child_hap():
 
-					elif f_geno != "NN" and c_geno != "NN":
-						pass
+	for ID in parameter.person_dict.keys():
+		person = parameter.person_dict[ID]
+		if len(person.children) > 0:
+			parameter.children_list.extend(list(person.children.keys()))
+			#print parameter.children_list
 
-					elif f_geno != "NN" and m_geno != "NN":
-						pass
-					"""
+	parameter.children_list = list(set(parameter.children_list))
+	parameter.children_list.sort()
+	print parameter.children_list
 
-
+	pass
 
 
 def get_args():
@@ -215,12 +226,14 @@ if __name__ == '__main__':
 	print len(person_dict)
 	for ID in parameter.person_dict:
 		person = parameter.person_dict[ID]
-		print person.ID, person.father, person.mather
-		#print person.children.keys()
+		print person.ID, person.father, person.mather,
+		print person.children.keys()
 	#print person_dict["1NAC1002"].genotype_dict['9935312']
 	#print person_dict["1NAC1002"].genotype_dict['10014103']
 	#print person_dict["1NAC1002"].genotype_dict['10065514']
 
-	parents_to_children()
+	#parents_to_children()
+
+	output_child_hap()
 
 	print "elapsed_time is: ", round(time.time() - start_time, 2), "s"

@@ -135,7 +135,7 @@ if __name__ == '__main__':
 	elif mode == "meth":
 		# keep all alleles disregarding qs and depth
 		parameters.quality_score_threshold = options.qscore
-		parameters.quality_score_threshold = 30
+		parameters.quality_score_threshold = 25
 		print "quality_score_threshold: ", parameters.quality_score_threshold
 		parameters.second_largest_allele_depth_cutoff = 1
 
