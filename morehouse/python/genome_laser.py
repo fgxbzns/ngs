@@ -17,6 +17,10 @@ class parameters:
 		self.children_list = []
 		self.children_dict = {}
 
+		#self.parent_list = []
+
+		self.children_hap_file = "child_hap.txt"
+
 class persons:
 	def __init__(self):
 		self.ID = ""
@@ -178,7 +182,7 @@ def parents_to_children():
 						#sys.exit(1)
 
 def output_child_hap():
-
+	"""
 	for ID in parameter.person_dict.keys():
 		person = parameter.person_dict[ID]
 		if len(person.children) > 0:
@@ -188,9 +192,98 @@ def output_child_hap():
 	parameter.children_list = list(set(parameter.children_list))
 	parameter.children_list.sort()
 	print parameter.children_list
+	"""
+
+	pos_list = parameter.rsID_dict.keys()
+	pos_list.sort()
+
+	with open(parameter.children_hap_file, "w") as c_hap_file:
+		print >> c_hap_file, "rs_ID", "pos",
+		for id in parameter.children_list:
+			print >> c_hap_file, id + "_F", id + "_M",
+		print >> c_hap_file, ""
+
+		for pos in pos_list:
+			print >> c_hap_file, parameter.rsID_dict[pos], pos,
+			for child_id in parameter.children_list:
+				print >> c_hap_file, parameter.person_dict[child_id].haplotype[pos][0], parameter.person_dict[child_id].haplotype[pos][1],
+			print >> c_hap_file, ""
+
+def prepare_id_list():
+	# children list
+	for ID in parameter.person_dict.keys():
+		person = parameter.person_dict[ID]
+		if len(person.children) > 0:
+			parameter.children_list.extend(list(person.children.keys()))
+			#print parameter.children_list
+
+	parameter.children_list = list(set(parameter.children_list))
+	parameter.children_list.sort()
+	#print parameter.children_list
+
+	# parent list
+	for ID in parameter.person_dict.keys():
+		person = parameter.person_dict[ID]
+		if person.father != "N/A":
+			parameter.father_list.append(person.father)
+		if person.mather != "N/A":
+			parameter.mather_list.append(person.mather)
+
+	parameter.father_list = list(set(parameter.father_list))
+	parameter.father_list.sort()
+	#print parameter.father_list
+
+	parameter.mather_list = list(set(parameter.mather_list))
+	parameter.mather_list.sort()
+	#print parameter.mather_list
+
+def children_to_parents():
+
+	f_id = "10NA19836"
+
+	children_list = parameter.person_dict[f_id].children.keys()
+	children_list.sort()
+	print children_list
+
+	pos_list = parameter.rsID_dict.keys()
+	pos_list.sort()
+
+	for pos in pos_list:
+
+		cf_hap_1 = parameter.person_dict[children_list[0]].haplotype[pos][0]
+		cf_hap_2 = parameter.person_dict[children_list[1]].haplotype[pos][0]
+		cf_hap_3 = parameter.person_dict[children_list[2]].haplotype[pos][0]
+
+		if (cf_hap_1 != cf_hap_2 or cf_hap_2 != cf_hap_3) and cf_hap_1 != "N" and cf_hap_2 != "X" and cf_hap_3 != "X":
+			print pos, cf_hap_1, cf_hap_2, cf_hap_3
+			pass
+		if cf_hap_1 != cf_hap_2 and cf_hap_1 != "X" and cf_hap_1 != "N" and cf_hap_2 != "X" and cf_hap_2 != "N":
+			#print pos
+			pass
+
+		if cf_hap_1 != cf_hap_3 and cf_hap_1 != "X" and cf_hap_1 != "N" and cf_hap_3 != "X" and cf_hap_3 != "N":
+			#print pos
+			pass
+
+		"""
+		try:
+
+			print parameter.person_dict[children_list[0]].haplotype[pos][0], \
+				parameter.person_dict[children_list[1]].haplotype[pos][0], \
+				parameter.person_dict[children_list[2]].haplotype[pos][0]
+		except:
+			print pos, children_list
+		"""
+
+
+
+
+
+
+
+
 
 	pass
-
 
 def get_args():
 	desc = ""
@@ -226,14 +319,18 @@ if __name__ == '__main__':
 	print len(person_dict)
 	for ID in parameter.person_dict:
 		person = parameter.person_dict[ID]
-		print person.ID, person.father, person.mather,
-		print person.children.keys()
+		#print person.ID, person.father, person.mather,
+		#print person.children.keys()
 	#print person_dict["1NAC1002"].genotype_dict['9935312']
 	#print person_dict["1NAC1002"].genotype_dict['10014103']
 	#print person_dict["1NAC1002"].genotype_dict['10065514']
 
-	#parents_to_children()
 
-	output_child_hap()
+	prepare_id_list()
+	parents_to_children()
+
+	#output_child_hap()
+
+	children_to_parents()
 
 	print "elapsed_time is: ", round(time.time() - start_time, 2), "s"
