@@ -166,7 +166,7 @@ if __name__ == '__main__':
 	elif mode == "output":
 		parameters.db_name = options.dbname
 		parameters.db_base_name = parameters.db_name[:-4]
-		parameters.second_largest_allele_depth_cutoff = 3
+		parameters.second_largest_allele_depth_cutoff = 1
 		output_filtered_data_txt_all(parameters)
 
 	elif mode == "test":

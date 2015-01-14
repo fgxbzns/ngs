@@ -12,12 +12,13 @@ class parameters:
 	def __init__(self):
 		self.person_dict = {}
 		self.rsID_dict = {}
+		self.pos_list = {}
 		self.father_list = []
 		self.mather_list = []
 		self.children_list = []
 		self.children_dict = {}
 
-		#self.parent_list = []
+		self.fragment_dict = {}
 
 		self.children_hap_file = "child_hap.txt"
 
@@ -29,6 +30,13 @@ class persons:
 		self.children = {}
 		self.genotype_dict = {}
 		self.haplotype = {}
+
+class fragments:
+	def __init__(self):
+		self.ID = ""
+		self.start = ""
+		self.end = ""
+		self.length = ""
 
 def load_pedi(pedi_name):
 	with open(pedi_name, "r") as pedi_file:
@@ -237,6 +245,9 @@ def prepare_id_list():
 	parameter.mather_list.sort()
 	#print parameter.mather_list
 
+	parameter.pos_list = parameter.rsID_dict.keys()
+	parameter.pos_list.sort()
+
 def children_to_parents():
 
 	f_id = "10NA19836"
@@ -245,18 +256,26 @@ def children_to_parents():
 	children_list.sort()
 	print children_list
 
-	pos_list = parameter.rsID_dict.keys()
-	pos_list.sort()
+	#pos_list = parameter.rsID_dict.keys()
+	#pos_list.sort()
 
-	for pos in pos_list:
+	compare = "same"
+	fragment_list = []
+	temp_fragment_A = {}
+	temp_fragment_B = {}
+
+	break_point_list = []
+
+	for pos in parameter.pos_list:
 
 		cf_hap_1 = parameter.person_dict[children_list[0]].haplotype[pos][0]
 		cf_hap_2 = parameter.person_dict[children_list[1]].haplotype[pos][0]
 		cf_hap_3 = parameter.person_dict[children_list[2]].haplotype[pos][0]
 
-		if (cf_hap_1 != cf_hap_2 or cf_hap_2 != cf_hap_3) and cf_hap_1 != "N" and cf_hap_2 != "X" and cf_hap_3 != "X":
-			print pos, cf_hap_1, cf_hap_2, cf_hap_3
+		if (cf_hap_1 != cf_hap_2 or cf_hap_2 != cf_hap_3) and cf_hap_1 != "X" and cf_hap_2 != "X" and cf_hap_3 != "X":
+			#print pos, cf_hap_1, cf_hap_2, cf_hap_3, parameter.person_dict[f_id].genotype_dict[pos]
 			pass
+
 		if cf_hap_1 != cf_hap_2 and cf_hap_1 != "X" and cf_hap_1 != "N" and cf_hap_2 != "X" and cf_hap_2 != "N":
 			#print pos
 			pass
@@ -265,15 +284,89 @@ def children_to_parents():
 			#print pos
 			pass
 
+		if cf_hap_1 != "X" and cf_hap_2 != "X":
+			if compare == "same":
+				if cf_hap_1 == cf_hap_2:
+					temp_fragment_A[pos] = cf_hap_1
+				else:
+					fragment_list.append(temp_fragment_A)
+					temp_fragment_A = {}
+
+					compare = "different"
+
+
 		"""
 		try:
-
 			print parameter.person_dict[children_list[0]].haplotype[pos][0], \
 				parameter.person_dict[children_list[1]].haplotype[pos][0], \
 				parameter.person_dict[children_list[2]].haplotype[pos][0]
 		except:
 			print pos, children_list
 		"""
+
+
+def compare_child_hap():
+
+	f_id = "10NA19836"
+
+	children_list = parameter.person_dict[f_id].children.keys()
+	children_list.sort()
+	print children_list
+
+	child_ID_1 = children_list[0]
+	child_ID_2 = children_list[2]
+
+	child_fragment_dict = {}
+	child_fragment_dict[child_ID_1] = []
+	child_fragment_dict[child_ID_2] = []
+
+	fragment_list = []
+
+	break_point_dict = {}
+	break_point_list = []
+
+	child_1 = parameter.person_dict[child_ID_1]
+	child_2 = parameter.person_dict[child_ID_2]
+
+	compare = ""
+
+	for pos in parameter.pos_list:
+		f_geno = parameter.person_dict[f_id].genotype_dict[pos]
+
+		if f_geno != "NN" and f_geno[0] != f_geno[1]:
+
+			cf_hap_1 = child_1.haplotype[pos][0]
+			cf_hap_2 = child_2.haplotype[pos][0]
+
+			if cf_hap_1 != "X" and cf_hap_2 != "X" and cf_hap_1 != "N" and cf_hap_2 != "N":
+
+				if compare == "":
+					#print f_geno, cf_hap_1, cf_hap_2
+					compare = "same" if cf_hap_1 == cf_hap_2 else "different"
+					print "initial compare status:", compare
+
+				#print "all", pos, cf_hap_1, cf_hap_2
+				elif compare == "same":
+					if cf_hap_1 != cf_hap_2:
+						child_fragment_dict[child_ID_1].append(pos)
+						child_fragment_dict[child_ID_2].append(pos)
+						compare = "different"
+						print "different", pos, cf_hap_1, cf_hap_2
+				elif compare == "different":
+					if cf_hap_1 == cf_hap_2:
+						child_fragment_dict[child_ID_1].append(pos)
+						child_fragment_dict[child_ID_2].append(pos)
+						compare = "same"
+						print "same", pos, cf_hap_1, cf_hap_2
+	#print child_fragment_dict[child_ID_1]
+	#print child_fragment_dict[child_ID_2]
+
+	for pos in child_fragment_dict[child_ID_1]:
+		fragment = fragments()
+		fragment.ID = child_ID_1
+		fragment.start =
+
+
 
 
 
@@ -331,6 +424,7 @@ if __name__ == '__main__':
 
 	#output_child_hap()
 
-	children_to_parents()
+	#children_to_parents()
+	compare_child_hap()
 
 	print "elapsed_time is: ", round(time.time() - start_time, 2), "s"
