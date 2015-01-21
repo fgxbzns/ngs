@@ -306,7 +306,6 @@ def children_to_parents_old():
 			print pos, children_list
 		"""
 
-
 def children_to_parents():
 	f_id = "10NA19836"
 
@@ -353,57 +352,102 @@ def children_to_parents():
 			#print pos, temp_parent_hap_A[pos]
 
 	child_id = children_list[1]
-	if True:
-	#for child_id in children_list:
+	#if True:
+	for child_id in children_list:
+		#if True:
 		if child_id != max_length_fragment.ID:
 			list = parameter.fragment_dict[child_id]
 			fragment = list[0]
-			if True:
-			#for fragment in list:
+			#if True:
+			for fragment in list:
 				#current_start, current_end = get_parent_hap_end(temp_parent_hap_A)
-				update_parent_hap(fragment, temp_parent_hap_A)
-				pass
+				status, temp_parent_hap_A = update_parent_hap(fragment, temp_parent_hap_A)
+				if status == "same_to_A":
+					pass
+				elif status == "same_to_B":
+					status, temp_parent_hap_B = update_parent_hap(fragment, temp_parent_hap_B)
+				elif status == "mix":
+					pass
+	print "temp_parent_hap_A", len(temp_parent_hap_A)
+	print "temp_parent_hap_B", len(temp_parent_hap_B)
 
-def update_parent_hap(fragment, temp_parent_hap):
-	current_start, current_end = get_parent_hap_end(temp_parent_hap)
+def update_parent_hap(fragment, temp_parent_hap_A):
 
-	overlap_start = 0
-	overlap_end = 0
-
-	if fragment.end <= current_start or fragment.start >= current_end:
-		return "no_overlap", temp_parent_hap
+	if len(temp_parent_hap_A) == 0:
+		# for temp_parent_hap_B
+		for pos in parameter.pos_list:
+			if pos >= fragment.start and pos < fragment.end:
+				temp_parent_hap_A[pos] = parameter.person_dict[fragment.ID].haplotype[pos][0]
+		return "same_to_B", temp_parent_hap_A
 	else:
-		if fragment.start < current_start and fragment.end < current_end:
-			overlap_start = current_start
-			overlap_end = fragment.end
-		elif fragment.start > current_start and fragment.end < current_end:
-			overlap_start = fragment.start
-			overlap_end = fragment.end
+		current_start, current_end = get_parent_hap_end(temp_parent_hap_A)
+
+		overlap_start = 0
+		overlap_end = 0
+
+		if fragment.end <= current_start or fragment.start >= current_end:
+			return "no_overlap", temp_parent_hap_A
 		else:
-			overlap_start = fragment.start
-			overlap_end = current_end
+			if fragment.start < current_start and fragment.end < current_end:
+				overlap_start = current_start
+				overlap_end = fragment.end
+			elif fragment.start > current_start and fragment.end < current_end:
+				overlap_start = fragment.start
+				overlap_end = fragment.end
+			else:
+				overlap_start = fragment.start
+				overlap_end = current_end
 
-	print current_start, current_end, overlap_start, overlap_end
+		#print "current_start, current_end, overlap_start, overlap_end", current_start, current_end, overlap_start, overlap_end
 
-	same = 0
-	not_same = 0
-	f_id = "10NA19836"
-	for pos in parameter.person_dict[f_id].hetero_pos_list:
-		if pos >= overlap_start and pos <= overlap_end:
-			if parameter.person_dict[fragment.ID].haplotype[pos][0] != "X" and temp_parent_hap[pos] != "X" \
-					and parameter.person_dict[fragment.ID].haplotype[pos][0] != "N" and temp_parent_hap[pos] != "N":
-				#print "xxxx", pos, parameter.person_dict[fragment.ID].haplotype[pos][0], temp_parent_hap[pos]
-				if parameter.person_dict[fragment.ID].haplotype[pos][0] == temp_parent_hap[pos]:
-					same += 1
-				else:
-					not_same += 1
-	print "dddddddddddd", same, not_same
+		same = 0
+		not_same = 0
+		f_id = "10NA19836"
+		for pos in parameter.person_dict[f_id].hetero_pos_list:
+			if pos >= overlap_start and pos <= overlap_end:
+				if parameter.person_dict[fragment.ID].haplotype[pos][0] != "X" and temp_parent_hap_A[pos] != "X" \
+						and parameter.person_dict[fragment.ID].haplotype[pos][0] != "N" and temp_parent_hap_A[pos] != "N":
+					#print "xxxx", pos, parameter.person_dict[fragment.ID].haplotype[pos][0], temp_parent_hap[pos]
+					if parameter.person_dict[fragment.ID].haplotype[pos][0] == temp_parent_hap_A[pos]:
+						same += 1
+					else:
+						not_same += 1
+		print "dddddddddddd", same, not_same
+
+		print "before", len(temp_parent_hap_A)
+		percentage = float(same)/(same + not_same)
+		print percentage
+		if percentage > 0.9:
+			for pos in parameter.person_dict[f_id].hetero_pos_list:
+				if pos >= fragment.start and pos <= fragment.end and pos not in temp_parent_hap_A:
+					temp_parent_hap_A[pos] = parameter.person_dict[fragment.ID].haplotype[pos][0]
+			print "after", len(temp_parent_hap_A)
+			return "same_to_A", temp_parent_hap_A
+		elif percentage < 0.1:
+			return "same_to_B", temp_parent_hap_A
+		else:
+			return "mix", temp_parent_hap_A
+
+		"""
+		elif percentage < 0.1:
+
+			for pos in parameter.person_dict[f_id].hetero_pos_list:
+				if pos >= fragment.start and pos <= fragment.end and pos not in temp_parent_hap_B:
+					temp_parent_hap_B[pos] = parameter.person_dict[fragment.ID].haplotype[pos][0]
+			print "after B", len(temp_parent_hap_B)
+			return "same_to_A", temp_parent_hap_A, temp_parent_hap_B
+		else:
+			print "middle"
+			return "middle", temp_parent_hap_A, temp_parent_hap_B
+		"""
+
+
 
 def get_parent_hap_end(temp_parent_hap):
 	pos_list = temp_parent_hap.keys()
 	pos_list.sort()
 	#print pos_list[0], pos_list[-1]
-	return(pos_list[0], pos_list[-1])
+	return (pos_list[0], pos_list[-1])
 
 def compare_child_hap(child_ID_1, child_ID_2):
 
@@ -461,7 +505,7 @@ def compare_child_hap(child_ID_1, child_ID_2):
 	child_fragment_dict[child_ID_2].append(parameter.pos_list[-1])
 
 	print child_fragment_dict[child_ID_1]
-	print child_fragment_dict[child_ID_2]
+	#print child_fragment_dict[child_ID_2]
 
 	for id in child_ID_1, child_ID_2:
 		for index, pos in enumerate(child_fragment_dict[id]):

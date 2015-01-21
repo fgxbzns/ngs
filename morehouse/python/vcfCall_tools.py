@@ -733,7 +733,7 @@ def data_filter_txt(line, parameters):
 		print line
 	# if temp_list.count(0) < 3: # remove homo position
 	number_of_zero = temp_list.count(0)
-	if number_of_zero == 2:
+	if number_of_zero <= 2:
 		# Remove the postions with 3 zeros and filter by the second_largest_allele_depth
 		temp_list.sort()
 		second_largest_allele_depth = temp_list[2]
