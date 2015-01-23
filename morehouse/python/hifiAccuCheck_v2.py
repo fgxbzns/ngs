@@ -133,6 +133,7 @@ def seperate_homo_hetero(same_to_AB_dict):
 def hifiAccuCheck(hifi_result_file, chr_name):
 	hap_std_file_name = file_path + "ASW_" + chr_name + "_child_hap_refed.txt"  # 454,solid NA10847
 	#hap_std_file_name = file_path + "NA12878_hap_new_refed.txt"	# simulation data hg18 chr6
+	#hap_std_file_name = "standardhaplotype.txt"         # chr1 NA11919_A
 
 	hifi_std_dict = load_raw_data(hap_std_file_name, raw_data_format)[1]
 	hap_std_total_number = len(hifi_std_dict)
@@ -175,11 +176,9 @@ def hifiAccuCheck(hifi_result_file, chr_name):
 	std_x_number = len(std_x_dict)
 
 	pencentage_in_common = round(float(same_position_total_number) / hifi_result_total_number * 100, 3)
-	#error_rate = round(float(not_same_AB_total_number)/(hifi_result_total_number - AT_GC_dict_number )*100, 3)
 	error_rate = round(float(not_same_AB_total_number)/(hifi_result_total_number)*100, 3)
 
 	accuracy = round((same_A_total_number + same_B_total_number + same_AB_total_number + AT_GC_dict_number)/float(same_position_total_number - hifi_result_x_number), 4)
-	#accuracy = round((hifi_result_total_number - not_same_AB_total_number)/float(same_position_total_number), 3)
 
 	same_AB_homo, same_AB_hetero = seperate_homo_hetero(same_to_AB_dict)
 	not_same_AB_homo, not_same_AB_hetero = seperate_homo_hetero(not_same_to_AB_dict)
