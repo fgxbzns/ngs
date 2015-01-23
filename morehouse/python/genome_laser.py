@@ -478,20 +478,20 @@ def children_to_parents():
 	temp_parent_hap_B = {}
 
 	fragment_startpos_sorted_list = sort_fragment()
-
+	status = "same_to_A"
 	for data in fragment_startpos_sorted_list:
 		start_pos = data[0]
 		fragment_list = data[1]
 
 		print start_pos
 		for fragment in fragment_list:
-			#print fragment.ID, fragment.start
+			print fragment.ID, fragment.start
 			status, temp_parent_hap_A = update_parent_hap(fragment, temp_parent_hap_A)
 			if status == "same_to_A":
 				pass
 
-				print fragment.ID, fragment.start, "removed", len(fragment_list)
-				fragment_list.remove(fragment)
+				#print fragment.ID, fragment.start, "removed", len(fragment_list)
+				#fragment_list.remove(fragment)
 
 			elif status == "same_to_B":
 				status, temp_parent_hap_B = update_parent_hap(fragment, temp_parent_hap_B)
@@ -523,21 +523,21 @@ def children_to_parents():
 				count += 1
 
 	print "count", count
-	"""
-	for pos in parameter.pos_list:
-		f_geno = parameter.person_dict[f_id].genotype_dict[pos]
-		if f_geno[0] != f_geno[1]:
-			print pos,
-			if pos in temp_parent_hap_A:
-				print temp_parent_hap_A[pos],
-			else:
-				print " ",
-			if pos in temp_parent_hap_B:
-				print temp_parent_hap_B[pos]
-			else:
-				print " "
+	with open("x.txt", "w") as x_file:
+		for pos in parameter.pos_list:
+			f_geno = parameter.person_dict[f_id].genotype_dict[pos]
+			if f_geno[0] != f_geno[1]:
+				print >> x_file, pos,
+				if pos in temp_parent_hap_A:
+					print >> x_file, temp_parent_hap_A[pos],
+				else:
+					print >> x_file, " ",
+				if pos in temp_parent_hap_B:
+					print >> x_file, temp_parent_hap_B[pos]
+				else:
+					print >> x_file, " "
 
-	"""
+
 
 	print "temp_parent_hap_A final", len(temp_parent_hap_A)
 	print "temp_parent_hap_B final", len(temp_parent_hap_B)
