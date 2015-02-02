@@ -363,7 +363,7 @@ def children_to_parents_mas_fragment():
 		list = parameter.fragment_dict[child_id]
 		for fragment in list:
 			if max_length == 0:
-				max_length = fragment.length
+				max_lsame_to_Aength = fragment.length
 				max_length_fragment = fragment
 			else:
 				if fragment.length > max_length:
@@ -478,14 +478,14 @@ def children_to_parents():
 	temp_parent_hap_B = {}
 
 	fragment_startpos_sorted_list = sort_fragment()
-	status = "same_to_A"
+	status = ""
 	for data in fragment_startpos_sorted_list:
 		start_pos = data[0]
 		fragment_list = data[1]
 
 		print start_pos
 		for fragment in fragment_list:
-			print fragment.ID, fragment.start
+			print fragment.ID, fragment.start, fragment.end
 			status, temp_parent_hap_A = update_parent_hap(fragment, temp_parent_hap_A)
 			if status == "same_to_A":
 				pass
@@ -506,10 +506,10 @@ def children_to_parents():
 	for pos in parameter.pos_list:
 		f_geno = parameter.person_dict[f_id].genotype_dict[pos]
 		if f_geno[0] == f_geno[1]:
-			if pos not in temp_parent_hap_A:
-				temp_parent_hap_A[pos] = f_geno[0]
-			if pos not in temp_parent_hap_B:
-				temp_parent_hap_B[pos] = f_geno[0]
+			#if pos not in temp_parent_hap_A:
+			temp_parent_hap_A[pos] = f_geno[0]
+			#if pos not in temp_parent_hap_B:
+			temp_parent_hap_B[pos] = f_geno[0]
 		else:
 			if pos in temp_parent_hap_A and pos not in temp_parent_hap_B:
 				temp_parent_hap_B[pos] = f_geno[0] if temp_parent_hap_A[pos] == f_geno[1] else f_geno[1]
@@ -522,28 +522,24 @@ def children_to_parents():
 				temp_parent_hap_B[pos] = "N"
 				count += 1
 
-	print "count", count
+	print "count N", count
 	with open("x.txt", "w") as x_file:
 		for pos in parameter.pos_list:
 			f_geno = parameter.person_dict[f_id].genotype_dict[pos]
-			if f_geno[0] != f_geno[1]:
+			#if f_geno[0] != f_geno[1]:
+			if True:
 				print >> x_file, pos,
 				if pos in temp_parent_hap_A:
 					print >> x_file, temp_parent_hap_A[pos],
 				else:
-					print >> x_file, " ",
+					print >> x_file, "N",
 				if pos in temp_parent_hap_B:
 					print >> x_file, temp_parent_hap_B[pos]
 				else:
-					print >> x_file, " "
-
-
+					print >> x_file, "N"
 
 	print "temp_parent_hap_A final", len(temp_parent_hap_A)
 	print "temp_parent_hap_B final", len(temp_parent_hap_B)
-
-
-
 
 def update_parent_hap(fragment, temp_parent_hap_A):
 
@@ -684,17 +680,6 @@ def compare_child_hap(child_ID_1, child_ID_2):
 					parameter.fragment_dict[id] = []
 				parameter.fragment_dict[id].append(fragment)
 
-
-
-
-
-
-
-
-
-
-
-
 	pass
 
 def get_args():
@@ -745,9 +730,10 @@ if __name__ == '__main__':
 
 	#children_to_parents()
 	#compare_child_hap()
-
+	#sort_fragment()
 	children_to_parents()
+	#children_to_parents_mas_fragment()
 
-	sort_fragment()
+
 
 	print "elapsed_time is: ", round(time.time() - start_time, 2), "s"
