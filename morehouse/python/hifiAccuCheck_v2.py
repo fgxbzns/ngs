@@ -2,16 +2,14 @@
 
 # location /home/guoxing/tool/morehouse
 
-"""July 24 2013, do not count AT, CG snps  """
 
-import os, glob, subprocess, random, operator, time
+import os, glob, subprocess, random, operator, time, sys
 from optparse import OptionParser
-from tools import *
-#from tools import file_path, program_path, data_record_path, currentPath
-#from tools import sort_dict_by_key, load_raw_data, wccount, keywithmaxval
 
+currentPath = os.getcwd() + '/'
+raw_data_format = "list"
+file_path = "/home/guoxing/disk2/solid/common_files/"
 
-data_record_path = "/home/guoxing/disk2/solid/common_files/data_record/"
 
 snp_hap_ori_dict = {}
 hifi_result_dict = {}
@@ -19,6 +17,40 @@ hap_std_total_number = 0
 hap_std_total_number_withoutXN = 0
 hifi_result_total_number = 0
 
+def list_to_line(list):
+	line = ""
+	for a in list:
+		line += str(a).strip() + "\t"
+	return line.strip()
+
+
+def load_raw_data(file_name, raw_data_format="list"):
+	title_info = ""
+	data = {}
+	with open(file_name, "r") as fp:
+		for line in fp:
+			if line.startswith("rsID"):
+				title_info = list_to_line(line.strip().split())
+			else:
+				elements = line.strip().split()
+				try:
+					# convert the position to int for sorting
+					if raw_data_format == "list":
+						data[int(elements[1])] = elements
+					elif raw_data_format == "string":
+						data[int(elements[1])] = line.strip()
+				except:
+					#print "error in ", line, file_name
+					pass
+	return (title_info, data)
+
+
+def removeN(hifi_std_dict):
+	temp_dict = {}
+	for position, elements in hifi_std_dict.iteritems():
+		if elements[2].strip() != "N" and elements[3].strip() != "N":
+			temp_dict[position] = hifi_std_dict[position]
+	return temp_dict
 
 def allele_similarity(hifi_result_dict, hifi_std_dict):
 	same_to_A = 0
@@ -43,7 +75,6 @@ def allele_similarity(hifi_result_dict, hifi_std_dict):
 	else:
 		print "same_to_B", same_to_B, "total", same_to_A + same_to_B, "B percentage", float(same_to_B)/(same_to_A + same_to_B)
 		return "similar_to_B"
-
 
 def compare_std_result(hifi_result_dict, hifi_std_dict):
 	same_to_A_dict = {}
@@ -134,6 +165,7 @@ def hifiAccuCheck(hifi_result_file, chr_name):
 	hap_std_file_name = file_path + "ASW_" + chr_name + "_child_hap_refed.txt"  # 454,solid NA10847
 	#hap_std_file_name = file_path + "NA12878_hap_new_refed.txt"	# simulation data hg18 chr6
 	#hap_std_file_name = "standardhaplotype.txt"         # chr1 NA11919_A
+	#hap_std_file_name = std_name
 
 	hifi_std_dict = load_raw_data(hap_std_file_name, raw_data_format)[1]
 	hap_std_total_number = len(hifi_std_dict)
@@ -145,17 +177,7 @@ def hifiAccuCheck(hifi_result_file, chr_name):
 
 	print "hap_std_total_number", hap_std_total_number
 	print "hifi_result_total_number", hifi_result_total_number
-	'''
-	compare_tuple = compare_std_result(hifi_result_dict, hifi_std_dict)
-	same_to_A_dict = compare_tuple[0]
-	#print len(same_to_A_dict)
-	same_to_B_dict = compare_tuple[1]
-	same_to_AB_dict = compare_tuple[2]
-	not_same_to_AB_dict = compare_tuple[3]
-	same_position_dict = compare_tuple[4]
-	different_position_dict = compare_tuple[5]
-	AT_GC_dict = compare_tuple[6]
-	'''
+
 	same_to_A_dict, same_to_B_dict, same_to_AB_dict, not_same_to_AB_dict, same_position_dict, different_position_dict, \
 	AT_GC_dict, hifi_result_x_dict, std_x_dict = compare_std_result(hifi_result_dict, hifi_std_dict)
 
@@ -179,6 +201,7 @@ def hifiAccuCheck(hifi_result_file, chr_name):
 	error_rate = round(float(not_same_AB_total_number)/(hifi_result_total_number)*100, 3)
 
 	accuracy = round((same_A_total_number + same_B_total_number + same_AB_total_number + AT_GC_dict_number)/float(same_position_total_number - hifi_result_x_number), 4)
+	#accuracy = round((same_A_total_number + same_B_total_number + same_AB_total_number)/float(hifi_result_total_number - AT_GC_dict_number), 4)
 
 	same_AB_homo, same_AB_hetero = seperate_homo_hetero(same_to_AB_dict)
 	not_same_AB_homo, not_same_AB_hetero = seperate_homo_hetero(not_same_to_AB_dict)
@@ -255,6 +278,9 @@ def get_args():
 	parser.add_option("-c", "--chr", type="string", dest="chrName", help="Input chr Name", default="chr11")
 	parser.add_option("-i", "--imputed", type="string", dest="hifiResult", help="Input hifiResult file Name",
 	                  default="null")
+	parser.add_option("-s", "--s", type="string", dest="std_name", help="Input std Name", default="")
+
+
 	(options, args) = parser.parse_args()
 	if options.chrName == "null" or options.hifiResult == "null":
 		print "parameters missing..."
@@ -266,5 +292,7 @@ def get_args():
 if __name__ == '__main__':
 	options = get_args()
 	chr_name = options.chrName
+	global std_name
+	std_name = options.std_name
 	hifi_result_file = options.hifiResult
 	hifiAccuCheck(hifi_result_file, chr_name)

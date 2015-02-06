@@ -97,7 +97,7 @@ def compare_geno_ref(geno_dict, hap_ref_dict):
 def load_hap_ref_data(chr_name):
 	ref_title_info = ""
 	hap_ref_dict = {}
-	for infile in glob.glob(os.path.join(file_path,"*"+chr_name+"_???.phased")):	# add * for chrX
+	for infile in glob.glob(os.path.join(file_path, "*"+chr_name+"_???.phased")):	# add * for chrX
 	#for infile in glob.glob(os.path.join(file_path,"*"+chr_name+"_???.phased_12878FM_remd")):	# simulation data NA12878 FM removed add * for chrX
 		ref_file_name = file_path + infile[(infile.find("hapmap3")):].strip()
 		print ref_file_name
@@ -111,7 +111,13 @@ def load_hap_ref_data(chr_name):
 				if position in hap_ref_dict:
 					#hap_ref_dict[position] += "\t" + list_to_line(line[2:])
 					hap_ref_dict[position].extend(line[2:])
-	return (ref_title_info, hap_ref_dict)
+	return ref_title_info, hap_ref_dict
+
+def load_hap_ref_data_single(ref_file_name):
+	ref_title_info = ""
+	hap_ref_dict = {}
+	ref_title_info, hap_ref_dict = load_raw_data(ref_file_name, raw_data_format_ref)
+	return ref_title_info, hap_ref_dict
 
 def ref_preprocess(geno_dict, hap_ref_dict):
 	ref_homo_dict, geno_ref_not_consistent, geno_n_dict = compare_geno_ref(geno_dict, hap_ref_dict)
@@ -200,13 +206,16 @@ def refMerger(haplotype_file, chr_name, remPercent):
 	
 	raw_data_format_ref = "list"
 		
-	ref_title_info, hap_ref_dict = load_hap_ref_data(chr_name)	
+	ref_title_info, hap_ref_dict = load_hap_ref_data(chr_name)
+	#ref_file_name = "/home/guoxing/disk2/wli/hifi_ref/refHaplos_ori.txt"
+	#ref_title_info, hap_ref_dict = load_hap_ref_data_single(ref_file_name)
 	
 	#total_person_number = len(ref_title_info.strip().split())
 	#print "total_person_number", total_element_number/2
 	
 	#genotype_file = file_path + "genotype_NA12878_chr6.txt"	# for simulation data
 	genotype_file = file_path + "genotype_NA10847_"+chr_name+".txt"	# for all
+	#genotype_file = "/home/guoxing/disk2/wli/hifi_ref/genotype_ori.txt"
 	geno_title_info, geno_dict = load_raw_data(genotype_file, raw_data_format_ref)
 	print "genotype_file", genotype_file 
 	print "total_geno_number: ", len(geno_dict)
