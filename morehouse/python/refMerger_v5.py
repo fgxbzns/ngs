@@ -130,7 +130,7 @@ def ref_preprocess(geno_dict, hap_ref_dict):
 	return hap_ref_dict
 
 def output_files(file_name, title_info, dict):
-	outpuf_file = open(currentPath + file_name, "w")	# for hifi
+	outpuf_file = open(currentPath + file_name, "w")    # for hifi
 	print >> outpuf_file, title_info
 	sorted_list = sort_dict_by_key(dict)
 	for element in sorted_list:

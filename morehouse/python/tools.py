@@ -43,16 +43,13 @@ hap_std_file_name = file_path + "NA12878_hap_new_refed.txt"  # simulation data h
 # solid data
 #hap_std_file_name = file_path + "ASW_"+chr_name+"_child_hap_refed.txt"	
 
-
 #genotype_file = file_path + "genotype_NA12878_chr6.txt"	# for simulation data
 #genotype_file = file_path + "genotype_NA10847_"+chr_name+".txt"	# for all
-
 
 raw_data_format = "list"
 
 quality_score_dict = {'!': 0, '\"': 1, '#': 2, '$': 3, '%': 4, '&': 5, '\'': 6, '(': 7,
 					  ')': 8, '*': 9, '+': 10, ',': 11, '-': 12, '.': 13}
-
 
 def usage():
 	print "%s [seed_file] [chr]" % sys.argv[0]

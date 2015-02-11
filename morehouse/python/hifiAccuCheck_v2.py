@@ -200,8 +200,8 @@ def hifiAccuCheck(hifi_result_file, chr_name):
 	pencentage_in_common = round(float(same_position_total_number) / hifi_result_total_number * 100, 3)
 	error_rate = round(float(not_same_AB_total_number)/(hifi_result_total_number)*100, 3)
 
-	accuracy = round((same_A_total_number + same_B_total_number + same_AB_total_number + AT_GC_dict_number)/float(same_position_total_number - hifi_result_x_number), 4)
-	#accuracy = round((same_A_total_number + same_B_total_number + same_AB_total_number)/float(hifi_result_total_number - AT_GC_dict_number), 4)
+	accuracy = round((same_A_total_number + same_B_total_number + same_AB_total_number)/float(same_position_total_number - hifi_result_x_number - AT_GC_dict_number), 4)
+	#accuracy = round((same_A_total_number + same_B_total_number + same_AB_total_number)/float(hifi_result_total_number - AT_GC_dict_number - hifi_result_x_number), 4)
 
 	same_AB_homo, same_AB_hetero = seperate_homo_hetero(same_to_AB_dict)
 	not_same_AB_homo, not_same_AB_hetero = seperate_homo_hetero(not_same_to_AB_dict)
