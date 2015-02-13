@@ -6,7 +6,7 @@
 
 import os, glob, subprocess, random, operator, time, sys, copy
 from optparse import OptionParser
-from tools import *
+#from tools import *
 
 
 class parameters:
@@ -36,6 +36,34 @@ class persons:
 		self.ID = ""
 		self.A_dict = {}
 		self.B_dict = {}
+
+def list_to_line(list):
+	line = ""
+	for a in list:
+		line += str(a).strip() + "\t"
+	return line.strip()
+
+def load_raw_data(file_name, raw_data_format="list"):
+	title_info = ""
+	data = {}
+	with open(file_name, "r") as fp:
+		for line in fp:
+			if line.startswith("rsID"):
+				title_info = list_to_line(line.strip().split())
+			else:
+				elements = line.strip().split()
+				try:
+					# convert the position to int for sorting
+					if raw_data_format == "list":
+						data[int(elements[1])] = elements
+					elif raw_data_format == "string":
+						data[int(elements[1])] = line.strip()
+				except:
+					#print "error in ", line, file_name
+					pass
+	return (title_info, data)
+
+
 
 def load_pedi(pedi_name):
 	with open(pedi_name, "r") as pedi_file:
@@ -175,7 +203,7 @@ def output_pedi():
 		generate_pedi()
 
 	with open("pedi.txt", "w") as pedi_output:
-		print >> pedi_output, "ID", "father", "mather"
+		print >> pedi_output, "PersonID", "Father", "Mather"
 		for pedi in parameter.pedi_list:
 			print >> pedi_output, pedi.father, "N/A", "N/A"
 			print >> pedi_output, pedi.mather, "N/A", "N/A"
@@ -183,7 +211,7 @@ def output_pedi():
 				print >> pedi_output, child.ID, pedi.father, pedi.mather
 
 	with open("geno.txt", "w") as geno_output:
-		print >> geno_output, "rsID", "pos",
+		print >> geno_output, "rs#", "pos",
 		for pedi in parameter.pedi_list:
 			print >> geno_output, pedi.father, pedi.mather,
 			for child in pedi.children_list:
@@ -200,22 +228,6 @@ def output_pedi():
 					print >> geno_output, child.A_dict[pos] + child.B_dict[pos],
 			print >> geno_output, ""
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 def get_args():
 	desc = ""
 	usage = ""
@@ -230,7 +242,6 @@ def get_args():
 		sys.exit(1)
 	"""
 	return options
-
 
 if __name__ == '__main__':
 	options = get_args()

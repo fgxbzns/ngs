@@ -6,7 +6,7 @@
 
 import os, glob, subprocess, random, operator, time, sys, copy
 from optparse import OptionParser
-from tools import *
+#from tools import *
 
 class parameters:
 	def __init__(self):
@@ -39,6 +39,18 @@ class fragments:
 		self.start = ""
 		self.end = ""
 		self.length = ""
+
+def list_to_line(list):
+	line = ""
+	for a in list:
+		line += str(a).strip() + "\t"
+	return line.strip()
+
+def sort_dict_by_key(input_dict):
+	sorted_list = []
+	sorted_list = [x for x in input_dict.iteritems()]
+	sorted_list.sort(key=lambda x: x[0])
+	return sorted_list
 
 def load_pedi(pedi_name):
 	with open(pedi_name, "r") as pedi_file:
@@ -76,7 +88,7 @@ def load_geno(geno_name):
 					for index, ID in enumerate(ID_list):
 						parameter.person_dict[ID].genotype_dict[position] = genotype[index]
 				except:
-					print "error in ", line, pedi_name
+					print "error in geno", line, pedi_name
 					#pass
 
 def parents_to_children():
@@ -192,18 +204,6 @@ def parents_to_children():
 						#sys.exit(1)
 
 def output_child_hap():
-	"""
-	for ID in parameter.person_dict.keys():
-		person = parameter.person_dict[ID]
-		if len(person.children) > 0:
-			parameter.children_list.extend(list(person.children.keys()))
-			#print parameter.children_list
-
-	parameter.children_list = list(set(parameter.children_list))
-	parameter.children_list.sort()
-	print parameter.children_list
-	"""
-
 	pos_list = parameter.rsID_dict.keys()
 	pos_list.sort()
 
@@ -666,6 +666,7 @@ def genome_laser():
 
 	prepare_id_list()
 	parents_to_children()
+	output_child_hap()
 
 	for f_id in parameter.father_list:
 		children_to_parents(f_id, 0)
@@ -719,13 +720,5 @@ if __name__ == '__main__':
 
 	genome_laser()
 
-
-
-	#output_child_hap()
-
-	#children_to_parents()
-	#compare_child_hap()
-	#sort_fragment()
-	#children_to_parents("1NA19702")
 
 	print "elapsed_time is: ", round(time.time() - start_time, 2), "s"
