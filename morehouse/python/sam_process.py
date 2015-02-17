@@ -5,7 +5,7 @@
 
 import os, glob, subprocess, random, operator, time, sys, math, string
 from optparse import OptionParser
-from tools import *
+#from tools import *
 from repeatRemove_sorted import *
 
 class parameters:
