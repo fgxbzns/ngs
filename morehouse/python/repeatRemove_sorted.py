@@ -8,7 +8,7 @@ import os,sys, glob, subprocess, random, operator, time
 from tools import *
 from optparse import OptionParser
 
-file_path = "/home/guoxing/disk2/solid/common_files/"
+#file_path = "/home/guoxing/disk2/solid/common_files/"
 
 currentPath = os.getcwd() + '/'
 
@@ -36,6 +36,12 @@ def output_files(file_name, data_list):
 	with open(file_name, "w") as output_file:
 		for line in data_list:
 			print >> output_file, line
+
+def list_to_line(list):
+	line = ""
+	for a in list:
+		line += str(a).strip() + "\t"
+	return line.strip()
 
 def repeat_remove(rmsk_file, sam_file):
 	# For removing repeat for solid data

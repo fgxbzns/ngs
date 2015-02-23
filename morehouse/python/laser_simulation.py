@@ -6,8 +6,6 @@
 
 import os, glob, subprocess, random, operator, time, sys, copy
 from optparse import OptionParser
-#from tools import *
-
 
 class parameters:
 	def __init__(self):
@@ -63,8 +61,6 @@ def load_raw_data(file_name, raw_data_format="list"):
 					pass
 	return (title_info, data)
 
-
-
 def load_pedi(pedi_name):
 	with open(pedi_name, "r") as pedi_file:
 		for line in pedi_file:
@@ -86,24 +82,6 @@ def load_pedi(pedi_name):
 				except:
 					print "error in ", line, pedi_name
 
-def load_geno(geno_name):
-	with open(geno_name, "r") as geno_file:
-		for line in geno_file:
-			if line.startswith("rs#"):
-				ID_list = line.strip().split()[2:]
-			else:
-				try:
-					elements = line.strip().split()
-					rsID = elements[0]
-					position = int(elements[1])
-					parameter.rsID_dict[position] = rsID
-					genotype = elements[2:]
-					for index, ID in enumerate(ID_list):
-						parameter.person_dict[ID].genotype_dict[position] = genotype[index]
-				except:
-					print "error in ", line, pedi_name
-					#pass
-
 def load_ref(ref_file_name):
 	ref_title_info, hap_ref_dict = load_raw_data(ref_file_name)
 	print "total_ref_number pos: ", len(hap_ref_dict)
@@ -118,7 +96,7 @@ def load_ref(ref_file_name):
 			person.B_dict = {}
 			parameter.person_dict[person_ID] = person
 			parameter.personID_list.append(person_ID)
-	print parameter.personID_list
+	#print parameter.personID_list
 
 	for pos in hap_ref_dict.keys():
 		parameter.pos_list.append(pos)
@@ -133,7 +111,7 @@ def load_ref(ref_file_name):
 	parameter.pos_list.sort()
 
 def get_crossover_pos():
-	crossover_times = 4
+	crossover_times = 3
 	crossover_pos_list = []
 
 	temp_pos_list = parameter.pos_list[:]
@@ -162,10 +140,10 @@ def get_hap(person, crossover_pos_list):
 			hap_dict[pos] = person.B_dict[pos]
 		elif pos >= crossover_pos_list[2] and pos < crossover_pos_list[3]:
 			hap_dict[pos] = person.A_dict[pos]
-		elif pos >= crossover_pos_list[3] and pos < crossover_pos_list[4]:
+		elif pos >= crossover_pos_list[3] and pos <= crossover_pos_list[4]:
 			hap_dict[pos] = person.B_dict[pos]
-		elif pos >= crossover_pos_list[4] and pos <= crossover_pos_list[5]:
-			hap_dict[pos] = person.A_dict[pos]
+		#elif pos >= crossover_pos_list[4] and pos <= crossover_pos_list[5]:
+		#	hap_dict[pos] = person.A_dict[pos]
 		else:
 			#print "error"
 			pass
@@ -192,14 +170,12 @@ def generate_pedi():
 		person.A_dict = get_hap(father, crossover_pos_list)
 		person.B_dict = get_hap(mather, crossover_pos_list)
 		pedi.children_list.append(person)
-		#print len(person.A_dict)
-		#print len(father.A_dict)
 
 	parameter.pedi_list.append(pedi)
 
 def output_pedi():
 
-	for i in range(5):
+	for i in range(3):
 		generate_pedi()
 
 	with open("pedi.txt", "w") as pedi_output:
@@ -232,25 +208,18 @@ def get_args():
 	desc = ""
 	usage = ""
 	parser = OptionParser(usage=usage, description=desc)
-	parser.add_option("-p", "--pedi", type="string", dest="pedi_name", help="Input pedi name", default="null")
-	parser.add_option("-g", "--geno", type="string", dest="geno_file", help="Input file name", default="null")
+	parser.add_option("-r", "--ref", type="string", dest="ref_file", help="Input file name", default="null")
 	(options, args) = parser.parse_args()
-	"""
-	if options.hg18_name == "null" or options.hg19_name == "null" or options.del_name == "null":
-		print "parameters missing..."
-		print usage
-		sys.exit(1)
-	"""
 	return options
 
 if __name__ == '__main__':
 	options = get_args()
-	pedi_name = options.pedi_name
 	global person_dict
 	person_dict = {}
 
 	global parameter
 	parameter = parameters()
+	ref_file_name = options.ref_file
 	ref_file_name = "hapmap3_r2_b36_fwd.consensus.qc.poly.chr1_ceu.phased"
 	load_ref(ref_file_name)
 
