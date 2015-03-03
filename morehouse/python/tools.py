@@ -36,6 +36,8 @@ bash_path = "/home/guoxing/disk2/ngs/bash/"
 #bash_path = "/nfs/ngs/bash/"
 data_record_path = "/home/guoxing/disk2/solid/common_files/data_record/"
 currentPath = os.getcwd() + '/'
+script_path = os.path.dirname(os.path.abspath(__file__))
+
 
 # simulation data hg18 chr6
 hap_std_file_name = file_path + "NA12878_hap_new_refed.txt"  # simulation data hg18 chr6

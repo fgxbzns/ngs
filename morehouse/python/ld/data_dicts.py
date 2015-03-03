@@ -1,12 +1,14 @@
 #!/usr/bin/python
+
+
 #######################################################################################
-# Common tools
+# Author Guoxing Fu
+# Feb. 20, 2015
+# A data class to store parameters and files to be used by LowDepth
 #######################################################################################
 
-import os, glob, subprocess, random, operator, time, sys
-from optparse import OptionParser
 from tools import *
-from cluster import get_cluster
+#from cluster import get_cluster
 
 class data_dicts:
     
@@ -84,7 +86,7 @@ class data_dicts:
         hap_std_file = file_path + "ASW_"+self.chr_name+"_child_hap_refed.txt"    
         self.hap_std_dict = load_hap_std(hap_std_file)
         print "total_hap_std_dict_number: ", len(self.hap_std_dict)
-    
+    """
     def update_ref_cluster_dict(self):
         self.ref_cluster_dict = get_cluster(self.ref_file_name, self.maf_upper_bound, self.maf_lower_bound)
         for maf_num, cluster_list in self.ref_cluster_dict.iteritems():
@@ -92,6 +94,7 @@ class data_dicts:
                 for pos, ref in cluster_dict.iteritems():
                     self.cluster_pos_dict[pos] = ref
         print "cluster_pos_dict: ", len(self.cluster_pos_dict)
+    """
     
     def update_ref_major_allele(self):
         # prepare the list with major alleles
@@ -190,8 +193,7 @@ class data_dicts:
         self.update_hap_ref_allele_frequence_dict()
         self.output_hap_ref_allele_frequence_dict()
         #self.read_hap_ref_allele_frequence_dict()
-        #pass
-      
+
 class seeds:
     def __init__(self):
         self.rsID = ""
@@ -228,8 +230,7 @@ def load_hap_std(file_name):
     hap_std_dict = {}
     temp_data_dict = load_raw_data(file_name, raw_data_format)[1]
     for position, elements in temp_data_dict.iteritems():
-        """ ??? N X """
-        if elements[2].strip() != "N" and elements[3].strip() != "N": 
+        if elements[2].strip() != "N" and elements[3].strip() != "N":
             try:
                 position = int(elements[1].strip())
                 hap_std_dict[position] = elements
@@ -273,164 +274,11 @@ def group_seed(seed_dict, geno_dict):
             seed_hetero_dict[position] = snp
     return (seed_homo_dict, seed_hetero_dict)
 
-if __name__=='__main__':
+if __name__ == '__main__':
 
     data_dict = data_dicts()
     data_dict.chr_name = ""
     data_dict.load_data_dicts()
     data_dict.load_seed_geno_ref()
 
-
-
-
-
-
-
-
-
-
-def compare_std_hap_ref():
-    ref_file_name = "refHaplos.txt"
-    hap_ref_dict = load_raw_data(ref_file_name, raw_data_format)[1]
-
-    std_x_dict = {}
-    std_not_in_ref_dict = {}
-    ref_homo = 0
-
-    for position, snp in hap_std_dict.iteritems():
-        if position in hap_ref_dict:
-            exist_in_ref = False
-            std_A = snp[2]
-            std_B = snp[3]
-            alleles = hap_ref_dict[position]
-            alleles = alleles[2:]
-            unique_alleles = list(set(alleles))
-            n_alleles = len(unique_alleles)
-            if n_alleles == 0 or n_alleles > 2:
-                print "error in: ", position
-                sys.exit(1)
-            else:
-                try:
-                    if n_alleles == 1:
-                        ref_homo += 1
-                    if std_A == std_B:
-                        if n_alleles == 2:
-                            if std_A == unique_alleles[0] or std_A == unique_alleles[1]:
-                                exist_in_ref = True
-                        if n_alleles == 1:
-                            if std_A == unique_alleles[0]:
-                                exist_in_ref = True
-                    else:
-                        if n_alleles == 2:
-                            if (std_A == unique_alleles[0] and std_B == unique_alleles[1]) or (std_A == unique_alleles[1] and std_B == unique_alleles[0]):
-                                exist_in_ref = True
-                            if n_alleles == 1:    # hetero_std, homo_ref
-                                pass
-                    if not exist_in_ref:
-                        if std_A == 'X':
-                            std_x_dict[position] = list_to_line(snp)
-                        else:
-                            std_not_in_ref_dict[position] = list_to_line(snp)
-                            print position, unique_alleles, n_alleles, std_A, std_B, geno_dict[position][2]
-                except:
-                    #print position, unique_alleles, n_alleles
-                    pass
-    print "std_x_dict: ", len(std_x_dict)
-    print "std_not_in_ref_dict: ", len(std_not_in_ref_dict)
-    print "ref_homo", ref_homo
-
-def compare_geno_ref():
-    ref_file_name = "refHaplos.txt"
-    hap_ref_dict = load_raw_data(ref_file_name, raw_data_format)[1]
-
-    std_x_dict = {}
-    std_n_dict = {}
-    std_not_in_ref_dict = {}
-    ref_homo = 0
-
-    for position, snp in geno_dict.iteritems():
-        if position in hap_ref_dict:
-            exist_in_ref = False
-            std_A = snp[2][0]
-            std_B = snp[2][1]
-            alleles = hap_ref_dict[position]
-            alleles = alleles[2:]
-            unique_alleles = list(set(alleles))
-            n_alleles = len(unique_alleles)
-            if n_alleles == 0 or n_alleles > 2:
-                print "error in: ", position
-                sys.exit(1)
-            else:
-                try:
-                    if n_alleles == 1:
-                        ref_homo += 1
-                    if std_A == std_B:
-                        if n_alleles == 2:
-                            if std_A == unique_alleles[0] or std_A == unique_alleles[1]:
-                                exist_in_ref = True
-                        if n_alleles == 1:
-                            if std_A == unique_alleles[0]:
-                                exist_in_ref = True
-                    else:
-                        if n_alleles == 2:
-                            if (std_A == unique_alleles[0] and std_B == unique_alleles[1]) or (std_A == unique_alleles[1] and std_B == unique_alleles[0]):
-                                exist_in_ref = True
-                            if n_alleles == 1:    # hetero_std, homo_ref
-                                pass
-                    if not exist_in_ref:
-                        if std_A == 'X':
-                            std_x_dict[position] = list_to_line(snp)
-                        if std_A == 'N':
-                            std_n_dict[position] = list_to_line(snp)
-                        else:
-                            std_not_in_ref_dict[position] = list_to_line(snp)
-                            print position, unique_alleles, n_alleles, std_A, std_B, geno_dict[position][2]
-                except:
-                    #print position, unique_alleles, n_alleles
-                    pass
-    print "std_x_dict: ", len(std_x_dict)
-    print "std_n_dict: ", len(std_n_dict)
-    print "std_not_in_ref_dict: ", len(std_not_in_ref_dict)
-    print "ref_homo", ref_homo
-
-def output_revised_seed(filename, selected_seed_dict):
-    seed_new_file = open(currentPath + filename, "w")
-    print >> seed_new_file, "rsID    position    NA10847-F       NA10847-M"
-    selected_seed_sorted_list = sort_dict_by_key(selected_seed_dict)     # need to sort the snps by position
-    for snp in selected_seed_sorted_list:
-        seed = snp[1]
-        line = seed.rsID + "\t" + str(seed.position) + "\t" + seed.allele_new
-        print >> seed_new_file, line
-    seed_new_file.close()
-
-def generate_std_seed(seed_number):
-        chr_name = "chr1"
-        hap_std_dict = load_seed_data(file_path+"ASW_"+chr_name+"_child_hap_refed.txt")[1]
-        hap_std_list = sort_dict_by_key(hap_std_dict)
-        
-        genotype_file = file_path + "genotype_NA10847_" + chr_name + ".txt"
-        geno_dict = load_raw_data(genotype_file)[1]
-        seed_homo_dict, seed_hetero_dict = group_seed(hap_std_dict, geno_dict)
-
-        seed_hetero_list = sort_dict_by_key(seed_hetero_dict)
-
-        selected_seed_dict = {}
-        i = 0
-        while i < seed_number-1:
-            random_index = random.randrange(0,(len(seed_hetero_list)-1))
-            while seed_hetero_list[random_index][0] in selected_seed_dict:
-                random_index = random.randrange(0,(len(seed_hetero_list)-1))
-            selected_seed_dict[seed_hetero_list[random_index][0]] = seed_hetero_list[random_index][1]
-            i += 1
-        # always add the last snp into seed, hifi requirement
-        selected_seed_dict[hap_std_list[-1][0]] = hap_std_list[-1][1]
-
-        file_name = "haplotype.txt"
-        output_revised_seed(file_name, selected_seed_dict)
-        """
-        seed_std_compare(file_name, chr_name)
-        refMerger(file_name, chr_name, 0)
-        hifi_run(file_name, chr_name)
-        hifiAccuCheck("imputed_"+file_name, chr_name)
-        """
 

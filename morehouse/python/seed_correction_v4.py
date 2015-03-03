@@ -150,6 +150,8 @@ def load_window_info(number_of_subfile):
 
 def seed_error_remove():
 	# reduce error seed from ori seed
+
+	number_of_subfile = data_dict.number_of_subfile
 	print "seed_hetero_dict new", len(data_dict.seed_hetero_dict)
 
 	seed_hetero_sorted_list = sort_dict_by_key(data_dict.seed_hetero_dict)
@@ -166,7 +168,7 @@ def seed_error_remove():
 	for file_number in range(number_of_subfile):
 		hap_subfile_name = data_dict.seed_file_name + "_" + str(file_number) + ".txt"
 		output_subfile = open(currentPath + hap_subfile_name, "w")
-		print >> output_subfile, seed_title_info
+		print >> output_subfile, data_dict.seed_title_info
 
 		seed_hetero_dict_bkup = data_dict.seed_hetero_dict.copy()
 
@@ -215,6 +217,9 @@ def seed_error_remove():
 
 
 def seed_error_remove_extract():
+
+	number_of_subfile = data_dict.number_of_subfile
+
 	revised_seed_dict = {}
 	hifi_dict = data_dict.seed_dict.copy()
 	print "hifi_dict initial", len(hifi_dict)
@@ -252,6 +257,8 @@ def seed_error_remove_extract():
 
 
 def seed_recover(seed_dict, revised_seed_dict):
+
+	number_of_subfile = data_dict.number_of_subfile
 	"""two usages 1. to recover experiment seed from remove step. 2. to remove errors in expanded seed"""
 	removed_seed_dict = dict_substract(data_dict.seed_hetero_dict, revised_seed_dict)
 
@@ -304,6 +311,8 @@ def seed_recover(seed_dict, revised_seed_dict):
 
 
 def seed_recover_extract(seed_hetero_dict, revised_seed_dict):
+
+	number_of_subfile = data_dict.number_of_subfile
 	recovered_seed_dict = {}
 	removed_seed_dict = dict_substract(data_dict.seed_hetero_dict, revised_seed_dict)
 	# print "removed_seed_dict", len(removed_seed_dict)
