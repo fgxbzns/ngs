@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # ######################################################################################
 # Guoxing Fu Jan 28, 2015
-# To generate simulation data for laser genome
+# 
 #######################################################################################
 
 import os, glob, subprocess, random, operator, time, sys, copy
@@ -173,9 +173,9 @@ def generate_pedi():
 
 	parameter.pedi_list.append(pedi)
 
-def output_pedi(pedi_num):
+def output_pedi():
 
-	for i in range(pedi_num):
+	for i in range(3):
 		generate_pedi()
 
 	with open("pedi.txt", "w") as pedi_output:
@@ -209,8 +209,6 @@ def get_args():
 	usage = ""
 	parser = OptionParser(usage=usage, description=desc)
 	parser.add_option("-r", "--ref", type="string", dest="ref_file", help="Input file name", default="null")
-	parser.add_option("-n", "--num", type="int", dest="pedi_num", help="Input file name", default="3")
-
 	(options, args) = parser.parse_args()
 	return options
 
@@ -222,12 +220,13 @@ if __name__ == '__main__':
 	global parameter
 	parameter = parameters()
 	ref_file_name = options.ref_file
-	pedi_num = options.pedi_num
-	ref_file_name = "hapmap3_r2_b36_fwd.consensus.qc.poly.chr1_ceu.phased"
+	# ref_file_name = "hapmap3_r2_b36_fwd.consensus.qc.poly.chr1_ceu.phased"
+	load_ref(ref_file_name)
+
+	generate_pedi()
+	output_pedi()
 
 	start_time = time.time()
-	load_ref(ref_file_name)
-	output_pedi(pedi_num)
 
 	print "elapsed_time is: ", round(time.time() - start_time, 2), "s"
 

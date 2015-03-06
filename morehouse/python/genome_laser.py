@@ -680,7 +680,7 @@ def compare_child_hap(p_id, p_code, child_ID_1, child_ID_2):
 					parameter.fragment_dict[id] = []
 				parameter.fragment_dict[id].append(fragment)
 
-def genome_laser():
+def genome_laser(pedi_name, geno_name):
 
 	pedi_name = "pedi.txt"
 	geno_name = "geno.txt"
@@ -708,7 +708,7 @@ def get_args():
 	usage = ""
 	parser = OptionParser(usage=usage, description=desc)
 	parser.add_option("-p", "--pedi", type="string", dest="pedi_name", help="Input pedi name", default="null")
-	parser.add_option("-g", "--geno", type="string", dest="geno_file", help="Input file name", default="null")
+	parser.add_option("-g", "--geno", type="string", dest="geno_name", help="Input file name", default="null")
 	(options, args) = parser.parse_args()
 
 	return options
@@ -716,6 +716,7 @@ def get_args():
 if __name__ == '__main__':
 	options = get_args()
 	pedi_name = options.pedi_name
+	geno_name = options.geno_name
 	global person_dict
 	person_dict = {}
 
@@ -724,6 +725,6 @@ if __name__ == '__main__':
 
 	start_time = time.time()
 
-	genome_laser()
+	genome_laser(pedi_name, geno_name)
 
 	print "elapsed_time is: ", round(time.time() - start_time, 2), "s"
