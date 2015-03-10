@@ -128,7 +128,7 @@ def get_crossover_pos():
 		crossover_pos_list.append(crossover_pos)
 	crossover_pos_list.append(last_pos)
 	crossover_pos_list.sort()
-	#print crossover_pos_list
+	print crossover_pos_list
 	return crossover_pos_list
 
 def get_hap(person, crossover_pos_list):
@@ -149,6 +149,29 @@ def get_hap(person, crossover_pos_list):
 			pass
 	return hap_dict
 
+def get_hap_various_crossover(person, crossover_pos_list):
+	hap_dict = {}
+	crossover_pos_index = 0
+	hap_side = "A"
+
+	for pos in parameter.pos_list:
+		if crossover_pos_index < len(crossover_pos_list):
+			if pos >= crossover_pos_list[crossover_pos_index] and pos <= crossover_pos_list[crossover_pos_index+1]:
+				if hap_side == "A":
+					hap_dict[pos] = person.A_dict[pos]
+				elif hap_side == "B":
+					hap_dict[pos] = person.B_dict[pos]
+			else:
+				if hap_side == "A":
+					hap_dict[pos] = person.A_dict[pos]
+				elif hap_side == "B":
+					hap_dict[pos] = person.B_dict[pos]
+				hap_side = "A" if hap_side == "B" else hap_side == "A"
+				crossover_pos_index += 1
+
+	return hap_dict
+
+
 def generate_pedi():
 
 	f_index = random.randrange(0, len(parameter.personID_list))
@@ -164,10 +187,12 @@ def generate_pedi():
 	pedi.mather = mather.ID
 
 	for i in range(1, 4):
-		crossover_pos_list = get_crossover_pos()
+
 		person = persons()
 		person.ID = father.ID + "_" + mather.ID + "_" + str(i)
+		crossover_pos_list = get_crossover_pos()
 		person.A_dict = get_hap(father, crossover_pos_list)
+		crossover_pos_list = get_crossover_pos()
 		person.B_dict = get_hap(mather, crossover_pos_list)
 		pedi.children_list.append(person)
 
@@ -209,7 +234,7 @@ def get_args():
 	usage = ""
 	parser = OptionParser(usage=usage, description=desc)
 	parser.add_option("-r", "--ref", type="string", dest="ref_file", help="Input file name", default="null")
-	parser.add_option("-n", "--num", type="int", dest="pedi_num", help="Input file name", default="3")
+	parser.add_option("-n", "--num", type="int", dest="pedi_num", help="Input file name", default="1")
 
 	(options, args) = parser.parse_args()
 	return options

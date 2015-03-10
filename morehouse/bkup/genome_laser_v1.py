@@ -269,7 +269,7 @@ def sort_fragment(f_id):
 		for fragment in list:
 			total_fragment += 1
 			in_unique_list = False
-			print fragment.ID, fragment.start, fragment.end
+			#print fragment.ID, fragment.start, fragment.end
 			start_pos = fragment.start
 			end_pos = fragment.end
 			for uni_frangment in unique_fragment:
@@ -283,8 +283,8 @@ def sort_fragment(f_id):
 					fragment_startpos_dict[int(start_pos)] = []
 				fragment_startpos_dict[int(start_pos)].append(fragment)
 
-	print "total_fragment", total_fragment
-	print "unique_fragment_total", unique_fragment_total
+	#print "total_fragment", total_fragment
+	#print "unique_fragment_total", unique_fragment_total
 
 	fragment_startpos_sorted_list = sort_dict_by_key(fragment_startpos_dict)
 	"""
@@ -658,6 +658,8 @@ def compare_child_hap(p_id, p_code, child_ID_1, child_ID_2):
 						child_fragment_dict[child_ID_2].append(pos)
 						compare = "same"
 						#print "same", pos, cf_hap_1, cf_hap_2
+			else:
+				print f_geno
 
 	child_fragment_dict[child_ID_1].append(parameter.pos_list[-1])
 	child_fragment_dict[child_ID_2].append(parameter.pos_list[-1])
@@ -673,12 +675,13 @@ def compare_child_hap(p_id, p_code, child_ID_1, child_ID_2):
 				fragment.start = child_fragment_dict[id][index]
 				fragment.end = child_fragment_dict[id][index + 1]
 				fragment.length = parameter.pos_list.index(fragment.end) - parameter.pos_list.index(fragment.start)
-				print fragment.ID, fragment.start, fragment.end, fragment.length, child_1.haplotype[pos][p_code], child_2.haplotype[pos][p_code]
+				#print fragment.ID, fragment.start, fragment.end, fragment.length, child_1.haplotype[pos][p_code], child_2.haplotype[pos][p_code]
 				#print fragment.ID, fragment.start, fragment.end, fragment.length
 
 				if id not in parameter.fragment_dict:
 					parameter.fragment_dict[id] = []
 				parameter.fragment_dict[id].append(fragment)
+
 
 def genome_laser(pedi_name, geno_name):
 
@@ -693,7 +696,7 @@ def genome_laser(pedi_name, geno_name):
 	output_child_hap()
 
 	f_code = 0
-	m_code = 0
+	m_code = 1
 
 	for f_id in parameter.father_list:
 		children_to_parents(f_id, f_code)
