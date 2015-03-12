@@ -7,6 +7,7 @@
 import os, glob, subprocess, random, operator, time, sys, copy
 from optparse import OptionParser
 #from tools import *
+from hifiAccuCheck_v2 import *
 
 class parameters:
 	def __init__(self):
@@ -32,6 +33,9 @@ class persons:
 		self.genotype_dict = {}
 		self.haplotype = {}
 		self.hetero_pos_list = []
+
+		self.fragment_dict = {}
+
 
 class fragments:
 	def __init__(self):
@@ -251,15 +255,15 @@ def prepare_id_list():
 	parameter.pos_list = parameter.rsID_dict.keys()
 	parameter.pos_list.sort()
 
-def sort_fragment(f_id):
-	#f_id = "1NA19702"
+def sort_fragment(p_id):
 
-	children_list = parameter.person_dict[f_id].children.keys()
+	children_list = parameter.person_dict[p_id].children.keys()
 	children_list.sort()
 	#print children_list
 
 	fragment_startpos_dict = {}
-
+	"""
+	# keep for remove duplicates
 	total_fragment = 0
 	unique_fragment_total = 0
 
@@ -283,16 +287,17 @@ def sort_fragment(f_id):
 					fragment_startpos_dict[int(start_pos)] = []
 				fragment_startpos_dict[int(start_pos)].append(fragment)
 
-	#print "total_fragment", total_fragment
-	#print "unique_fragment_total", unique_fragment_total
+	print "total_fragment", total_fragment
+	print "unique_fragment_total", unique_fragment_total
 
 	fragment_startpos_sorted_list = sort_dict_by_key(fragment_startpos_dict)
 	"""
-
+	# To sort fragment_list
 	for child_id in children_list:
+		#list = parameter.person_dict[p_id].fragment_dict[child_id]
 		list = parameter.fragment_dict[child_id]
 		for fragment in list:
-			print fragment.ID, fragment.start, fragment.end
+			#print fragment.ID, fragment.start, fragment.end
 			start_pos = fragment.start
 			end_pos = fragment.end
 			if start_pos not in fragment_startpos_dict:
@@ -301,7 +306,7 @@ def sort_fragment(f_id):
 
 	fragment_startpos_sorted_list = sort_dict_by_key(fragment_startpos_dict)
 
-
+	"""
 	for data in fragment_startpos_sorted_list:
 		start_pos = data[0]
 		fragment_list = data[1]
@@ -310,126 +315,11 @@ def sort_fragment(f_id):
 		for fragment in fragment_list:
 			print fragment.ID, fragment.start
 	"""
+
 	return fragment_startpos_sorted_list
 
 
-def children_to_parents_max_fragment():
-	f_id = "1NA19702"
-
-	children_list = parameter.person_dict[f_id].children.keys()
-	children_list.sort()
-	#print children_list
-
-	for pos in parameter.pos_list:
-		f_geno = parameter.person_dict[f_id].genotype_dict[pos]
-		if f_geno != "NN" and f_geno[0] != f_geno[1]:
-			parameter.person_dict[f_id].hetero_pos_list.append(pos)
-
-	#print "hetero pos_list size", len(parameter.person_dict[f_id].hetero_pos_list)
-
-	#for child_id in children_list:
-
-	compare_child_hap(children_list[0], children_list[1])
-	compare_child_hap(children_list[0], children_list[2])
-	compare_child_hap(children_list[1], children_list[2])
-
-	max_length_fragment = ""
-	max_length = 0
-
-	for child_id in children_list:
-		list = parameter.fragment_dict[child_id]
-		for fragment in list:
-			if max_length == 0:
-				max_lsame_to_Aength = fragment.length
-				max_length_fragment = fragment
-			else:
-				if fragment.length > max_length:
-					max_length = fragment.length
-					max_length_fragment = fragment
-			#print fragment.ID, fragment.start, fragment.end, fragment.length
-	#print max_length, max_length_fragment.ID
-
-	temp_parent_hap_A = {}
-	temp_parent_hap_B = {}
-	temp_parent_hap_list = [temp_parent_hap_A, temp_parent_hap_B]
-
-	for pos in parameter.pos_list:
-		if pos >= max_length_fragment.start and pos <= max_length_fragment.end:
-			temp_parent_hap_A[pos] = parameter.person_dict[max_length_fragment.ID].haplotype[pos][0]
-			#print pos, temp_parent_hap_A[pos]
-	#parameter.fragment_dict[child_id].remove(max_length_fragment)
-
-	child_id = children_list[1]
-	#if True:
-	for child_id in children_list:
-		if True:
-		#if child_id != max_length_fragment.ID:
-			list = parameter.fragment_dict[child_id]
-			fragment = list[0]
-			if True:
-			#while len(parameter.fragment_dict[child_id]) > 0:
-				#print "parameter.fragment_dict[child_id] size", len(parameter.fragment_dict[child_id])
-				for fragment in list:
-					#current_start, current_end = get_parent_hap_end(temp_parent_hap_A)
-					status, temp_parent_hap_A = update_parent_hap(fragment, temp_parent_hap_A)
-					if status == "same_to_A":
-						parameter.fragment_dict[child_id].remove(fragment)
-						#print fragment.ID, fragment.start, "removed", len(parameter.fragment_dict[child_id])
-
-					elif status == "same_to_B":
-						status, temp_parent_hap_B = update_parent_hap(fragment, temp_parent_hap_B)
-					elif status == "mix":
-						pass
-	#print "temp_parent_hap_A", len(temp_parent_hap_A)
-	#print "temp_parent_hap_B", len(temp_parent_hap_B)
-
-
-	count = 0
-	for pos in parameter.pos_list:
-		f_geno = parameter.person_dict[f_id].genotype_dict[pos]
-		if f_geno[0] == f_geno[1]:
-			if pos not in temp_parent_hap_A:
-				temp_parent_hap_A[pos] = f_geno[0]
-			if pos not in temp_parent_hap_B:
-				temp_parent_hap_B[pos] = f_geno[0]
-		else:
-			if pos in temp_parent_hap_A and pos not in temp_parent_hap_B:
-				temp_parent_hap_B[pos] = f_geno[0] if temp_parent_hap_A[pos] == f_geno[1] else f_geno[1]
-
-			elif pos not in temp_parent_hap_A and pos in temp_parent_hap_B:
-				temp_parent_hap_A[pos] = f_geno[0] if temp_parent_hap_B[pos] == f_geno[1] else f_geno[1]
-
-			elif pos not in temp_parent_hap_A and pos not in temp_parent_hap_B:
-				temp_parent_hap_A[pos] = "N"
-				temp_parent_hap_B[pos] = "N"
-				count += 1
-
-	#print "count", count
-	"""
-	for pos in parameter.pos_list:
-		f_geno = parameter.person_dict[f_id].genotype_dict[pos]
-		if f_geno[0] != f_geno[1]:
-			print pos,
-			if pos in temp_parent_hap_A:
-				print temp_parent_hap_A[pos],
-			else:
-				print " ",
-			if pos in temp_parent_hap_B:
-				print temp_parent_hap_B[pos]
-			else:
-				print " "
-
-	for pos in temp_parent_hap_A:
-		#print pos, temp_parent_hap_A[pos],
-		if pos not in temp_parent_hap_B:
-			print pos, temp_parent_hap_A[pos]
-	"""
-
-	#print "temp_parent_hap_A final", len(temp_parent_hap_A)
-	#print "temp_parent_hap_B final", len(temp_parent_hap_B)
-
 def children_to_parents(p_id, p_code):
-	#f_id = "1NA19702"
 
 	children_list = parameter.person_dict[p_id].children.keys()
 	children_list.sort()
@@ -440,9 +330,8 @@ def children_to_parents(p_id, p_code):
 		if f_geno != "NN" and f_geno[0] != f_geno[1]:
 			parameter.person_dict[p_id].hetero_pos_list.append(pos)
 
-	#print "hetero pos_list size", len(parameter.person_dict[f_id].hetero_pos_list)
-
-	#for child_id in children_list:
+	parameter.person_dict[p_id].hetero_pos_list.sort()
+	print "hetero pos_list size", len(parameter.person_dict[p_id].hetero_pos_list)
 
 	compare_child_hap(p_id, p_code, children_list[0], children_list[1])
 	compare_child_hap(p_id, p_code, children_list[0], children_list[2])
@@ -452,6 +341,8 @@ def children_to_parents(p_id, p_code):
 	temp_parent_hap_B = {}
 
 	fragment_startpos_sorted_list = sort_fragment(p_id)
+	#group_parent_hap(p_id, fragment_startpos_sorted_list)
+
 	status = ""
 	for data in fragment_startpos_sorted_list:
 		start_pos = data[0]
@@ -459,7 +350,7 @@ def children_to_parents(p_id, p_code):
 
 		#print start_pos
 		for fragment in fragment_list:
-			#print fragment.ID, fragment.start, fragment.end
+			#print "******", fragment.ID, fragment.start, fragment.end
 			status, temp_parent_hap_A = update_parent_hap(p_id, fragment, temp_parent_hap_A, p_code)
 			if status == "same_to_A":
 				pass
@@ -481,7 +372,16 @@ def children_to_parents(p_id, p_code):
 			#if pos not in temp_parent_hap_B:
 			temp_parent_hap_B[pos] = f_geno[0]
 		else:
-			if pos in temp_parent_hap_A and pos not in temp_parent_hap_B:
+			if pos in temp_parent_hap_A and pos in temp_parent_hap_B:
+				if temp_parent_hap_A[pos] == "X" and temp_parent_hap_B[pos] != "X":
+					#print "xxxA000", temp_parent_hap_A[pos], temp_parent_hap_B[pos], f_geno[0], f_geno[1]
+					temp_parent_hap_A[pos] = f_geno[0] if temp_parent_hap_B[pos] == f_geno[1] else f_geno[1]
+					#print "xxxA111", temp_parent_hap_A[pos],temp_parent_hap_B[pos]
+				if temp_parent_hap_B[pos] == "X" and temp_parent_hap_A[pos] != "X":
+					temp_parent_hap_B[pos] = f_geno[0] if temp_parent_hap_A[pos] == f_geno[1] else f_geno[1]
+					#print "xxx", temp_parent_hap_A[pos], temp_parent_hap_B[pos]
+
+			elif pos in temp_parent_hap_A and pos not in temp_parent_hap_B:
 				temp_parent_hap_B[pos] = f_geno[0] if temp_parent_hap_A[pos] == f_geno[1] else f_geno[1]
 
 			elif pos not in temp_parent_hap_A and pos in temp_parent_hap_B:
@@ -491,6 +391,7 @@ def children_to_parents(p_id, p_code):
 				temp_parent_hap_A[pos] = "N"
 				temp_parent_hap_B[pos] = "N"
 				count += 1
+
 
 	#print "count N", count
 
@@ -511,11 +412,12 @@ def children_to_parents(p_id, p_code):
 
 	# to output data
 	with open(p_id + "_hap.txt", "w") as x_file:
+		print >> x_file, "rs#", "pos", parameter.person_dict[p_id].ID + "_A", parameter.person_dict[p_id].ID + "_B"
 		for pos in parameter.pos_list:
+			print >> x_file, parameter.rsID_dict[pos], pos,
 			f_geno = parameter.person_dict[p_id].genotype_dict[pos]
 			#if f_geno[0] != f_geno[1]:
 			if True:
-				print >> x_file, pos,
 				if pos in temp_parent_hap_A:
 					print >> x_file, temp_parent_hap_A[pos],
 				else:
@@ -527,6 +429,21 @@ def children_to_parents(p_id, p_code):
 
 	#print "temp_parent_hap_A final", len(temp_parent_hap_A)
 	#print "temp_parent_hap_B final", len(temp_parent_hap_B)
+
+
+def output_hap_std():
+	parent_id_list = []
+	parent_id_list.extend(parameter.father_list)
+	parent_id_list.extend(parameter.mather_list)
+	parent_id_list.sort()
+	for p_id in parent_id_list:
+		with open(p_id + "_std.txt", "w") as std_file:
+			print >> std_file, "rs#", "pos", parameter.person_dict[p_id].ID + "_A", parameter.person_dict[p_id].ID + "_B"
+			for pos in parameter.pos_list:
+				print >> std_file, parameter.rsID_dict[pos], pos,
+				f_geno = parameter.person_dict[p_id].genotype_dict[pos]
+				print >> std_file, f_geno[0], f_geno[1]
+
 
 def output_parent_hap():
 
@@ -547,13 +464,41 @@ def output_parent_hap():
 				print >> parent_hap, parameter.person_dict[id].haplotype[pos][0], parameter.person_dict[id].haplotype[pos][1],
 			print >> parent_hap, ""
 
-def update_parent_hap(f_id, fragment, temp_parent_hap_A, p_index):
+
+def group_parent_hap(p_id, fragment_startpos_sorted_list):
+
+	group_hap_A = {}
+	group_hap_B = {}
+	fragment_group_A_list = []
+	fragment_group_B_list = []
+	"""
+	children_list = parameter.person_dict[p_id].children.keys()
+	children_list.sort()
+	size = len(parameter.fragment_dict[children_list[0]] + parameter.fragment_dict[children_list[1]] + parameter.fragment_dict[children_list[2]])
+
+	print "ori_f_list_size", size
+	"""
+
+	fragment_sorted_list = []
+	#fragment_startpos_sorted_list = sort_fragment(p_id)
+	status = ""
+	for data in fragment_startpos_sorted_list:
+		start_pos = data[0]
+		fragment_list = data[1]
+		fragment_sorted_list.extend(fragment_list)
+	print "fragment_sorted_list", len(fragment_sorted_list)
+	for fragment in fragment_sorted_list:
+		#print fragment.ID, fragment.start, fragment.end, fragment.length
+		pass
+
+
+def update_parent_hap(f_id, fragment, temp_parent_hap_A, p_code):
 
 	if len(temp_parent_hap_A) == 0:
 		# for temp_parent_hap_B
 		for pos in parameter.pos_list:
 			if pos >= fragment.start and pos <= fragment.end:
-				temp_parent_hap_A[pos] = parameter.person_dict[fragment.ID].haplotype[pos][p_index]
+				temp_parent_hap_A[pos] = parameter.person_dict[fragment.ID].haplotype[pos][p_code]
 		return "same_to_A", temp_parent_hap_A
 	else:
 		current_start, current_end = get_parent_hap_end(temp_parent_hap_A)
@@ -581,10 +526,10 @@ def update_parent_hap(f_id, fragment, temp_parent_hap_A, p_index):
 		#f_id = "1NA19702"
 		for pos in parameter.person_dict[f_id].hetero_pos_list:
 			if pos >= overlap_start and pos <= overlap_end:
-				if parameter.person_dict[fragment.ID].haplotype[pos][p_index] != "X" and temp_parent_hap_A[pos] != "X" \
-						and parameter.person_dict[fragment.ID].haplotype[pos][p_index] != "N" and temp_parent_hap_A[pos] != "N":
+				if parameter.person_dict[fragment.ID].haplotype[pos][p_code] != "X" and temp_parent_hap_A[pos] != "X" \
+						and parameter.person_dict[fragment.ID].haplotype[pos][p_code] != "N" and temp_parent_hap_A[pos] != "N":
 					#print "xxxx", pos, parameter.person_dict[fragment.ID].haplotype[pos][0], temp_parent_hap[pos]
-					if parameter.person_dict[fragment.ID].haplotype[pos][p_index] == temp_parent_hap_A[pos]:
+					if parameter.person_dict[fragment.ID].haplotype[pos][p_code] == temp_parent_hap_A[pos]:
 						same += 1
 					else:
 						not_same += 1
@@ -595,7 +540,7 @@ def update_parent_hap(f_id, fragment, temp_parent_hap_A, p_index):
 		if percentage >= 0.99:
 			for pos in parameter.person_dict[f_id].hetero_pos_list:
 				if pos >= fragment.start and pos <= fragment.end and pos not in temp_parent_hap_A:
-					temp_parent_hap_A[pos] = parameter.person_dict[fragment.ID].haplotype[pos][p_index]
+					temp_parent_hap_A[pos] = parameter.person_dict[fragment.ID].haplotype[pos][p_code]
 			#print "added snp", len(temp_parent_hap_A)
 			#print "percentage A", percentage
 			return "same_to_A", temp_parent_hap_A
@@ -611,18 +556,13 @@ def update_parent_hap(f_id, fragment, temp_parent_hap_A, p_index):
 def get_parent_hap_end(temp_parent_hap):
 	pos_list = temp_parent_hap.keys()
 	pos_list.sort()
-	return (pos_list[0], pos_list[-1])
+	return pos_list[0], pos_list[-1]
 
 def compare_child_hap(p_id, p_code, child_ID_1, child_ID_2):
 
 	child_fragment_dict = {}
 	child_fragment_dict[child_ID_1] = []
 	child_fragment_dict[child_ID_2] = []
-
-	fragment_list = []
-
-	break_point_dict = {}
-	break_point_list = []
 
 	child_1 = parameter.person_dict[child_ID_1]
 	child_2 = parameter.person_dict[child_ID_2]
@@ -633,14 +573,15 @@ def compare_child_hap(p_id, p_code, child_ID_1, child_ID_2):
 	compare = ""
 
 	for pos in parameter.pos_list:
+		pos = int(pos)
 		f_geno = parameter.person_dict[p_id].genotype_dict[pos]
 
-		if f_geno != "NN" and f_geno[0] != f_geno[1] and f_geno[0] != "X" and f_geno[1] != "X":
+		if f_geno[0] != "N" and f_geno[1] != "N" and f_geno[0] != f_geno[1] and f_geno[0] != "X" and f_geno[1] != "X":
 
 			cf_hap_1 = child_1.haplotype[pos][p_code]
 			cf_hap_2 = child_2.haplotype[pos][p_code]
 
-			parameter.person_dict[p_id].hetero_pos_list.append(pos)
+			#parameter.person_dict[p_id].hetero_pos_list.append(pos)
 
 			if cf_hap_1 != "X" and cf_hap_2 != "X" and cf_hap_1 != "N" and cf_hap_2 != "N":
 
@@ -655,36 +596,76 @@ def compare_child_hap(p_id, p_code, child_ID_1, child_ID_2):
 						child_fragment_dict[child_ID_1].append(pos)
 						child_fragment_dict[child_ID_2].append(pos)
 						compare = "different"
-						#print "different", pos, cf_hap_1, cf_hap_2
+						#print "different",  child_ID_1, child_ID_2, pos, cf_hap_1, cf_hap_2
 				elif compare == "different":
 					if cf_hap_1 == cf_hap_2:
 						child_fragment_dict[child_ID_1].append(pos)
 						child_fragment_dict[child_ID_2].append(pos)
 						compare = "same"
-						#print "same", pos, cf_hap_1, cf_hap_2
+						#print "same", child_ID_1, child_ID_2, pos, cf_hap_1, cf_hap_2
 
 	child_fragment_dict[child_ID_1].append(parameter.pos_list[-1])
 	child_fragment_dict[child_ID_2].append(parameter.pos_list[-1])
 
-	print len(child_fragment_dict[child_ID_1])
-	print len(child_fragment_dict[child_ID_2])
+	#print len(child_fragment_dict[child_ID_1])
+	#print len(child_fragment_dict[child_ID_2])
 
 	for id in child_ID_1, child_ID_2:
 		for index, pos in enumerate(child_fragment_dict[id]):
 			if index < len(child_fragment_dict[id]) - 1:
 				fragment = fragments()
 				fragment.ID = id
-				fragment.start = child_fragment_dict[id][index]
-				fragment.end = child_fragment_dict[id][index + 1]
+				fragment.start = int(child_fragment_dict[id][index])
+				fragment.end = int(child_fragment_dict[id][index + 1])
 				fragment.length = parameter.pos_list.index(fragment.end) - parameter.pos_list.index(fragment.start)
 				#print fragment.ID, fragment.start, fragment.end, fragment.length, child_1.haplotype[pos][p_code], child_2.haplotype[pos][p_code]
-				print fragment.ID, fragment.start, fragment.end, fragment.length
+				print child_ID_1, "vs", child_ID_2, fragment.start, fragment.end, fragment.length
+
+				#if id not in parameter.person_dict[p_id].fragment_dict:
+				#	parameter.person_dict[p_id].fragment_dict[id] = []
+				#parameter.person_dict[p_id].fragment_dict[id].append(fragment)
 
 				if id not in parameter.fragment_dict:
 					parameter.fragment_dict[id] = []
 				parameter.fragment_dict[id].append(fragment)
 
+def output_fragment():
+	p_id = "NA07347"
+	child_id_1 = "NA11881_NA07347_1"
+	child_id_2 = "NA11881_NA07347_2"
+	child_id_3 = "NA11881_NA07347_3"
+
+	with open("NA11881_NA07347_1_0_frag.txt", "w") as c_frag:
+		print >> c_frag, "pos", "f_geno_0", "f_geno_1", "c_hap_0"
+		fragment = parameter.person_dict[p_id].fragment_dict[child_id_1][3]
+		for pos in parameter.person_dict[p_id].hetero_pos_list:
+			if fragment.start <= pos <= fragment.end and parameter.person_dict[child_id_1].haplotype[pos][0] != "X":
+				f_geno = parameter.person_dict[p_id].genotype_dict[pos]
+				print >> c_frag, pos, f_geno, \
+					parameter.person_dict[child_id_1].genotype_dict[pos],\
+					parameter.person_dict[child_id_1].haplotype[pos][0], \
+					parameter.person_dict[child_id_2].genotype_dict[pos],\
+					parameter.person_dict[child_id_2].haplotype[pos][0], \
+					parameter.person_dict[child_id_3].genotype_dict[pos],\
+					parameter.person_dict[child_id_3].haplotype[pos][0]
+
+	"""
+	for child in parameter.person_dict[p_id].fragment_dict.keys():
+		print child
+		for fragment in parameter.person_dict[p_id].fragment_dict[child]:
+			for pos in parameter.person_dict[p_id].hetero_pos_list:
+
+
+			fragment.ID
+
+	"""
+	#f_geno = parameter.person_dict[p_id].genotype_dict[pos]
+	#	if f_geno != "NN" and f_geno[0] != f_geno[1]:
+	#		parameter.person_dict[p_id].hetero_pos_list.append(pos)
+
+
 def compare_child_hap_old(p_id, p_code, child_ID_1, child_ID_2):
+	"""keep it for now"""
 
 	child_fragment_dict = {}
 	child_fragment_dict[child_ID_1] = []
@@ -749,11 +730,11 @@ def compare_child_hap_old(p_id, p_code, child_ID_1, child_ID_2):
 				fragment.end = child_fragment_dict[id][index + 1]
 				fragment.length = parameter.pos_list.index(fragment.end) - parameter.pos_list.index(fragment.start)
 				#print fragment.ID, fragment.start, fragment.end, fragment.length, child_1.haplotype[pos][p_code], child_2.haplotype[pos][p_code]
-				#print fragment.ID, fragment.start, fragment.end, fragment.length
+				print fragment.ID, fragment.start, fragment.end, fragment.length
 
-				if id not in parameter.fragment_dict:
-					parameter.fragment_dict[id] = []
-				parameter.fragment_dict[id].append(fragment)
+				if id not in parameter.person_dict[p_id].fragment_dict:
+					parameter.person_dict[p_id].fragment_dict[id] = []
+				parameter.person_dict[p_id].fragment_dict[id].append(fragment)
 
 def genome_laser(pedi_name, geno_name):
 
@@ -767,16 +748,27 @@ def genome_laser(pedi_name, geno_name):
 	parents_to_children()
 	output_child_hap()
 
+	output_hap_std()
+
 	f_code = 0
 	m_code = 1
 
 	for f_id in parameter.father_list:
 		children_to_parents(f_id, f_code)
+		print f_id
+		#hifiAccuCheck_file(f_id+"_hap.txt", f_id+"_std.txt")
+
 
 	for m_id in parameter.mather_list:
 		children_to_parents(m_id, m_code)
+		#hifiAccuCheck_file(m_id+"_hap.txt", m_id+"_std.txt")
+		pass
 
 	output_parent_hap()
+
+	#hifiAccuCheck_file("NA07347_hap.txt", "NA07347_std.txt")
+
+	#output_fragment()
 
 def get_args():
 	desc = ""

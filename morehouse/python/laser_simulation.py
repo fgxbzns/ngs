@@ -7,6 +7,7 @@
 import os, glob, subprocess, random, operator, time, sys, copy
 from optparse import OptionParser
 
+
 class parameters:
 	def __init__(self):
 		self.person_dict = {}
@@ -253,6 +254,7 @@ if __name__ == '__main__':
 	start_time = time.time()
 	load_ref(ref_file_name)
 	output_pedi(pedi_num)
+
 
 	print "elapsed_time is: ", round(time.time() - start_time, 2), "s"
 

@@ -287,6 +287,9 @@ def hifiAccuCheck_file(hifi_result_file, hap_std_file_name):
 	same_to_A_dict, same_to_B_dict, same_to_AB_dict, not_same_to_AB_dict, same_position_dict, different_position_dict, \
 	AT_GC_dict, hifi_result_x_dict, std_x_dict = compare_std_result(hifi_result_dict, hifi_std_dict)
 
+	for pos in not_same_to_AB_dict.keys():
+		print pos, hifi_result_dict[pos], hifi_std_dict[pos]
+
 	"""
 	output_dict("same_to_A_dict.txt", same_to_A_dict, hifi_std_dict)
 	output_dict("same_to_B_dict.txt", same_to_B_dict, hifi_std_dict)
@@ -306,7 +309,7 @@ def hifiAccuCheck_file(hifi_result_file, hap_std_file_name):
 	pencentage_in_common = round(float(same_position_total_number) / hifi_result_total_number * 100, 3)
 	error_rate = round(float(not_same_AB_total_number)/(hifi_result_total_number)*100, 3)
 
-	accuracy = round((same_A_total_number + same_B_total_number + same_AB_total_number)/float(same_position_total_number - hifi_result_x_number - AT_GC_dict_number), 4)
+	accuracy = round((same_A_total_number + same_B_total_number + same_AB_total_number)/float(same_position_total_number - AT_GC_dict_number), 4)
 	#accuracy = round((same_A_total_number + same_B_total_number + same_AB_total_number)/float(hifi_result_total_number - AT_GC_dict_number - hifi_result_x_number), 4)
 
 	same_AB_homo, same_AB_hetero = seperate_homo_hetero(same_to_AB_dict)
@@ -397,8 +400,8 @@ def get_args():
 
 if __name__ == '__main__':
 	options = get_args()
-	chr_name = options.chrName
+	#chr_name = options.chrName
 	global std_name
 	std_name = options.std_name
 	hifi_result_file = options.hifiResult
-	hifiAccuCheck(hifi_result_file, chr_name)
+	hifiAccuCheck_file(hifi_result_file, std_name)
