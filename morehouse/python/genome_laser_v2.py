@@ -35,6 +35,7 @@ class persons:
 		self.hetero_pos_list = []
 
 		self.fragment_dict = {}
+		self.common_fragment_dict = {}
 
 
 class fragments:
@@ -255,6 +256,39 @@ def prepare_id_list():
 	parameter.pos_list = parameter.rsID_dict.keys()
 	parameter.pos_list.sort()
 
+
+def find_common_fragment_old(child_ID_1, child_ID_2):
+
+	fragment_list_1 = parameter.fragment_dict[child_ID_1]
+	fragment_list_2 = parameter.fragment_dict[child_ID_2]
+
+	common_fragment_list = []
+
+	for f1 in fragment_list_1:
+		for f2 in fragment_list_2:
+			if f1.start == f2.start and f1.end == f2.end:
+				#print child_ID_1, child_ID_2, f1.start, f2.end
+				common_fragment_list.append(f1)
+
+	return common_fragment_list
+
+def find_common_fragment(fragment_list_1, fragment_list_2):
+
+	common_fragment_list = []
+
+	for f1 in fragment_list_1:
+		for f2 in fragment_list_2:
+			if f1.start == f2.start and f1.end == f2.end:
+			#if f1.length == f2.length:
+				#print child_ID_1, child_ID_2, f1.start, f2.end
+				common_fragment_list.append(f1)
+
+	print "f1", len(fragment_list_1)
+	print "f2", len(fragment_list_2)
+	print "common", len(common_fragment_list)
+
+	return common_fragment_list
+
 def sort_fragment(p_id):
 
 	children_list = parameter.person_dict[p_id].children.keys()
@@ -336,6 +370,15 @@ def children_to_parents(p_id, p_code):
 	compare_child_hap(p_id, p_code, children_list[0], children_list[1])
 	compare_child_hap(p_id, p_code, children_list[0], children_list[2])
 	compare_child_hap(p_id, p_code, children_list[1], children_list[2])
+
+	child_1_2 = find_common_fragment(parameter.fragment_dict[children_list[0]], parameter.fragment_dict[children_list[1]])
+	child_2_3 = find_common_fragment(parameter.fragment_dict[children_list[1]], parameter.fragment_dict[children_list[2]])
+	#child_1_3 = find_common_fragment(parameter.fragment_dict[children_list[0]], parameter.fragment_dict[children_list[2]])
+	#child_1_2_3 = find_common_fragment(child_1_2, parameter.fragment_dict[children_list[2]])
+	child_1_2_3 = find_common_fragment(child_1_2, child_2_3)
+
+	for f1 in child_1_2_3:
+		print f1.start, f1.end
 
 	temp_parent_hap_A = {}
 	temp_parent_hap_B = {}
@@ -760,11 +803,11 @@ def genome_laser(pedi_name, geno_name):
 
 
 	for m_id in parameter.mather_list:
-		children_to_parents(m_id, m_code)
+		#children_to_parents(m_id, m_code)
 		#hifiAccuCheck_file(m_id+"_hap.txt", m_id+"_std.txt")
 		pass
 
-	output_parent_hap()
+	#output_parent_hap()
 
 	#hifiAccuCheck_file("NA07347_hap.txt", "NA07347_std.txt")
 
