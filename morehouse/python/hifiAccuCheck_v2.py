@@ -70,10 +70,10 @@ def allele_similarity(hifi_result_dict, hifi_std_dict):
 	#print "similarity, same_to_A", same_to_A
 	#print "similarity, same_to_B", same_to_B
 	if same_to_A >= same_to_B:
-		print "same_to_A", same_to_A, "total", same_to_A + same_to_B, "A percentage", float(same_to_A)/(same_to_A + same_to_B)
+		print "same_to_A", same_to_A, "total", same_to_A + same_to_B, "A percentage", float(same_to_A)/(same_to_A + same_to_B+1)
 		return "similar_to_A"
 	else:
-		print "same_to_B", same_to_B, "total", same_to_A + same_to_B, "B percentage", float(same_to_B)/(same_to_A + same_to_B)
+		print "same_to_B", same_to_B, "total", same_to_A + same_to_B, "B percentage", float(same_to_B)/(same_to_A + same_to_B+1)
 		return "similar_to_B"
 
 def compare_std_result(hifi_result_dict, hifi_std_dict):
@@ -325,9 +325,9 @@ def hifiAccuCheck_file(hifi_result_file, hap_std_file_name):
 
 	#hetero_accuracy = round(float(same_A_total_number + same_B_total_number + len(same_AB_hetero))/float(len(same_AB_hetero)+len(not_same_AB_hetero) \
 	#														-AT_GC_dict_number )*100, 3)
-	hetero_accuracy = round(
-		float(same_A_total_number + same_B_total_number + len(same_AB_hetero)) / float(len(same_position_hetero) \
-		                                                                               - AT_GC_dict_number) * 100, 2)
+	#hetero_accuracy = round(
+	#	float(same_A_total_number + same_B_total_number + len(same_AB_hetero)) / float(len(same_position_hetero) \
+	#	                                                                               - AT_GC_dict_number) * 100, 2)
 	#homo_accuracy = round(float(len(same_AB_homo)) / float(len(same_position_homo)) * 100, 3)
 
 	coverage = round(float(same_position_total_number)/(hifi_result_total_number)*100, 2)

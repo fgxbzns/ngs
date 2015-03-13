@@ -235,7 +235,7 @@ def get_args():
 	usage = ""
 	parser = OptionParser(usage=usage, description=desc)
 	parser.add_option("-r", "--ref", type="string", dest="ref_file", help="Input file name", default="null")
-	parser.add_option("-n", "--num", type="int", dest="pedi_num", help="Input file name", default="1")
+	parser.add_option("-n", "--num", type="int", dest="pedi_num", help="Input file name", default="5")
 
 	(options, args) = parser.parse_args()
 	return options

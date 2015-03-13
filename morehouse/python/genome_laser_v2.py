@@ -257,21 +257,6 @@ def prepare_id_list():
 	parameter.pos_list.sort()
 
 
-def find_common_fragment_old(child_ID_1, child_ID_2):
-
-	fragment_list_1 = parameter.fragment_dict[child_ID_1]
-	fragment_list_2 = parameter.fragment_dict[child_ID_2]
-
-	common_fragment_list = []
-
-	for f1 in fragment_list_1:
-		for f2 in fragment_list_2:
-			if f1.start == f2.start and f1.end == f2.end:
-				#print child_ID_1, child_ID_2, f1.start, f2.end
-				common_fragment_list.append(f1)
-
-	return common_fragment_list
-
 def find_common_fragment(fragment_list_1, fragment_list_2):
 
 	common_fragment_list = []
@@ -279,9 +264,13 @@ def find_common_fragment(fragment_list_1, fragment_list_2):
 	for f1 in fragment_list_1:
 		for f2 in fragment_list_2:
 			if f1.start == f2.start and f1.end == f2.end:
-			#if f1.length == f2.length:
-				#print child_ID_1, child_ID_2, f1.start, f2.end
-				common_fragment_list.append(f1)
+				not_in_common = True
+				for cf in common_fragment_list:
+					if f1.start == cf.start and f1.end == cf.end:
+						not_in_common = False
+				if not_in_common:
+					common_fragment_list.append(f1)
+					#print child_ID_1, child_ID_2, f1.start, f2.end
 
 	print "f1", len(fragment_list_1)
 	print "f2", len(fragment_list_2)
@@ -328,8 +317,8 @@ def sort_fragment(p_id):
 	"""
 	# To sort fragment_list
 	for child_id in children_list:
-		#list = parameter.person_dict[p_id].fragment_dict[child_id]
-		list = parameter.fragment_dict[child_id]
+		list = parameter.person_dict[p_id].fragment_dict[child_id]
+		#list = parameter.fragment_dict[child_id]
 		for fragment in list:
 			#print fragment.ID, fragment.start, fragment.end
 			start_pos = fragment.start
@@ -371,20 +360,27 @@ def children_to_parents(p_id, p_code):
 	compare_child_hap(p_id, p_code, children_list[0], children_list[2])
 	compare_child_hap(p_id, p_code, children_list[1], children_list[2])
 
-	child_1_2 = find_common_fragment(parameter.fragment_dict[children_list[0]], parameter.fragment_dict[children_list[1]])
-	child_2_3 = find_common_fragment(parameter.fragment_dict[children_list[1]], parameter.fragment_dict[children_list[2]])
+	#child_1_2 = find_common_fragment(parameter.fragment_dict[children_list[0]], parameter.fragment_dict[children_list[1]])
+	#child_2_3 = find_common_fragment(parameter.fragment_dict[children_list[1]], parameter.fragment_dict[children_list[2]])
 	#child_1_3 = find_common_fragment(parameter.fragment_dict[children_list[0]], parameter.fragment_dict[children_list[2]])
 	#child_1_2_3 = find_common_fragment(child_1_2, parameter.fragment_dict[children_list[2]])
-	child_1_2_3 = find_common_fragment(child_1_2, child_2_3)
+	#child_1_2_3 = find_common_fragment(child_1_2, child_2_3)
 
+	child_1_2 = find_common_fragment(parameter.person_dict[p_id].fragment_dict[children_list[0]], parameter.person_dict[p_id].fragment_dict[children_list[1]])
+	child_1_2_3 = find_common_fragment(child_1_2, parameter.person_dict[p_id].fragment_dict[children_list[2]])
+
+	print len(parameter.person_dict[p_id].hetero_pos_list)
 	for f1 in child_1_2_3:
 		print f1.start, f1.end
+		for pos in parameter.person_dict[p_id].hetero_pos_list:
+			if int(f1.start) <= pos <= int(f1.end):
+				parameter.person_dict[p_id].common_fragment_dict[pos] = 0
+	print len(parameter.person_dict[p_id].common_fragment_dict)
 
 	temp_parent_hap_A = {}
 	temp_parent_hap_B = {}
 
 	fragment_startpos_sorted_list = sort_fragment(p_id)
-	#group_parent_hap(p_id, fragment_startpos_sorted_list)
 
 	status = ""
 	for data in fragment_startpos_sorted_list:
@@ -425,10 +421,16 @@ def children_to_parents(p_id, p_code):
 					#print "xxx", temp_parent_hap_A[pos], temp_parent_hap_B[pos]
 
 			elif pos in temp_parent_hap_A and pos not in temp_parent_hap_B:
-				temp_parent_hap_B[pos] = f_geno[0] if temp_parent_hap_A[pos] == f_geno[1] else f_geno[1]
+				if temp_parent_hap_A[pos] == "X":
+					temp_parent_hap_B[pos] = "X"
+				else:
+					temp_parent_hap_B[pos] = f_geno[0] if temp_parent_hap_A[pos] == f_geno[1] else f_geno[1]
 
 			elif pos not in temp_parent_hap_A and pos in temp_parent_hap_B:
-				temp_parent_hap_A[pos] = f_geno[0] if temp_parent_hap_B[pos] == f_geno[1] else f_geno[1]
+				if temp_parent_hap_B[pos] == "X":
+					temp_parent_hap_A[pos] = "X"
+				else:
+					temp_parent_hap_A[pos] = f_geno[0] if temp_parent_hap_B[pos] == f_geno[1] else f_geno[1]
 
 			elif pos not in temp_parent_hap_A and pos not in temp_parent_hap_B:
 				temp_parent_hap_A[pos] = "N"
@@ -452,23 +454,35 @@ def children_to_parents(p_id, p_code):
 		else:
 			parameter.person_dict[p_id].haplotype[pos][1] = "N"
 
-
+	"""
 	# to output data
 	with open(p_id + "_hap.txt", "w") as x_file:
 		print >> x_file, "rs#", "pos", parameter.person_dict[p_id].ID + "_A", parameter.person_dict[p_id].ID + "_B"
 		for pos in parameter.pos_list:
-			print >> x_file, parameter.rsID_dict[pos], pos,
-			f_geno = parameter.person_dict[p_id].genotype_dict[pos]
-			#if f_geno[0] != f_geno[1]:
-			if True:
-				if pos in temp_parent_hap_A:
-					print >> x_file, temp_parent_hap_A[pos],
-				else:
-					print >> x_file, "N",
-				if pos in temp_parent_hap_B:
-					print >> x_file, temp_parent_hap_B[pos]
-				else:
-					print >> x_file, "N"
+			if pos not in parameter.person_dict[p_id].common_fragment_dict:
+				print >> x_file, parameter.rsID_dict[pos], pos,
+				f_geno = parameter.person_dict[p_id].genotype_dict[pos]
+				#if f_geno[0] != f_geno[1]:
+				if True:
+					if pos in temp_parent_hap_A:
+						print >> x_file, temp_parent_hap_A[pos],
+					else:
+						print >> x_file, "N",
+					if pos in temp_parent_hap_B:
+						print >> x_file, temp_parent_hap_B[pos]
+					else:
+						print >> x_file, "N"
+	"""
+	with open(p_id + "_hap.txt", "w") as x_file:
+		print >> x_file, "rs#", "pos", parameter.person_dict[p_id].ID + "_A", parameter.person_dict[p_id].ID + "_B"
+		for pos in parameter.pos_list:
+			if pos in temp_parent_hap_A and pos in temp_parent_hap_B \
+				and temp_parent_hap_A[pos] != "N" and temp_parent_hap_B[pos] != "N" \
+					and temp_parent_hap_A[pos] != "X" and temp_parent_hap_B[pos] != "X":
+				if pos not in parameter.person_dict[p_id].common_fragment_dict:
+					print >> x_file, parameter.rsID_dict[pos], pos,
+					print >> x_file, temp_parent_hap_A[pos], temp_parent_hap_B[pos]
+
 
 	#print "temp_parent_hap_A final", len(temp_parent_hap_A)
 	#print "temp_parent_hap_B final", len(temp_parent_hap_B)
@@ -502,8 +516,10 @@ def output_parent_hap():
 		print >> parent_hap, ""
 
 		for pos in parameter.pos_list:
+
 			print >> parent_hap, parameter.rsID_dict[pos], pos,
 			for id in parent_id_list:
+
 				print >> parent_hap, parameter.person_dict[id].haplotype[pos][0], parameter.person_dict[id].haplotype[pos][1],
 			print >> parent_hap, ""
 
@@ -662,15 +678,15 @@ def compare_child_hap(p_id, p_code, child_ID_1, child_ID_2):
 				fragment.end = int(child_fragment_dict[id][index + 1])
 				fragment.length = parameter.pos_list.index(fragment.end) - parameter.pos_list.index(fragment.start)
 				#print fragment.ID, fragment.start, fragment.end, fragment.length, child_1.haplotype[pos][p_code], child_2.haplotype[pos][p_code]
-				print child_ID_1, "vs", child_ID_2, fragment.start, fragment.end, fragment.length
+				#print child_ID_1, "vs", child_ID_2, fragment.start, fragment.end, fragment.length
 
-				#if id not in parameter.person_dict[p_id].fragment_dict:
-				#	parameter.person_dict[p_id].fragment_dict[id] = []
-				#parameter.person_dict[p_id].fragment_dict[id].append(fragment)
+				if id not in parameter.person_dict[p_id].fragment_dict:
+					parameter.person_dict[p_id].fragment_dict[id] = []
+				parameter.person_dict[p_id].fragment_dict[id].append(fragment)
 
-				if id not in parameter.fragment_dict:
-					parameter.fragment_dict[id] = []
-				parameter.fragment_dict[id].append(fragment)
+				#if id not in parameter.fragment_dict:
+				#	parameter.fragment_dict[id] = []
+				#parameter.fragment_dict[id].append(fragment)
 
 def output_fragment():
 	p_id = "NA07347"
@@ -799,12 +815,13 @@ def genome_laser(pedi_name, geno_name):
 	for f_id in parameter.father_list:
 		children_to_parents(f_id, f_code)
 		print f_id
-		#hifiAccuCheck_file(f_id+"_hap.txt", f_id+"_std.txt")
+		hifiAccuCheck_file(f_id+"_hap.txt", f_id+"_std.txt")
 
 
 	for m_id in parameter.mather_list:
-		#children_to_parents(m_id, m_code)
-		#hifiAccuCheck_file(m_id+"_hap.txt", m_id+"_std.txt")
+		children_to_parents(m_id, m_code)
+		print m_id
+		hifiAccuCheck_file(m_id+"_hap.txt", m_id+"_std.txt")
 		pass
 
 	#output_parent_hap()
