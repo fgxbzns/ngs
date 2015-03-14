@@ -324,7 +324,7 @@ def hifiAccuCheck_file(hifi_result_file, hap_std_file_name):
 	#homo_accuracy = round(float(len(same_AB_homo))/float(len(same_position_homo)-len(AT_GC_homo))*100, 3)
 
 	#hetero_accuracy = round(float(same_A_total_number + same_B_total_number + len(same_AB_hetero))/float(len(same_AB_hetero)+len(not_same_AB_hetero) \
-	#														-AT_GC_dict_number )*100, 3)
+	#													-AT_GC_dict_number )*100, 3)
 	#hetero_accuracy = round(
 	#	float(same_A_total_number + same_B_total_number + len(same_AB_hetero)) / float(len(same_position_hetero) \
 	#	                                                                               - AT_GC_dict_number) * 100, 2)

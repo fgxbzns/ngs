@@ -454,25 +454,6 @@ def children_to_parents(p_id, p_code):
 		else:
 			parameter.person_dict[p_id].haplotype[pos][1] = "N"
 
-	"""
-	# to output data
-	with open(p_id + "_hap.txt", "w") as x_file:
-		print >> x_file, "rs#", "pos", parameter.person_dict[p_id].ID + "_A", parameter.person_dict[p_id].ID + "_B"
-		for pos in parameter.pos_list:
-			if pos not in parameter.person_dict[p_id].common_fragment_dict:
-				print >> x_file, parameter.rsID_dict[pos], pos,
-				f_geno = parameter.person_dict[p_id].genotype_dict[pos]
-				#if f_geno[0] != f_geno[1]:
-				if True:
-					if pos in temp_parent_hap_A:
-						print >> x_file, temp_parent_hap_A[pos],
-					else:
-						print >> x_file, "N",
-					if pos in temp_parent_hap_B:
-						print >> x_file, temp_parent_hap_B[pos]
-					else:
-						print >> x_file, "N"
-	"""
 	with open(p_id + "_hap.txt", "w") as x_file:
 		print >> x_file, "rs#", "pos", parameter.person_dict[p_id].ID + "_A", parameter.person_dict[p_id].ID + "_B"
 		for pos in parameter.pos_list:
@@ -480,8 +461,7 @@ def children_to_parents(p_id, p_code):
 				and temp_parent_hap_A[pos] != "N" and temp_parent_hap_B[pos] != "N" \
 					and temp_parent_hap_A[pos] != "X" and temp_parent_hap_B[pos] != "X":
 				if pos not in parameter.person_dict[p_id].common_fragment_dict:
-					print >> x_file, parameter.rsID_dict[pos], pos,
-					print >> x_file, temp_parent_hap_A[pos], temp_parent_hap_B[pos]
+					print >> x_file, parameter.rsID_dict[pos], pos, temp_parent_hap_A[pos], temp_parent_hap_B[pos]
 
 
 	#print "temp_parent_hap_A final", len(temp_parent_hap_A)
