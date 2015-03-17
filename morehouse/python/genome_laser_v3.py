@@ -297,11 +297,12 @@ def children_to_parents(p_id, p_code):
 	child_1_2_3 = find_common_fragment(child_1_2, parameter.person_dict[p_id].fragment_dict[children_list[2]])
 
 	#print len(parameter.person_dict[p_id].hetero_pos_list)
-	for f1 in child_1_2_3:
-		#print p_id, f1.start, f1.end
-		for pos in parameter.person_dict[p_id].hetero_pos_list:
-			if int(f1.start) <= pos <= int(f1.end):
-				parameter.person_dict[p_id].common_fragment_dict[pos] = 0
+	with open(p_id + "_fragment.txt", "w") as f_file:
+		for f1 in child_1_2_3:
+			print >> f_file, p_id, f1.start, f1.end, f1.length
+			for pos in parameter.person_dict[p_id].hetero_pos_list:
+				if int(f1.start) <= pos <= int(f1.end):
+					parameter.person_dict[p_id].common_fragment_dict[pos] = 0
 	#print len(parameter.person_dict[p_id].common_fragment_dict)
 
 	temp_parent_hap_A = {}
@@ -369,16 +370,16 @@ def children_to_parents(p_id, p_code):
 			parameter.person_dict[p_id].haplotype[pos][1] = temp_parent_hap_B[pos]
 		else:
 			parameter.person_dict[p_id].haplotype[pos][1] = "N"
-	"""
+
 	with open(p_id + "_hap.txt", "w") as x_file:
 		print >> x_file, "rs#", "pos", parameter.person_dict[p_id].ID + "_A", parameter.person_dict[p_id].ID + "_B"
 		for pos in parameter.pos_list:
 			if pos in temp_parent_hap_A and pos in temp_parent_hap_B \
 					and temp_parent_hap_A[pos] != "N" and temp_parent_hap_B[pos] != "N" \
 					and temp_parent_hap_A[pos] != "X" and temp_parent_hap_B[pos] != "X":
-				if pos not in parameter.person_dict[p_id].common_fragment_dict:
-					print >> x_file, parameter.rsID_dict[pos], pos, temp_parent_hap_A[pos], temp_parent_hap_B[pos]
-	"""
+				#if pos not in parameter.person_dict[p_id].common_fragment_dict:
+				print >> x_file, parameter.rsID_dict[pos], pos, temp_parent_hap_A[pos], temp_parent_hap_B[pos]
+
 
 def output_hap_std():
 	parent_id_list = []
@@ -561,21 +562,19 @@ def genome_laser(pedi_name, geno_name):
 	parents_to_children()
 	output_child_hap()
 
-	#output_hap_std()
+	output_hap_std()
 
 	for f_id in parameter.father_list:
 		children_to_parents(f_id, 0)
 		#print f_id
-		#hifiAccuCheck_file(f_id + "_hap.txt", f_id + "_std.txt")
+		hifiAccuCheck_file(f_id + "_hap.txt", f_id + "_std.txt")
 
 	for m_id in parameter.mather_list:
 		children_to_parents(m_id, 1)
 		#print m_id
-		#hifiAccuCheck_file(m_id + "_hap.txt", m_id + "_std.txt")
+		hifiAccuCheck_file(m_id + "_hap.txt", m_id + "_std.txt")
 
 	output_parent_hap()
-
-
 
 
 def get_args():
@@ -946,6 +945,6 @@ if __name__ == '__main__':
 	acc_check_file = current_path + "/scripts/hifiAccuCheck_v3_pos_num.py"
 	# #HIFI processing
 	raw_ref_title, raw_ref_data = load_raw_data(ref_name)
-	check_hapfile_run_HIFI_child()
-	check_hapfile_run_HIFI_parent()
+	#check_hapfile_run_HIFI_child()
+	#check_hapfile_run_HIFI_parent()
 	print "elapsed_time is: ", round(time.time() - start_time, 2), "s"

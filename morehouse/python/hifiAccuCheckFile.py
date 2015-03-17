@@ -287,8 +287,8 @@ def hifiAccuCheck_file(hifi_result_file, hap_std_file_name):
 	same_to_A_dict, same_to_B_dict, same_to_AB_dict, not_same_to_AB_dict, same_position_dict, different_position_dict, \
 	AT_GC_dict, hifi_result_x_dict, std_x_dict = compare_std_result(hifi_result_dict, hifi_std_dict)
 
-	for pos in not_same_to_AB_dict.keys():
-		print pos, hifi_result_dict[pos], hifi_std_dict[pos]
+	# for pos in not_same_to_AB_dict.keys():
+	# 	print pos, hifi_result_dict[pos], hifi_std_dict[pos]
 
 	"""
 	output_dict("same_to_A_dict.txt", same_to_A_dict, hifi_std_dict)
@@ -300,6 +300,125 @@ def hifiAccuCheck_file(hifi_result_file, hap_std_file_name):
 	same_B_total_number = len(same_to_B_dict)
 	same_AB_total_number = len(same_to_AB_dict)
 	not_same_AB_total_number = len(not_same_to_AB_dict)
+	same_position_total_number = len(same_position_dict)
+	different_position_total_number = len(different_position_dict)
+	AT_GC_dict_number = len(AT_GC_dict)
+	hifi_result_x_number = len(hifi_result_x_dict)
+	std_x_number = len(std_x_dict)
+
+	pencentage_in_common = round(float(same_position_total_number) / hifi_result_total_number * 100, 3)
+	error_rate = round(float(not_same_AB_total_number)/(same_position_total_number)*100, 3)
+	#accuracy = 100 - error_rate
+	accuracy = round((same_A_total_number + same_B_total_number + same_AB_total_number)/float(same_position_total_number - AT_GC_dict_number), 4)
+	#accuracy = round((same_A_total_number + same_B_total_number + same_AB_total_number)/float(hifi_result_total_number - AT_GC_dict_number - hifi_result_x_number), 4)
+
+	same_AB_homo, same_AB_hetero = seperate_homo_hetero(same_to_AB_dict)
+	not_same_AB_homo, not_same_AB_hetero = seperate_homo_hetero(not_same_to_AB_dict)
+	different_AB_homo, different_AB_hetero = seperate_homo_hetero(different_position_dict)
+	AT_GC_homo, AT_GC_hetero = seperate_homo_hetero(AT_GC_dict)
+	imputed_homo, imputed_hetero = seperate_homo_hetero(hifi_result_dict)
+	same_position_homo, same_position_hetero = seperate_homo_hetero(same_position_dict)
+	#hetero_accuracy = round(float(len(same_AB_hetero))/float(len(same_position_hetero)-len(AT_GC_hetero))*100, 3)
+	#homo_accuracy = round(float(len(same_AB_homo))/float(len(same_position_homo)-len(AT_GC_homo))*100, 3)
+
+	#hetero_accuracy = round(float(same_A_total_number + same_B_total_number + len(same_AB_hetero))/float(len(same_AB_hetero)+len(not_same_AB_hetero) \
+	#														-AT_GC_dict_number )*100, 3)
+	hetero_accuracy = round(
+		float(same_A_total_number + same_B_total_number + len(same_AB_hetero)) / float(len(same_position_hetero) \
+		                                                                               - AT_GC_dict_number) * 100, 2)
+	#homo_accuracy = round(float(len(same_AB_homo)) / float(len(same_position_homo)) * 100, 3)
+
+	coverage = round(float(same_position_total_number)/(hifi_result_total_number)*100, 2)
+	coverage = round(float(same_position_total_number)/(hap_std_total_number)*100, 2)
+
+	print "same_position_total_number", same_position_total_number
+	print "different_position_total_number", different_position_total_number
+	print "same_AB_total_number", same_AB_total_number
+	print "same_A_total_number", same_A_total_number
+	print "same_B_total_number", same_B_total_number
+	print "AT_GC_dict_number", AT_GC_dict_number
+	print "not_same_AB_total_number", not_same_AB_total_number
+	print "pencentage in common", pencentage_in_common
+	#print "coverage", coverage
+
+	#print "len(same_AB_hetero)", len(same_AB_hetero)
+	#print "len(same_position_hetero)", len(same_position_hetero)
+	#print "len(AT_GC_hetero)", len(AT_GC_hetero)
+	#print "hetero_accuracy", hetero_accuracy
+	#print "homo_accuracy", homo_accuracy
+	print "hifi_result_x_number", hifi_result_x_number
+	print "std_x_number", std_x_number
+
+	print "accuracy", accuracy
+
+	accuracy_output_file_name = "hifi_accuracy.txt"
+	accuracy_output_file = open(currentPath + accuracy_output_file_name, "w")
+	print >> accuracy_output_file, "hifi result file: ", currentPath + hifi_result_file
+	print >> accuracy_output_file, "hifi std file: ", hap_std_file_name
+	print >> accuracy_output_file, "hap_std_total_number: ", hap_std_total_number
+	print >> accuracy_output_file, "hifi_result_total_number: ", hifi_result_total_number
+	print >> accuracy_output_file, "same_position_total_number: ", same_position_total_number
+	print >> accuracy_output_file, "different_position_total_number: ", different_position_total_number
+	print >> accuracy_output_file, "same_A_total_number: ", same_A_total_number
+	print >> accuracy_output_file, "same_B_total_number: ", same_B_total_number
+	print >> accuracy_output_file, "same_AB_total_number: ", same_AB_total_number
+	print >> accuracy_output_file, "not_same_AB_total_number: ", not_same_AB_total_number
+	print >> accuracy_output_file, "pencentage in common: ", pencentage_in_common
+	print >> accuracy_output_file, "accuracy: ", accuracy
+
+	accuracy_output_file.close()
+	"""
+	# record data
+	data_record_file_name = "solid_process_4.txt"
+	data_record_file = open(data_record_path + data_record_file_name, "a")
+	print >> data_record_file, currentPath, same_position_total_number, (same_A_total_number+same_B_total_number+not_same_AB_total_number), same_AB_total_number, hifi_result_total_number, accuracy
+	data_record_file.close()
+	cmd = "grep hifi_data hifi_accuracy.txt >> " + data_record_path + data_record_file_name
+	#print cmd
+	#os.system(cmd)
+	"""
+	return same_to_AB_dict, AT_GC_dict
+
+def hifiAccuCheck_file_laser(hifi_result_file, hap_std_file_name, common_fragment_dict):
+	# remove error in common fragment
+
+	hifi_std_dict = load_raw_data(hap_std_file_name, raw_data_format)[1]
+	hap_std_total_number = len(hifi_std_dict)
+
+	hifi_std_dict = removeN(hifi_std_dict)
+
+	hifi_result_dict = load_raw_data(hifi_result_file, raw_data_format)[1]
+	hifi_result_total_number = len(hifi_result_dict)
+
+	print "hap_std_total_number", hap_std_total_number
+	print "hifi_result_total_number", hifi_result_total_number
+
+	same_to_A_dict, same_to_B_dict, same_to_AB_dict, not_same_to_AB_dict, same_position_dict, different_position_dict, \
+	AT_GC_dict, hifi_result_x_dict, std_x_dict = compare_std_result(hifi_result_dict, hifi_std_dict)
+
+	for pos in not_same_to_AB_dict.keys():
+		#print pos, hifi_result_dict[pos], hifi_std_dict[pos]
+		pass
+
+	"""
+	output_dict("same_to_A_dict.txt", same_to_A_dict, hifi_std_dict)
+	output_dict("same_to_B_dict.txt", same_to_B_dict, hifi_std_dict)
+	output_dict("not_same_to_AB_dict.txt", not_same_to_AB_dict, hifi_std_dict)
+	output_dict("different_position_dict.txt", different_position_dict, hifi_std_dict)
+	"""
+	same_A_total_number = len(same_to_A_dict)
+	same_B_total_number = len(same_to_B_dict)
+	same_AB_total_number = len(same_to_AB_dict)
+	not_same_AB_total_number = len(not_same_to_AB_dict)
+
+	common_fragment_pos_total = 0
+	for pos in not_same_to_AB_dict.keys():
+		if pos in common_fragment_dict:
+			common_fragment_pos_total += 1
+	print "common_fragment_pos_total", common_fragment_pos_total
+
+
+
 	same_position_total_number = len(same_position_dict)
 	different_position_total_number = len(different_position_dict)
 	AT_GC_dict_number = len(AT_GC_dict)
@@ -378,7 +497,6 @@ def hifiAccuCheck_file(hifi_result_file, hap_std_file_name):
 	#os.system(cmd)
 	"""
 	return same_to_AB_dict, AT_GC_dict
-
 
 def get_args():
 	desc = "Compare seed and std hap, to check purity of seed"
