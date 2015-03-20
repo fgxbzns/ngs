@@ -34,6 +34,7 @@ class persons:
 		self.genotype_dict = {}
 		self.haplotype = {}
 		self.hetero_pos_list = []
+		self.std_hap_dict = {}
 
 		self.fragment_dict = {}
 		self.common_fragment_dict = {}
@@ -99,6 +100,7 @@ def load_geno(geno_name):
 					genotype = elements[2:]
 					for index, ID in enumerate(ID_list):
 						parameter.person_dict[ID].genotype_dict[position] = genotype[index]
+						parameter.person_dict[ID].std_hap_dict[position] = (genotype[index][0], genotype[index][1])
 				except:
 					print "error in geno", line, pedi_name
 
@@ -192,24 +194,6 @@ def parents_to_children():
 								parameter.person_dict[ID].haplotype[pos] = ("N", "N")
 						else:
 							print "3", pos
-
-
-def output_child_hap():
-	pos_list = parameter.rsID_dict.keys()
-	pos_list.sort()
-
-	with open(parameter.children_hap_file, "w") as c_hap_file:
-		print >> c_hap_file, "rs_ID", "pos",
-		for id in parameter.children_list:
-			print >> c_hap_file, id + "_F", id + "_M",
-		print >> c_hap_file, ""
-
-		for pos in pos_list:
-			print >> c_hap_file, parameter.rsID_dict[pos], pos,
-			for child_id in parameter.children_list:
-				print >> c_hap_file, parameter.person_dict[child_id].haplotype[pos][0], \
-					parameter.person_dict[child_id].haplotype[pos][1],
-			print >> c_hap_file, ""
 
 
 def prepare_id_list():
@@ -313,7 +297,7 @@ def children_to_parents(p_id, p_code):
 			pos = data[0]
 			fragment_list = data[1]
 			for f1 in fragment_list:
-				print >> f_file, p_id, f1.start, f1.end, f1.length
+				print >> f_file, p_id, f1.start, f1.end
 
 	#print len(parameter.person_dict[p_id].hetero_pos_list)
 	#with open(p_id + "_fragment.txt", "w") as f_file:
@@ -398,42 +382,6 @@ def children_to_parents(p_id, p_code):
 					and temp_parent_hap_A[pos] != "X" and temp_parent_hap_B[pos] != "X":
 				#if pos not in parameter.person_dict[p_id].common_fragment_dict:
 				print >> x_file, parameter.rsID_dict[pos], pos, temp_parent_hap_A[pos], temp_parent_hap_B[pos]
-
-
-def output_hap_std():
-	parent_id_list = []
-	parent_id_list.extend(parameter.father_list)
-	parent_id_list.extend(parameter.mather_list)
-	parent_id_list.sort()
-	for p_id in parent_id_list:
-		with open(p_id + "_std.txt", "w") as std_file:
-			print >> std_file, "rs#", "pos", parameter.person_dict[p_id].ID + "_A", parameter.person_dict[
-				                                                                        p_id].ID + "_B"
-			for pos in parameter.pos_list:
-				print >> std_file, parameter.rsID_dict[pos], pos,
-				f_geno = parameter.person_dict[p_id].genotype_dict[pos]
-				print >> std_file, f_geno[0], f_geno[1]
-
-
-def output_parent_hap():
-	parent_id_list = []
-	parent_id_list.extend(parameter.father_list)
-	parent_id_list.extend(parameter.mather_list)
-	parent_id_list.sort()
-
-	with open("parent_hap.txt", "w") as parent_hap:
-		print >> parent_hap, "rs#", "pos",
-		for id in parent_id_list:
-			print >> parent_hap, parameter.person_dict[id].ID + "_A", parameter.person_dict[id].ID + "_B",
-		print >> parent_hap, ""
-
-		for pos in parameter.pos_list:
-
-			print >> parent_hap, parameter.rsID_dict[pos], pos,
-			for id in parent_id_list:
-				print >> parent_hap, parameter.person_dict[id].haplotype[pos][0], \
-					parameter.person_dict[id].haplotype[pos][1],
-			print >> parent_hap, ""
 
 
 def update_parent_hap(f_id, fragment, temp_parent_hap_A, p_code):
@@ -548,7 +496,7 @@ def compare_child_hap(p_id, p_code, child_ID_1, child_ID_2):
 					parameter.person_dict[p_id].fragment_dict[id] = []
 				parameter.person_dict[p_id].fragment_dict[id].append(fragment)
 
-
+"""
 def output_fragment():
 	p_id = "NA07347"
 	child_id_1 = "NA11881_NA07347_1"
@@ -568,6 +516,76 @@ def output_fragment():
 					parameter.person_dict[child_id_2].haplotype[pos][0], \
 					parameter.person_dict[child_id_3].genotype_dict[pos], \
 					parameter.person_dict[child_id_3].haplotype[pos][0]
+"""
+
+def output_hap_std_geno():
+	#parent_id_list = []
+	#parent_id_list.extend(parameter.father_list)
+	#parent_id_list.extend(parameter.mather_list)
+	id_list = parameter.person_dict.keys()
+	id_list.sort()
+	for id in id_list:
+		with open(id + "_std.txt", "w") as std_file:
+			print >> std_file, "rs#", "pos", parameter.person_dict[id].ID + "_A", parameter.person_dict[
+				                                                                        id].ID + "_B"
+			for pos in parameter.pos_list:
+				print >> std_file, parameter.rsID_dict[pos], pos,
+				geno = parameter.person_dict[id].genotype_dict[pos]
+				print >> std_file, geno[0], geno[1]
+
+		with open(id + "_geno.txt", "w") as geno_file:
+			print >> geno_file, "rs#", "pos", parameter.person_dict[id].ID
+			for pos in parameter.pos_list:
+				print >> geno_file, parameter.rsID_dict[pos], pos,
+				geno = parameter.person_dict[id].genotype_dict[pos]
+				print >> geno_file, geno
+
+def output_child_hap():
+
+	with open(parameter.children_hap_file, "w") as c_hap_file:
+		print >> c_hap_file, "rs_ID", "pos",
+		for id in parameter.children_list:
+			print >> c_hap_file, id + "_F", id + "_M",
+		print >> c_hap_file, ""
+
+		for pos in parameter.pos_list:
+			print >> c_hap_file, parameter.rsID_dict[pos], pos,
+			for child_id in parameter.children_list:
+				print >> c_hap_file, parameter.person_dict[child_id].haplotype[pos][0], \
+					parameter.person_dict[child_id].haplotype[pos][1],
+			print >> c_hap_file, ""
+
+def output_parent_hap():
+	parent_id_list = []
+	parent_id_list.extend(parameter.father_list)
+	parent_id_list.extend(parameter.mather_list)
+	parent_id_list.sort()
+
+	with open("parent_hap.txt", "w") as parent_hap:
+		print >> parent_hap, "rs#", "pos",
+		for id in parent_id_list:
+			print >> parent_hap, parameter.person_dict[id].ID + "_A", parameter.person_dict[id].ID + "_B",
+		print >> parent_hap, ""
+
+		for pos in parameter.pos_list:
+
+			print >> parent_hap, parameter.rsID_dict[pos], pos,
+			for id in parent_id_list:
+				print >> parent_hap, parameter.person_dict[id].haplotype[pos][0], \
+					parameter.person_dict[id].haplotype[pos][1],
+			print >> parent_hap, ""
+
+def output_seed():
+	id_list = parameter.person_dict.keys()
+	id_list.sort()
+	for id in id_list:
+		with open(id + "_seed.txt", "w") as seed_file:
+			print >> seed_file, "rs#", "pos", parameter.person_dict[id].ID + "_A"
+			for pos in parameter.pos_list:
+				print >> seed_file, parameter.rsID_dict[pos], pos,
+				hap = parameter.person_dict[id].haplotype[pos]
+				if hap[0] != "N" and hap[0] != "X" and hap[0] != "":
+					print >> seed_file, hap[0]
 
 
 def genome_laser(pedi_name, geno_name):
@@ -581,7 +599,7 @@ def genome_laser(pedi_name, geno_name):
 	parents_to_children()
 	output_child_hap()
 
-	output_hap_std()
+	output_hap_std_geno()
 
 	for f_id in parameter.father_list:
 		children_to_parents(f_id, 0)
@@ -595,6 +613,8 @@ def genome_laser(pedi_name, geno_name):
 
 	output_parent_hap()
 
+	output_seed()
+
 
 def get_args():
 	desc = ""
@@ -606,7 +626,6 @@ def get_args():
 	(options, args) = parser.parse_args()
 
 	return options
-
 
 ####################
 # #def for HIFI# #
