@@ -296,13 +296,32 @@ def children_to_parents(p_id, p_code):
 	                                 parameter.person_dict[p_id].fragment_dict[children_list[1]])
 	child_1_2_3 = find_common_fragment(child_1_2, parameter.person_dict[p_id].fragment_dict[children_list[2]])
 
-	#print len(parameter.person_dict[p_id].hetero_pos_list)
+
+	fragment_sort_dict = {}
+	for fragment in child_1_2_3:
+			#print fragment.ID, fragment.start, fragment.end
+			start_pos = fragment.start
+			end_pos = fragment.end
+			if start_pos not in fragment_sort_dict:
+				fragment_sort_dict[int(start_pos)] = []
+			fragment_sort_dict[int(start_pos)].append(fragment)
+
+	fragment__sorted_list = sort_dict_by_key(fragment_sort_dict)
+
 	with open(p_id + "_fragment.txt", "w") as f_file:
-		for f1 in child_1_2_3:
-			print >> f_file, p_id, f1.start, f1.end, f1.length
-			for pos in parameter.person_dict[p_id].hetero_pos_list:
-				if int(f1.start) <= pos <= int(f1.end):
-					parameter.person_dict[p_id].common_fragment_dict[pos] = 0
+		for data in fragment__sorted_list:
+			pos = data[0]
+			fragment_list = data[1]
+			for f1 in fragment_list:
+				print >> f_file, p_id, f1.start, f1.end, f1.length
+
+	#print len(parameter.person_dict[p_id].hetero_pos_list)
+	#with open(p_id + "_fragment.txt", "w") as f_file:
+	for f1 in child_1_2_3:
+		#print >> f_file, p_id, f1.start, f1.end, f1.length
+		for pos in parameter.person_dict[p_id].hetero_pos_list:
+			if int(f1.start) <= pos <= int(f1.end):
+				parameter.person_dict[p_id].common_fragment_dict[pos] = 0
 	#print len(parameter.person_dict[p_id].common_fragment_dict)
 
 	temp_parent_hap_A = {}
@@ -460,7 +479,7 @@ def update_parent_hap(f_id, fragment, temp_parent_hap_A, p_code):
 		percentage = float(same) / (same + not_same + 1)
 		if percentage >= 0.99:
 			for pos in parameter.person_dict[f_id].hetero_pos_list:
-				if pos >= fragment.start and pos <= fragment.end and pos not in temp_parent_hap_A:
+				if pos > fragment.start and pos < fragment.end and pos not in temp_parent_hap_A:
 					temp_parent_hap_A[pos] = parameter.person_dict[fragment.ID].haplotype[pos][p_code]
 			return "same_to_A", temp_parent_hap_A
 		elif percentage <= 0.01:
@@ -945,6 +964,6 @@ if __name__ == '__main__':
 	acc_check_file = current_path + "/scripts/hifiAccuCheck_v3_pos_num.py"
 	# #HIFI processing
 	raw_ref_title, raw_ref_data = load_raw_data(ref_name)
-	#check_hapfile_run_HIFI_child()
-	#check_hapfile_run_HIFI_parent()
+	check_hapfile_run_HIFI_child()
+	check_hapfile_run_HIFI_parent()
 	print "elapsed_time is: ", round(time.time() - start_time, 2), "s"
