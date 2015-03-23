@@ -8,6 +8,7 @@
 import os, glob, subprocess, random, operator, time, sys, copy, shutil, fnmatch
 from optparse import OptionParser
 from hifiAccuCheck_v2 import *
+from refMerg_laser import *
 
 class parameters:
 	def __init__(self):
@@ -24,7 +25,8 @@ class parameters:
 
 		self.children_hap_file = "child_hap.txt"
 
-		set.ref_file_name = ""
+		self.ref_file_name = ""
+		self.ori_ref_title = ""
 		self.ori_ref_dict = {}
 
 
@@ -83,7 +85,7 @@ def load_pedi(pedi_name):
 					if person.mather != "N/A" and person.mather in parameter.person_dict and person.ID not in \
 							parameter.person_dict[person.mather].children:
 						parameter.person_dict[person.mather].children[person.ID] = ""
-					if person.ID not in person_dict:
+					if person.ID not in parameter.person_dict:
 						parameter.person_dict[person.ID] = person
 				except:
 					print "error in ", line, pedi_name
@@ -223,6 +225,8 @@ def prepare_id_list():
 
 	parameter.pos_list = parameter.rsID_dict.keys()
 	parameter.pos_list.sort()
+
+
 
 
 def find_common_fragment(fragment_list_1, fragment_list_2):
@@ -617,6 +621,9 @@ def genome_laser(pedi_name, geno_name):
 	output_parent_hap()
 
 	output_seed()
+
+	refMerger("NA12763", parameter)
+
 
 
 def get_args():
@@ -1140,11 +1147,17 @@ if __name__ == '__main__':
 	pedi_name = options.pedi_name
 	geno_name = options.geno_file
 	ref_name = options.ref_file
-	global person_dict
-	person_dict = {}
+	#global person_dict
+	#person_dict = {}
 
 	global parameter
 	parameter = parameters()
+
+	parameter.ref_file_name = ref_name
+
+	parameter.ref_file_name = "hapmap3_r2_b36_fwd.consensus.qc.poly.chr1_ceu.phased"
+
+	parameter.ori_ref_title, parameter.ori_ref_dict = load_raw_data(parameter.ref_file_name)
 
 	pedi_name = "pedi.txt"
 	geno_name = "geno.txt"
@@ -1164,7 +1177,7 @@ if __name__ == '__main__':
 	refMerger = current_path + "/scripts/refMerger_v5_wli_filltheend_remove_extra.py"
 	acc_check_file = current_path + "/scripts/hifiAccuCheck_v3_pos_num.py"
 	# #HIFI processing
-	raw_ref_title, raw_ref_data = load_raw_data(ref_name)
-	check_hapfile_run_HIFI_child()
-	check_hapfile_run_HIFI_parent()
+	#raw_ref_title, raw_ref_data = load_raw_data(ref_name)
+	#check_hapfile_run_HIFI_child()
+	#check_hapfile_run_HIFI_parent()
 	print "elapsed_time is: ", round(time.time() - start_time, 2), "s"

@@ -75,7 +75,7 @@ def load_raw_data(file_name, raw_data_format="list"):
 				except:
 					#print "error in ", line, file_name
 					pass
-	return (title_info, data)
+	return title_info, data
 
 
 def hifi_run(file_name, chr_name):
