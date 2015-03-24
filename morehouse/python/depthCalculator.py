@@ -14,6 +14,7 @@ parser = OptionParser(usage=usage)
 parser.add_option("-s", "--aFile", type="string", dest="samFile", help="Input File Name", default="null")
 parser.add_option("-c", "--chr", type="string", dest="chrName", help="Input chr Name", default="chr11")
 
+# human hg_18
 chr_length_dict = {"chr1": 247249719, "chr2": 242951149, "chr3": 199501827, "chr4": 191273063, "chr5": 180857866,
                    "chr6": 170899992, "chr7": 158821424, "chr8": 146274826, "chr9": 140273252, "chr10": 135374737,
                    "chr11": 134452384, "chr12": 132349534, "chr13": 114142980, "chr14": 106368585, "chr15": 100338915,

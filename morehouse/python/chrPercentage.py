@@ -1,13 +1,15 @@
 #!/usr/bin/python
 
-# location /home/guoxing/tool/morehouse/python
+# ######################################################################################
+# Guoxing Fu Mar 28, 2013
+#
+#######################################################################################
 
 import os
 import time
 import sys
 from optparse import OptionParser
 
-currentPath = os.getcwd() + '/'
 
 def chr_percentage(a_file_name):
 
@@ -15,17 +17,14 @@ def chr_percentage(a_file_name):
 	total_reads_number = 0
 
 	with open(a_file_name, 'r') as input_file:
-		#with open(a_file_name + "_insertsize", 'w') as insert_size_output_file:
 			with open(a_file_name + "_percentage", 'w') as output_file:
 				for line in input_file:
 					if not line.startswith("@"):
 						elements = line.strip().split()
 						chr_name = elements[2].strip()
-						insertion_size = elements[8].strip()
-						#if insertion_size != "0":
+						#insertion_size = elements[8].strip()
 						if True:
 							total_reads_number += 1
-							#print >> insert_size_output_file, line.strip()
 							if chr_name not in chr_dict:
 								chr_dict[chr_name] = 1
 							else:
@@ -37,7 +36,7 @@ def chr_percentage(a_file_name):
 					print >> output_file, str(chr[0]) + "\t" + str(chr[1]) + "\t" + str(round(float(chr[1])*100/total_reads_number, 4))
 				print >> output_file, "total_reads_number", total_reads_number
 
-	print "chr6", chr_dict["chr6"]
+	#print "chr6", chr_dict["chr6"]
 	print "total_reads_number", total_reads_number
 
 def get_args():
@@ -53,6 +52,7 @@ def get_args():
 	return options
 
 if __name__ == '__main__':
+	currentPath = os.getcwd() + '/'
 
 	options = get_args()
 	a_file_name = options.aFile

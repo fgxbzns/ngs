@@ -173,8 +173,9 @@ def make_hifi_files(ref, parameter):
 def find_index(a, b):
 	index_list = []
 	for str_b in b:
-		if a in str_b:
-			index_list.append(b.index(str_b))
+		for id in a:
+			if id in str_b:
+				index_list.append(b.index(str_b))
 	return index_list
 
 def remove_element(index_list, list):
@@ -186,7 +187,15 @@ def remove_hap_in_ref(id, parameter):
 	ref_title = copy.deepcopy(parameter.ori_ref_title)
 	ref_dict = copy.deepcopy(parameter.ori_ref_dict)
 
-	index_list = find_index(id, ref_title)
+	id_list = []
+	id_list.append(id)
+	if parameter.person_dict[id].father != "N/A":
+		id_list.append(parameter.person_dict[id].father)
+	if parameter.person_dict[id].mather != "N/A":
+		id_list.append(parameter.person_dict[id].mather)
+	print id, id_list
+
+	index_list = find_index(id_list, ref_title)
 	remove_element(index_list, ref_title)
 
 	for pos in ref_dict.keys():
