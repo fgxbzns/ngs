@@ -7,7 +7,7 @@
 
 import os, glob, subprocess, random, operator, time, sys, copy, shutil, fnmatch
 from optparse import OptionParser
-from hifiAccuCheck_v2 import *
+#from hifiAccuCheck_v2 import *
 from refMerg_laser import *
 
 class parameters:
@@ -44,6 +44,7 @@ class persons:
 
 		self.fragment_dict = {}
 		self.common_fragment_dict = {}
+		self.common_fragment_pos_dict = {}
 
 
 class fragments:
@@ -295,17 +296,22 @@ def children_to_parents(p_id, p_code):
 
 	fragment_sort_dict = {}
 	for fragment in child_1_2_3:
-			#print fragment.ID, fragment.start, fragment.end
-			start_pos = fragment.start
-			end_pos = fragment.end
-			if start_pos not in fragment_sort_dict:
-				fragment_sort_dict[int(start_pos)] = []
-			fragment_sort_dict[int(start_pos)].append(fragment)
+		#print fragment.ID, fragment.start, fragment.end
+		start_pos = fragment.start
+		end_pos = fragment.end
+		if start_pos not in fragment_sort_dict:
+			fragment_sort_dict[int(start_pos)] = []
+		fragment_sort_dict[int(start_pos)].append(fragment)
 
-	fragment__sorted_list = sort_dict_by_key(fragment_sort_dict)
+		for pos in parameter.person_dict[p_id].hetero_pos_list:
+			if start_pos <= pos <= end_pos:
+				parameter.person_dict[p_id].common_fragment_pos_dict[pos] = 0
+
+	print "fragment hetero size", p_id, len(parameter.person_dict[p_id].common_fragment_pos_dict)
+	fragment_sorted_list = sort_dict_by_key(fragment_sort_dict)
 
 	with open(p_id + "_fragment.txt", "w") as f_file:
-		for data in fragment__sorted_list:
+		for data in fragment_sorted_list:
 			pos = data[0]
 			fragment_list = data[1]
 			for f1 in fragment_list:
@@ -531,9 +537,6 @@ def output_fragment():
 """
 
 def output_hap_std_geno():
-	#parent_id_list = []
-	#parent_id_list.extend(parameter.father_list)
-	#parent_id_list.extend(parameter.mather_list)
 	id_list = parameter.person_dict.keys()
 	id_list.sort()
 	for id in id_list:
@@ -552,6 +555,30 @@ def output_hap_std_geno():
 				geno = parameter.person_dict[id].genotype_dict[pos]
 				print >> geno_file, geno
 
+def output_l3_ref():
+
+	with open("l3_ref.txt", "w") as c_hap_file:
+		print >> c_hap_file, "rsID", "pos",
+		for id in parameter.children_list:
+			print >> c_hap_file, id + "_F", id + "_M",
+		print >> c_hap_file, ""
+
+		for pos in parameter.pos_list:
+			keep_pos = True
+			for child_id in parameter.children_list:
+				if parameter.person_dict[child_id].haplotype[pos][0] == "X" or \
+					parameter.person_dict[child_id].haplotype[pos][1] == "X" or \
+					parameter.person_dict[child_id].haplotype[pos][0] == "N" or \
+					parameter.person_dict[child_id].haplotype[pos][1] == "N":
+					keep_pos = False
+					break
+			if keep_pos:
+				print >> c_hap_file, parameter.rsID_dict[pos], pos,
+				for child_id in parameter.children_list:
+					print >> c_hap_file, parameter.person_dict[child_id].haplotype[pos][0], \
+						parameter.person_dict[child_id].haplotype[pos][1],
+				print >> c_hap_file, ""
+
 def output_child_hap():
 
 	with open(parameter.children_hap_file, "w") as c_hap_file:
@@ -567,12 +594,16 @@ def output_child_hap():
 					parameter.person_dict[child_id].haplotype[pos][1],
 			print >> c_hap_file, ""
 
-def output_parent_hap():
-	# parent_id_list = []
-	# parent_id_list.extend(parameter.father_list)
-	# parent_id_list.extend(parameter.mather_list)
-	# parent_id_list.sort()
+	for child_id in parameter.children_list:
+		with open(child_id + "_hap.txt", "w") as hap_file:
+				print >> hap_file, "rs#", "pos", parameter.person_dict[id].ID
+				for pos in parameter.pos_list:
+					child_hap = parameter.person_dict[child_id].haplotype[pos]
+					if child_hap[0] != "X" and child_hap[1] != "X" and child_hap[0] != "N" and child_hap[1] != "N":
+						print >> hap_file, parameter.rsID_dict[pos], pos,
+						print >> hap_file, child_hap[0], child_hap[1]
 
+def output_parent_hap():
 	with open("parent_hap.txt", "w") as parent_hap:
 		print >> parent_hap, "rs#", "pos",
 		for id in parameter.parent_id_list:
@@ -606,26 +637,43 @@ def genome_laser(pedi_name, geno_name):
 	load_geno(geno_name)
 
 	prepare_id_list()
+
+	print "Laser I"
+	start_time = time.time()
 	parents_to_children()
+	print "Laser I run time: ", round(time.time() - start_time, 2), "s"
+
 	output_child_hap()
+
+	for child_id in parameter.children_list:
+		print "laser I", child_id,
+		hifiAccuCheck_file(child_id + "_hap.txt", child_id + "_std.txt")
+
+	output_l3_ref()
 
 	output_hap_std_geno()
 
+	print "Laser II"
+	start_time = time.time()
+
 	for f_id in parameter.father_list:
 		children_to_parents(f_id, 0)
-		#print f_id
-		#hifiAccuCheck_file(f_id + "_hap.txt", f_id + "_std.txt")
-
 	for m_id in parameter.mather_list:
 		children_to_parents(m_id, 1)
-		#print m_id
-		#hifiAccuCheck_file(m_id + "_hap.txt", m_id + "_std.txt")
+	print "Laser II run time: ", round(time.time() - start_time, 2), "s"
+
+	for f_id in parameter.father_list:
+		print "laser II", f_id,
+		hifiAccuCheck_file_laser(f_id, f_id + "_hap.txt", f_id + "_std.txt", parameter.person_dict[f_id].common_fragment_dict)
+
+	for m_id in parameter.mather_list:
+		print "laser II", m_id,
+		hifiAccuCheck_file_laser(f_id, f_id + "_hap.txt", f_id + "_std.txt", parameter.person_dict[f_id].common_fragment_dict)
 
 	output_parent_hap()
 
 	output_seed()
 
-	#refMerger("NA12763", parameter)
 	laser_three()
 	laser_four()
 
@@ -640,17 +688,26 @@ def laser_three():
 	for id in parameter.parent_id_list:
 		os.system("mkdir -p " + current_path + "laser_3/" + id)
 		os.chdir(id)
-		os.system("mv " + current_path + id + "_seed.txt ./haplotype.txt")
-		os.system("mv " + current_path + id + "_geno.txt ./genotype.txt")
-		os.system("cp " + current_path + "child_hap.txt ./refHaplos.txt")
+		#os.system("mv " + current_path + id + "_seed.txt ./haplotype.txt")
+		#os.system("mv " + current_path + id + "_geno.txt ./genotype.txt")
+		os.system("cp " + current_path + id + "_std.txt ./")
+		os.system("cp " + current_path + "l3_ref.txt ./")
+
+		refMerger_laser2(id, parameter)
+
 
 		hifi_run_code = subprocess_execute(hifi_file)
 		if hifi_run_code != 0:
 			print "==done=="
 			print ""
+			if os.path.isfile("imputed_haplotype.txt"):
+				print "laser III", id,
+				hifiAccuCheck_file_laser(id, "imputed_haplotype.txt", id + "_std.txt", parameter.person_dict[id].common_fragment_dict)
 		else:
 			print "hifi has an issue", id
 			pass
+
+
 		os.chdir(current_path + "laser_3")
 	os.chdir(current_path)
 
@@ -667,19 +724,20 @@ def laser_four():
 	for id in parameter.person_dict.keys():
 		os.system("mkdir -p " + current_path + "laser_4/" + id)
 		os.chdir(id)
+		os.system("cp " + current_path + id + "_std.txt ./")
 		refMerger(id, parameter)
 		hifi_run_code = subprocess_execute(hifi_file)
 		if hifi_run_code != 0:
 			print "==done=="
 			print ""
+			if os.path.isfile("imputed_haplotype.txt"):
+				print "laser IV", id,
+				hifiAccuCheck_file_laser(id, "imputed_haplotype.txt", id + "_std.txt", parameter.person_dict[id].common_fragment_dict)
 		else:
 			print "hifi has an issue", id
 			pass
 		os.chdir(current_path + "laser_4")
 	os.chdir(current_path)
-
-
-
 
 
 def get_args():
@@ -696,224 +754,197 @@ def get_args():
 
 
 ####################
+# #def for Accu# #
+####################
+
+def allele_similarity(hifi_result_dict, hifi_std_dict):
+	same_to_A = 0
+	same_to_B = 0
+	for position, elements_hifi in hifi_result_dict.iteritems():
+		if position in hifi_std_dict:
+			hifi_A = elements_hifi[2].strip()
+			hifi_B = elements_hifi[3].strip()
+			elements_std = hifi_std_dict[position]
+			std_A = elements_std[2].strip()
+			std_B = elements_std[3].strip()
+			if hifi_A != hifi_B:
+				if hifi_A == std_A:
+					same_to_A += 1
+				if hifi_A == std_B:
+					same_to_B += 1
+	if same_to_A >= same_to_B:
+		return "similar_to_A"
+	else:
+		return "similar_to_B"
+
+def compare_std_result(hifi_result_dict, hifi_std_dict):
+	same_to_A_dict = {}
+	same_to_B_dict = {}
+	same_to_X_dict = {}
+	same_to_N_dict = {}
+	same_to_AB_dict = {}
+	AT_GC_dict = {}
+	not_same_to_AB_dict = {}
+	same_position_dict = {}
+	different_position_dict = {}
+	hifi_result_x_dict = {}
+	std_x_dict = {}
+
+	same_position_total_number = 0
+	different_position_total_number = 0
+	similarity = allele_similarity(hifi_result_dict, hifi_std_dict)
+
+	for position, elements_hifi in hifi_result_dict.iteritems():
+		if position in hifi_std_dict:
+			hifi_A = elements_hifi[2].strip()
+			hifi_B = elements_hifi[3].strip()
+			#if hifi_A != 'X' and hifi_B != 'X' and hifi_A != 'N' and hifi_B != 'N':
+			if True:
+				elements_std = hifi_std_dict[position]
+				std_A = elements_std[2].strip()
+				std_B = elements_std[3].strip()
+
+				if similarity == "similar_to_B":  # for solid data 4 and 6, the hifi seed is from mother (B)
+					hifi_A, hifi_B = hifi_B, hifi_A
+				# the hifi seed is from father, A
+				if hifi_A == std_A:  #A is A
+					if hifi_B == std_B:
+						same_to_AB_dict[position] = elements_hifi
+					else:
+						same_to_A_dict[position] = elements_hifi
+				elif hifi_B == std_B:
+					same_to_B_dict[position] = elements_hifi
+				elif std_A == "X" or std_B == "X" or std_A == "N" or std_B == "N":
+					same_to_AB_dict[position] = elements_hifi
+				else:
+					if (std_A == "A" and std_B == "T") or (std_A == "C" and std_B == "G") or (
+							std_A == "T" and std_B == "A") or (std_A == "G" and std_B == "C"):
+						AT_GC_dict[position] = elements_hifi
+						hifi_result_x_dict[position] = elements_hifi
+					elif hifi_A == "X" or hifi_B == "X":
+						pass
+					else:
+						not_same_to_AB_dict[position] = elements_hifi
+				same_position_dict[position] = elements_hifi
+
+			if hifi_A == "X" or hifi_B == "X":
+				hifi_result_x_dict[position] = elements_hifi
+			if std_A == "X" or std_B == "X" or std_A == "N" or std_B == "N":
+				std_x_dict[position] = elements_hifi
+
+			#same_position_total_number += 1
+		else:
+			#different_position_total_number += 1
+			different_position_dict[position] = elements_hifi
+
+	return (
+	same_to_A_dict, same_to_B_dict, same_to_AB_dict, not_same_to_AB_dict, same_position_dict, different_position_dict,
+	AT_GC_dict, hifi_result_x_dict, std_x_dict)
+
+def hifiAccuCheck_file(hifi_result_file, hap_std_file_name):
+
+	hifi_std_dict = load_raw_data(hap_std_file_name, raw_data_format)[1]
+	hap_std_total_number = len(hifi_std_dict)
+
+	hifi_std_dict = removeN(hifi_std_dict)
+
+	hifi_result_dict = load_raw_data(hifi_result_file, raw_data_format)[1]
+	hifi_result_total_number = len(hifi_result_dict)
+
+	# print "hap_std_total_number", hap_std_total_number
+	# print "hifi_result_total_number", hifi_result_total_number
+
+	same_to_A_dict, same_to_B_dict, same_to_AB_dict, not_same_to_AB_dict, same_position_dict, different_position_dict, \
+	AT_GC_dict, hifi_result_x_dict, std_x_dict = compare_std_result(hifi_result_dict, hifi_std_dict)
+
+	same_A_total_number = len(same_to_A_dict)
+	same_B_total_number = len(same_to_B_dict)
+	same_AB_total_number = len(same_to_AB_dict)
+	not_same_AB_total_number = len(not_same_to_AB_dict)
+
+	common_fragment_pos_total = 0
+	for pos in not_same_to_AB_dict.keys():
+		if pos in common_fragment_dict:
+			common_fragment_pos_total += 1
+	# print "common_fragment_pos_total", common_fragment_pos_total
+
+	same_position_total_number = len(same_position_dict)
+	AT_GC_dict_number = len(AT_GC_dict)
+
+	accuracy = round((same_A_total_number + same_B_total_number + same_AB_total_number)/float(same_position_total_number - AT_GC_dict_number), 3)
+
+	print "accuracy", accuracy
+
+	accuracy_output_file_name = "hifi_accuracy.txt"
+	accuracy_output_file = open(currentPath + accuracy_output_file_name, "w")
+	print >> accuracy_output_file, "accuracy: ", accuracy
+	accuracy_output_file.close()
+	return same_to_AB_dict, AT_GC_dict
+
+
+def hifiAccuCheck_file_laser(id, hifi_result_file, hap_std_file_name, common_fragment_dict):
+	# remove error in common fragment
+
+	hifi_std_dict = load_raw_data(hap_std_file_name, raw_data_format)[1]
+	hap_std_total_number = len(hifi_std_dict)
+
+	hifi_std_dict = removeN(hifi_std_dict)
+
+	hifi_result_dict = load_raw_data(hifi_result_file, raw_data_format)[1]
+	hifi_result_total_number = len(hifi_result_dict)
+
+	# print "hap_std_total_number", hap_std_total_number
+	# print "hifi_result_total_number", hifi_result_total_number
+
+	same_to_A_dict, same_to_B_dict, same_to_AB_dict, not_same_to_AB_dict, same_position_dict, different_position_dict, \
+	AT_GC_dict, hifi_result_x_dict, std_x_dict = compare_std_result(hifi_result_dict, hifi_std_dict)
+
+	same_A_total_number = len(same_to_A_dict)
+	same_B_total_number = len(same_to_B_dict)
+	same_AB_total_number = len(same_to_AB_dict)
+	not_same_AB_total_number = len(not_same_to_AB_dict)
+
+	print "not_same_AB_total_number 1 ", not_same_AB_total_number
+
+
+	for pos in not_same_to_AB_dict.keys():
+		if pos in parameter.person_dict[id].common_fragment_pos_dict:
+			same_AB_total_number += 1
+			not_same_AB_total_number -= 1
+			#print pos, hifi_result_dict[pos], hifi_std_dict[pos]
+			pass
+	print "not_same_AB_total_number 2 ", not_same_AB_total_number
+
+
+	# common_fragment_pos_total = 0
+	# for pos in not_same_to_AB_dict.keys():
+	# 	if pos in common_fragment_dict:
+	# 		common_fragment_pos_total += 1
+	# print "common_fragment_pos_total", common_fragment_pos_total
+
+	same_position_total_number = len(same_position_dict)
+	AT_GC_dict_number = len(AT_GC_dict)
+
+	accuracy = round((same_A_total_number + same_B_total_number + same_AB_total_number)/float(same_position_total_number - AT_GC_dict_number), 3)
+
+
+	print "accuracy", accuracy
+
+	accuracy_output_file_name = "hifi_accuracy.txt"
+	accuracy_output_file = open(currentPath + accuracy_output_file_name, "w")
+	print >> accuracy_output_file, "accuracy: ", accuracy
+	accuracy_output_file.close()
+
+	return same_to_AB_dict, AT_GC_dict
+
+####################
 # #def for HIFI# #
 ####################
 
 
-def load_raw_data(hap_file):
-	title = ""
-	data = {}
-	with open(hap_file, "r") as fp:
-		for line in fp:
-			if line != "":
-				elements = line.strip().split()
-				if line.startswith("rs_ID") or line.startswith("rs#") or line.startswith("rsID"):
-					title = elements
-				else:
-					# print elements[1]
-					data[int(elements[1])] = elements
-	return title, data
 
 
-def find_index(a, b):
-	index_list = []
-	for str_b in b:
-		if a in str_b:
-			# print b.index(str_b)
-			index_list.append(b.index(str_b))
-	return index_list
-
-
-def remove_sample_from_ref(line, rm_list):  # Deleting multiple elements from a list by index
-	# new_line = [i for j, i in enumerate(line) if i not in rm_list]
-	new_line = line
-	# print "length", len(line)
-	for index in sorted(rm_list, reverse=True):
-		# print index
-		del new_line[index]
-	return new_line
-
-
-def make_child_HIFI_files(sample_id, raw_ref_title, raw_ref_data):
-	sample_id_list = []
-	id_rm_list = []
-	# define the person temp
-	person_temp = parameter.person_dict[sample_id]
-
-	# make the ref
-	# ref_title = copy.copy(raw_ref_title)
-	# ref_data = copy.copy(raw_ref_data)
-	ref_title = copy.deepcopy(raw_ref_title)
-	ref_data = copy.deepcopy(raw_ref_data)
-	sample_id_list.append(person_temp.father)
-	sample_id_list.append(person_temp.mather)
-	for item in sample_id_list:
-		index = find_index(item, ref_title)
-		for num in index:
-			id_rm_list.append(num)
-	# print "F&M", id_rm_list
-	output_ref = open("_ref", "w")
-	print >> output_ref, "rsID" + "\t" + list_to_line(remove_sample_from_ref(ref_title, id_rm_list)[1:])
-	for pos in sorted(ref_data.keys()):
-		# print pos
-		print >> output_ref, list_to_line(remove_sample_from_ref(ref_data[pos], id_rm_list))
-	output_ref.close()
-
-	# make the geno
-	output_geno = open("_geno", "w")
-	print >> output_geno, "rsID" + "\t" + "pos#" + "\t" + sample_id
-	for pos in parameter.pos_list:
-		print >> output_geno, parameter.rsID_dict[pos] + "\t" + str(pos) + "\t" + person_temp.genotype_dict[pos]
-	output_geno.close()
-
-	# make the haplo
-	output_haplo = open("_haplo", "w")
-	print >> output_haplo, "rsID" + "\t" + "pos#" + "\t" + sample_id + "_A"
-	for pos in parameter.pos_list:
-		if pos in person_temp.haplotype:
-			if person_temp.haplotype[pos][0] != "N" and person_temp.haplotype[pos][0] != "X":
-				print >> output_haplo, parameter.rsID_dict[pos] + "\t" + str(pos) + "\t" + person_temp.haplotype[pos][0]
-	output_haplo.close()
-
-	# make the haplo after laser
-	output_haplo = open("_haplo_laser", "w")
-	print >> output_haplo, "rsID" + "\t" + "pos#" + "\t" + sample_id + "_A"
-	for pos in parameter.pos_list:
-		if pos in person_temp.haplotype:
-			if person_temp.haplotype[pos][0] != "N" and person_temp.haplotype[pos][0] != "X" or \
-									person_temp.haplotype[pos][1] != "N" and person_temp.haplotype[pos][1] != "X":
-				print >> output_haplo, parameter.rsID_dict[pos] + "\t" + str(pos) + "\t" + person_temp.haplotype[pos][
-					0] + "\t" + person_temp.haplotype[pos][1]
-	output_haplo.close()
-
-	# make the std_haplo
-	output_std_haplo = open("_std_haplo", "w")
-	print >> output_std_haplo, "rsID" + "\t" + "pos#" + "\t" + sample_id + "_A" + "\t" + sample_id + "_B"
-	for pos in parameter.pos_list:
-		print >> output_std_haplo, parameter.rsID_dict[pos] + "\t" + str(pos) + "\t" + person_temp.genotype_dict[pos][
-			0] + "\t" + person_temp.genotype_dict[pos][1]
-	output_std_haplo.close()
-
-	print sample_id, "HIFI files ready"
-
-
-def make_parent_HIFI_files(sample_id, raw_ref_title, raw_ref_data):
-	# make the ref
-	# ref_title = copy.copy(raw_ref_title)
-	# ref_data = copy.copy(raw_ref_data)
-	ref_title = copy.deepcopy(raw_ref_title)
-	ref_data = copy.deepcopy(raw_ref_data)
-	id_rm_list = find_index(sample_id, ref_title)
-	# print id_rm_list
-	output_ref = open("_ref", "w")
-	print >> output_ref, "rsID" + "\t" + list_to_line(remove_sample_from_ref(ref_title, id_rm_list)[1:])
-	for pos in sorted(ref_data.keys()):
-		print >> output_ref, list_to_line(remove_sample_from_ref(ref_data[pos], id_rm_list))
-	output_ref.close()
-
-	# define the person temp
-	person_temp = parameter.person_dict[sample_id]
-
-	# make the geno
-	output_geno = open("_geno", "w")
-	print >> output_geno, "rsID" + "\t" + "pos#" + "\t" + sample_id
-	for pos in parameter.pos_list:
-		print >> output_geno, parameter.rsID_dict[pos] + "\t" + str(pos) + "\t" + person_temp.genotype_dict[pos]
-	output_geno.close()
-
-	# make the haplo
-	output_haplo = open("_haplo", "w")
-	print >> output_haplo, "rsID" + "\t" + "pos#" + "\t" + sample_id + "_A"
-	for pos in parameter.pos_list:
-		if pos in person_temp.haplotype:
-			if person_temp.haplotype[pos][0] != "N" and person_temp.haplotype[pos][0] != "X":
-				print >> output_haplo, parameter.rsID_dict[pos] + "\t" + str(pos) + "\t" + person_temp.haplotype[pos][0]
-	output_haplo.close()
-
-	# make the haplo after laser
-	output_haplo = open("_haplo_laser", "w")
-	print >> output_haplo, "rsID" + "\t" + "pos#" + "\t" + sample_id + "_A"
-	for pos in parameter.pos_list:
-		if pos in person_temp.haplotype:
-			if person_temp.haplotype[pos][0] != "N" and person_temp.haplotype[pos][0] != "X" or \
-									person_temp.haplotype[pos][1] != "N" and person_temp.haplotype[pos][1] != "X":
-				print >> output_haplo, parameter.rsID_dict[pos] + "\t" + str(pos) + "\t" + person_temp.haplotype[pos][
-					0] + "\t" + person_temp.haplotype[pos][1]
-	output_haplo.close()
-
-	# make the std_haplo
-	output_std_haplo = open("_std_haplo", "w")
-	print >> output_std_haplo, "rsID" + "\t" + "pos#" + "\t" + sample_id + "_A" + "\t" + sample_id + "_B"
-	for pos in parameter.pos_list:
-		print >> output_std_haplo, parameter.rsID_dict[pos] + "\t" + str(pos) + "\t" + person_temp.genotype_dict[pos][
-			0] + "\t" + person_temp.genotype_dict[pos][1]
-	output_std_haplo.close()
-
-	print sample_id, "HIFI files ready"
-
-
-def key_compare(k1, k2):
-	temp = {}
-	for a in k1.keys():
-		if a in k2:
-			temp[a] = 0
-			# print "comon key is ", a
-	return temp
-
-
-def cut_by_common_append():
-	ref_title, ref_data = load_raw_data("refHaplos_after_merge")
-	geno_title, geno_data = load_raw_data("genotype_after_merge")
-	haplo_title, haplo_data = load_raw_data("haplotype_after_merge")
-	com_id1 = key_compare(ref_data, geno_data)
-	com_id2 = key_compare(com_id1, haplo_data)
-	mini_p = min(com_id2.keys())
-	max_p = max(com_id2.keys())
-	# print mini_p
-	# print type(mini_p)
-	# print max_p
-	# print type(max_p)
-	geno_output = open("genotype.txt", "w")
-	haplo_output = open("haplotype.txt", "w")
-	ref_output = open("refHaplos.txt", "w")
-	ref_list_ori = sorted(ref_data, key=int)
-	geno_list_ori = sorted(geno_data, key=int)
-	haplo_list_ori = sorted(haplo_data, key=int)
-	ref_list = []
-	geno_list = []
-	haplo_list = []
-	# print haplo_list
-	for i in ref_list_ori:
-		if int(mini_p) <= int(i) <= int(max_p):
-			ref_list.append(i)
-	for j in geno_list_ori:
-		if int(mini_p) <= int(j) <= int(max_p):
-			geno_list.append(j)
-	for q in haplo_list_ori:
-		if int(mini_p) <= int(q) <= int(max_p):
-			haplo_list.append(q)
-	# print "new list"
-	# print "ref_list[0]", ref_list[0]
-	# print "ref_list[-1]", ref_list[-1]
-	# print "geno_list[0]", geno_list[0]
-	# print "geno_list[-1]", geno_list[-1]
-	# print "haplo_list[0]", haplo_list[0]
-	# print "haplo_list[-1]", haplo_list[-1]
-	print >> geno_output, "rsID" + "\t" + "phys_position" + "\t" + list_to_line(geno_title[2:])
-	print >> haplo_output, "rsID" + "\t" + "phys_position" + "\t" + list_to_line(haplo_title[2:])
-	print >> ref_output, "rsID" + "\t" + "phys_position"
-	for k in sorted(ref_list):
-		print >> ref_output, list_to_line(ref_data[k])
-	for d in sorted(geno_list):
-		print >> geno_output, list_to_line(geno_data[d])
-	for c in sorted(haplo_list):
-		print >> haplo_output, list_to_line(haplo_data[c])
-	geno_output.close()
-	haplo_output.close()
-	ref_output.close()
-
-
-def subprocess_execute(command, time_out=600):
+def subprocess_execute(command, time_out=120):
 	c = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
 	# print c.communicate()
 	t = 0
@@ -931,94 +962,6 @@ def subprocess_execute(command, time_out=600):
 	return returncode
 
 
-def check_hapfile_run_HIFI_child():
-	os.chdir(current_path)
-	if os.path.isfile("child_hap.txt") and os.path.isfile("parent_hap.txt"):
-		print "prepare for HIFI running..."
-		# raw_ref_title, raw_ref_data = load_raw_data(ref_name)
-		sample_id_list = parameter.children_list
-		# processing samples data start
-		for sample_id in set(sample_id_list):
-			print sample_id, "processing..."
-
-			if os.path.exists(sample_id):  # remove the exist folder and create a new one
-				shutil.rmtree(sample_id)
-			os.makedirs(sample_id)
-
-			os.chdir(sample_id)
-			# print sample_id
-			# ref_title = copy.copy(raw_ref_title)
-			# ref_data = copy.copy(raw_ref_data)
-			make_child_HIFI_files(sample_id, raw_ref_title, raw_ref_data)
-			print "refMerging..."
-			print subprocess.Popen("python " + refMerger + " -i _haplo -n _geno -r _ref", shell=True,
-			                       stdout=subprocess.PIPE).stdout.read()
-			os.rename("refHaplos.txt", "refHaplos_after_merge")
-			os.rename("genotype.txt", "genotype_after_merge")
-			os.rename("haplotype.txt", "haplotype_after_merge")
-			cut_by_common_append()  # format required by hifi
-			os.system("unix2dos refHaplos.txt")
-			os.system("unix2dos genotype.txt")
-			os.system("unix2dos haplotype.txt")
-			hifi_starttime = time.time()
-			hifi_run_code = subprocess_execute(hifi_file)
-			print "hifi run time with", sample_id, round((time.time() - hifi_starttime), 6), "s"
-			# print hifi_run_code
-			if hifi_run_code != 0:
-				print "==done=="
-				print ""
-			else:
-				print "hifi has an issue", sample_id
-				pass
-			os.chdir(current_path)
-			# processing samples data end
-	else:
-		print "Warning! child_hap.txt or parent_hap.txt file missing..."
-
-
-def check_hapfile_run_HIFI_parent():
-	os.chdir(current_path)
-	if os.path.isfile("child_hap.txt") and os.path.isfile("parent_hap.txt"):
-		print "prepare for HIFI running..."
-		sample_id_list = parameter.person_dict.keys()
-		# processing samples data start
-		for sample_id in set(sample_id_list):
-			if sample_id not in parameter.children_list:
-				print sample_id, "processing..."
-
-				if os.path.exists(sample_id):  # remove the exist folder and create a new one
-					shutil.rmtree(sample_id)
-				os.makedirs(sample_id)
-
-				os.chdir(sample_id)
-				# print sample_id
-				# ref_title = copy.copy(raw_ref_title)
-				# ref_data = copy.copy(raw_ref_data)
-				make_parent_HIFI_files(sample_id, raw_ref_title, raw_ref_data)
-				print "refMerging..."
-				print subprocess.Popen("python " + refMerger + " -i _haplo -n _geno -r _ref", shell=True,
-				                       stdout=subprocess.PIPE).stdout.read()
-				os.rename("refHaplos.txt", "refHaplos_after_merge")
-				os.rename("genotype.txt", "genotype_after_merge")
-				os.rename("haplotype.txt", "haplotype_after_merge")
-				cut_by_common_append()  # format required by hifi
-				os.system("unix2dos refHaplos.txt")
-				os.system("unix2dos genotype.txt")
-				os.system("unix2dos haplotype.txt")
-				hifi_starttime = time.time()
-				hifi_run_code = subprocess_execute(hifi_file)
-				print "hifi run time with", sample_id, round((time.time() - hifi_starttime), 6), "s"
-				# print hifi_run_code
-				if hifi_run_code != 0:
-					print "==done=="
-					print ""
-				else:
-					print "hifi has an issue", sample_id
-					pass
-				os.chdir(current_path)
-				# processing samples data end
-	else:
-		print "Warning! child_hap.txt or parent_hap.txt file missing..."
 
 
 if __name__ == '__main__':
@@ -1042,7 +985,7 @@ if __name__ == '__main__':
 	geno_name = "geno.txt"
 
 	start_time = time.time()
-	print "Laser I II ..."
+
 	genome_laser(pedi_name, geno_name)
 
 	###################
@@ -1056,8 +999,5 @@ if __name__ == '__main__':
 	hifi_file = current_path + "/scripts/hifi_fu_ref_for_HIFILOCA.ref"
 	refMerger = current_path + "/scripts/refMerger_v5_wli_filltheend_remove_extra.py"
 	acc_check_file = current_path + "/scripts/hifiAccuCheck_v3_pos_num.py"
-	# #HIFI processing
-	#raw_ref_title, raw_ref_data = load_raw_data(ref_name)
-	#check_hapfile_run_HIFI_child()
-	#check_hapfile_run_HIFI_parent()
+
 	print "elapsed_time is: ", round(time.time() - start_time, 2), "s"

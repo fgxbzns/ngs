@@ -123,14 +123,12 @@ def output_hap(file_name, parameter, seed_dict):
 		print >> output, ref.seed_title
 		for pos in sorted(seed_dict.keys()):
 			print >> output, parameter.rsID_dict[pos], pos, seed_dict[pos][0]
-			#print >> output, list_to_line([parameter.rsID_dict[pos], pos, seed_dict[pos][0]]).strip()
 
 def output_geno(file_name, parameter, geno_dict):
 	with open(file_name, "w") as output:
 		print >> output, ref.geno_title
 		for pos in sorted(geno_dict.keys()):
 			print >> output, parameter.rsID_dict[pos], pos, geno_dict[pos][0]+geno_dict[pos][1]
-			#print >> output, list_to_line([parameter.rsID_dict[pos], pos, geno_dict[pos][0]+geno_dict[pos][1]]).strip()
 
 def output_ref(file_name, ref_dict):
 	with open(file_name, "w") as output:
@@ -229,3 +227,26 @@ def refMerger(id, parameter):
 
 
 
+def refMerger_laser2(id, parameter):
+
+	person = parameter.person_dict[id]
+
+	global ref
+	ref = refs()
+	#print id
+	ref.ref_title, ref.ref_dict = load_hap_ref_data_single("l3_ref.txt")
+	#print ref.ref_title
+
+	ref.seed_title = "rsID pos " + id + "_A"
+
+	for pos in person.haplotype.keys():
+		hap = person.haplotype[pos]
+		if hap[0] != "N" and hap[0] != "X" and hap[0] != "":
+			ref.seed_dict[pos] = hap[0]
+
+	ref.geno_title = "rsID pos " + id
+	ref.geno_dict = person.genotype_dict
+
+	ref.ref_dict = ref_preprocess(ref.geno_dict, ref.ref_dict)
+
+	make_hifi_files(ref, parameter)
