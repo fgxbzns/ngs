@@ -20,7 +20,7 @@
 //#define MAFSTEP 0.01	ori minor allele frequence step
 //#define MAFSTEP 0.1
 #define IMPUTORTABLEWIDTH 1024
-#define MAXCOMPARELEN 1000
+#define MAXCOMPARELEN 50
 #define WINI 16
 //WINI should be > WINO for the ini
 #define WINO 10

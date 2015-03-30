@@ -307,7 +307,7 @@ def children_to_parents(p_id, p_code):
 			if start_pos <= pos <= end_pos:
 				parameter.person_dict[p_id].common_fragment_pos_dict[pos] = 0
 
-	print "fragment hetero size", p_id, len(parameter.person_dict[p_id].common_fragment_pos_dict)
+	#print "fragment hetero size", p_id, len(parameter.person_dict[p_id].common_fragment_pos_dict)
 	fragment_sorted_list = sort_dict_by_key(fragment_sort_dict)
 
 	with open(p_id + "_fragment.txt", "w") as f_file:
@@ -644,6 +644,8 @@ def genome_laser(pedi_name, geno_name):
 	print "Laser I run time: ", round(time.time() - start_time, 2), "s"
 
 	output_child_hap()
+	output_hap_std_geno()
+
 
 	for child_id in parameter.children_list:
 		print "laser I", child_id,
@@ -651,7 +653,6 @@ def genome_laser(pedi_name, geno_name):
 
 	output_l3_ref()
 
-	output_hap_std_geno()
 
 	print "Laser II"
 	start_time = time.time()
@@ -679,7 +680,7 @@ def genome_laser(pedi_name, geno_name):
 
 def laser_three():
 	print "Laser III"
-	hifi_file = "/home/guoxing/disk2/laser/simulation_data/hifi_test/hifi/scripts/hifi_fu_ref_for_HIFILOCA.ref"
+	hifi_file = "/home/guoxing/disk2/laser/simulation_data/hifi_test/hifi/scripts/hifi_fu_laser"
 	current_path = os.getcwd() + "/"
 	#os.mkdir(current_path + "laser_3")
 	os.system("mkdir -p " + current_path + "laser_3")
@@ -715,7 +716,7 @@ def laser_three():
 
 def laser_four():
 	print "Laser IV"
-	hifi_file = "/home/guoxing/disk2/laser/simulation_data/hifi_test/hifi/scripts/hifi_fu_ref_for_HIFILOCA.ref"
+	hifi_file = "/home/guoxing/disk2/laser/simulation_data/hifi_test/hifi/scripts/hifi_fu_laser"
 	current_path = os.getcwd() + "/"
 	#os.mkdir(current_path + "laser_4")
 	os.system("mkdir -p " + current_path + "laser_4")
@@ -862,17 +863,21 @@ def hifiAccuCheck_file(hifi_result_file, hap_std_file_name):
 	same_AB_total_number = len(same_to_AB_dict)
 	not_same_AB_total_number = len(not_same_to_AB_dict)
 
-	common_fragment_pos_total = 0
-	for pos in not_same_to_AB_dict.keys():
-		if pos in common_fragment_dict:
-			common_fragment_pos_total += 1
+	# common_fragment_pos_total = 0
+	# for pos in not_same_to_AB_dict.keys():
+	# 	if pos in common_fragment_dict:
+	# 		common_fragment_pos_total += 1
 	# print "common_fragment_pos_total", common_fragment_pos_total
 
 	same_position_total_number = len(same_position_dict)
 	AT_GC_dict_number = len(AT_GC_dict)
 
+	error_rate = round(not_same_AB_total_number/float(same_position_total_number), 4)
 	accuracy = round((same_A_total_number + same_B_total_number + same_AB_total_number)/float(same_position_total_number - AT_GC_dict_number), 3)
 
+	print "error ", not_same_AB_total_number, "total ", same_position_total_number
+
+	print "error rate", error_rate
 	print "accuracy", accuracy
 
 	accuracy_output_file_name = "hifi_accuracy.txt"
@@ -904,7 +909,7 @@ def hifiAccuCheck_file_laser(id, hifi_result_file, hap_std_file_name, common_fra
 	same_AB_total_number = len(same_to_AB_dict)
 	not_same_AB_total_number = len(not_same_to_AB_dict)
 
-	print "not_same_AB_total_number 1 ", not_same_AB_total_number
+	#print "not_same_AB_total_number 1 ", not_same_AB_total_number
 
 
 	for pos in not_same_to_AB_dict.keys():
@@ -913,21 +918,18 @@ def hifiAccuCheck_file_laser(id, hifi_result_file, hap_std_file_name, common_fra
 			not_same_AB_total_number -= 1
 			#print pos, hifi_result_dict[pos], hifi_std_dict[pos]
 			pass
-	print "not_same_AB_total_number 2 ", not_same_AB_total_number
-
-
-	# common_fragment_pos_total = 0
-	# for pos in not_same_to_AB_dict.keys():
-	# 	if pos in common_fragment_dict:
-	# 		common_fragment_pos_total += 1
-	# print "common_fragment_pos_total", common_fragment_pos_total
+	#print "not_same_AB_total_number 2 ", not_same_AB_total_number
 
 	same_position_total_number = len(same_position_dict)
 	AT_GC_dict_number = len(AT_GC_dict)
 
+	error_rate = round(not_same_AB_total_number/float(same_position_total_number), 4)
 	accuracy = round((same_A_total_number + same_B_total_number + same_AB_total_number)/float(same_position_total_number - AT_GC_dict_number), 3)
 
 
+	print "error ", not_same_AB_total_number, "total ", same_position_total_number
+
+	print "error rate", error_rate
 	print "accuracy", accuracy
 
 	accuracy_output_file_name = "hifi_accuracy.txt"
@@ -937,6 +939,8 @@ def hifiAccuCheck_file_laser(id, hifi_result_file, hap_std_file_name, common_fra
 
 	return same_to_AB_dict, AT_GC_dict
 
+
+
 ####################
 # #def for HIFI# #
 ####################
@@ -944,7 +948,7 @@ def hifiAccuCheck_file_laser(id, hifi_result_file, hap_std_file_name, common_fra
 
 
 
-def subprocess_execute(command, time_out=120):
+def subprocess_execute(command, time_out=300):
 	c = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
 	# print c.communicate()
 	t = 0
