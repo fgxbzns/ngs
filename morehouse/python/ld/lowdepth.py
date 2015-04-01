@@ -3021,20 +3021,7 @@ def combine_seed(input_file_1, input_file_2):
 
 
 def verify_expanded_seed_by_cluster(revised_seed_dict):
-	"""
-	ref_file_name = "refHaplos.txt" 
-	global ref_cluster_dict
-	maf_upper_bound = 0.5
-	maf_lower_bound = 0.3
-	ref_cluster_dict = get_cluster(ref_file_name, maf_upper_bound, maf_lower_bound)	
-	
-	global cluster_pos_dict
-	cluster_pos_dict = {}
-	for maf_num, cluster_list in ref_cluster_dict.iteritems():
-		for cluster_dict in cluster_list:
-			for pos, ref in cluster_dict.iteritems():
-				cluster_pos_dict[pos] = ref
-	"""
+
 	for pos, revised_seed in revised_seed_dict.iteritems():
 		keep_this_seed = True
 		if pos in data_dict.cluster_pos_dict:
