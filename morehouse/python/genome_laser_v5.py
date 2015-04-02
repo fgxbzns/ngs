@@ -512,27 +512,6 @@ def compare_child_hap(p_id, p_code, child_ID_1, child_ID_2):
 					parameter.person_dict[p_id].fragment_dict[id] = []
 				parameter.person_dict[p_id].fragment_dict[id].append(fragment)
 
-"""
-def output_fragment():
-	p_id = "NA07347"
-	child_id_1 = "NA11881_NA07347_1"
-	child_id_2 = "NA11881_NA07347_2"
-	child_id_3 = "NA11881_NA07347_3"
-
-	with open("NA11881_NA07347_1_0_frag.txt", "w") as c_frag:
-		print >> c_frag, "pos", "f_geno_0", "f_geno_1", "c_hap_0"
-		fragment = parameter.person_dict[p_id].fragment_dict[child_id_1][3]
-		for pos in parameter.person_dict[p_id].hetero_pos_list:
-			if fragment.start <= pos <= fragment.end and parameter.person_dict[child_id_1].haplotype[pos][0] != "X":
-				f_geno = parameter.person_dict[p_id].genotype_dict[pos]
-				print >> c_frag, pos, f_geno, \
-					parameter.person_dict[child_id_1].genotype_dict[pos], \
-					parameter.person_dict[child_id_1].haplotype[pos][0], \
-					parameter.person_dict[child_id_2].genotype_dict[pos], \
-					parameter.person_dict[child_id_2].haplotype[pos][0], \
-					parameter.person_dict[child_id_3].genotype_dict[pos], \
-					parameter.person_dict[child_id_3].haplotype[pos][0]
-"""
 
 def output_hap_std_geno():
 	id_list = parameter.person_dict.keys()
@@ -553,17 +532,27 @@ def output_hap_std_geno():
 				geno = parameter.person_dict[id].genotype_dict[pos]
 				print >> geno_file, geno
 
-def output_l3_ref():
 
-	with open("l3_ref.txt", "w") as c_hap_file:
+def output_hap_std(id):
+	with open(id + "_std.txt", "w") as std_file:
+		print >> std_file, "rs#", "pos", parameter.person_dict[id].ID + "_A", parameter.person_dict[id].ID + "_B"
+		for pos in parameter.pos_list:
+			print >> std_file, parameter.rsID_dict[pos], pos,
+			geno = parameter.person_dict[id].genotype_dict[pos]
+			print >> std_file, geno[0], geno[1]
+
+
+def output_l3_ref(p_id):
+
+	with open(p_id + "_ref.txt", "w") as c_hap_file:
 		print >> c_hap_file, "rsID", "pos",
-		for id in parameter.children_list:
+		for id in sorted(parameter.person_dict[p_id].children.keys()):
 			print >> c_hap_file, id + "_F", id + "_M",
 		print >> c_hap_file, ""
 
 		for pos in parameter.pos_list:
 			keep_pos = True
-			for child_id in parameter.children_list:
+			for child_id in parameter.person_dict[p_id].children.keys():
 				if parameter.person_dict[child_id].haplotype[pos][0] == "X" or \
 					parameter.person_dict[child_id].haplotype[pos][1] == "X" or \
 					parameter.person_dict[child_id].haplotype[pos][0] == "N" or \
@@ -572,7 +561,7 @@ def output_l3_ref():
 					break
 			if keep_pos:
 				print >> c_hap_file, parameter.rsID_dict[pos], pos,
-				for child_id in parameter.children_list:
+				for child_id in sorted(parameter.person_dict[p_id].children.keys()):
 					print >> c_hap_file, parameter.person_dict[child_id].haplotype[pos][0], \
 						parameter.person_dict[child_id].haplotype[pos][1],
 				print >> c_hap_file, ""
@@ -649,9 +638,6 @@ def genome_laser(pedi_name, geno_name):
 		print "laser I", child_id,
 		hifiAccuCheck_file(child_id + "_hap.txt", child_id + "_std.txt")
 
-	output_l3_ref()
-
-
 	print "Laser II"
 	start_time = time.time()
 
@@ -667,14 +653,14 @@ def genome_laser(pedi_name, geno_name):
 
 	for m_id in parameter.mather_list:
 		print "laser II", m_id,
-		hifiAccuCheck_file_laser(f_id, f_id + "_hap.txt", f_id + "_std.txt", parameter.person_dict[f_id].common_fragment_dict)
+		hifiAccuCheck_file_laser(m_id, m_id + "_hap.txt", m_id + "_std.txt", parameter.person_dict[m_id].common_fragment_dict)
 
 	output_parent_hap()
 
 	output_seed()
 
 	laser_three()
-	laser_four()
+	#laser_four()
 
 def laser_three():
 	print "Laser III"
@@ -687,15 +673,15 @@ def laser_three():
 	for id in parameter.parent_id_list:
 		os.system("mkdir -p " + current_path + "laser_3/" + id)
 		os.chdir(id)
-		#os.system("mv " + current_path + id + "_seed.txt ./haplotype.txt")
-		#os.system("mv " + current_path + id + "_geno.txt ./genotype.txt")
 		os.system("cp " + current_path + id + "_std.txt ./")
-		os.system("cp " + current_path + "l3_ref.txt ./")
+		output_l3_ref(id)
 
 		refMerger_laser2(id, parameter)
 
-
+		start_time = time.time()
 		hifi_run_code = subprocess_execute(hifi_file)
+		print "Laser III run time: ", id, round(time.time() - start_time, 2), "s"
+
 		if hifi_run_code != 0:
 			print "==done=="
 			print ""
@@ -725,7 +711,11 @@ def laser_four():
 		os.chdir(id)
 		os.system("cp " + current_path + id + "_std.txt ./")
 		refMerger(id, parameter)
+
+		start_time = time.time()
 		hifi_run_code = subprocess_execute(hifi_file)
+		print "Laser IV run time: ", id, round(time.time() - start_time, 2), "s"
+
 		if hifi_run_code != 0:
 			print "==done=="
 			print ""
@@ -900,7 +890,7 @@ def output_geno(file_name, parameter, geno_dict):
 
 def output_ref(file_name, ref_dict):
 	with open(file_name, "w") as output:
-		print >> output, list_to_line(ref.ref_title)
+		print >> output, ref.ref_title
 		for pos in sorted(ref_dict.keys()):
 			print >> output, ref_dict[pos].strip()
 
@@ -1001,9 +991,8 @@ def refMerger_laser2(id, parameter):
 
 	global ref
 	ref = refs()
-	#print id
-	ref.ref_title, ref.ref_dict = load_hap_ref_data_single("l3_ref.txt")
-	#print ref.ref_title
+
+	ref.ref_title, ref.ref_dict = load_hap_ref_data_single(id + "_ref.txt")
 
 	ref.seed_title = "rsID pos " + id + "_A"
 
