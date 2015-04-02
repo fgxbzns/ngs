@@ -670,6 +670,8 @@ def laser_three():
 	os.system("mkdir -p " + current_path + "laser_3")
 	os.chdir(current_path + "laser_3")
 
+	laser_three_time = 0
+
 	for id in parameter.parent_id_list:
 		os.system("mkdir -p " + current_path + "laser_3/" + id)
 		os.chdir(id)
@@ -680,7 +682,9 @@ def laser_three():
 
 		start_time = time.time()
 		hifi_run_code = subprocess_execute(hifi_file)
-		print "Laser III run time: ", id, round(time.time() - start_time, 2), "s"
+		run_time = round(time.time() - start_time, 2)
+		laser_three_time += run_time
+		print "Laser III run time: ", id, run_time, "s"
 
 		if hifi_run_code != 0:
 			print "==done=="
@@ -696,6 +700,7 @@ def laser_three():
 		os.chdir(current_path + "laser_3")
 	os.chdir(current_path)
 
+	print "laser_three_time total", laser_three_time
 
 
 def laser_four():
@@ -705,7 +710,7 @@ def laser_four():
 	#os.mkdir(current_path + "laser_4")
 	os.system("mkdir -p " + current_path + "laser_4")
 	os.chdir(current_path + "laser_4")
-
+	laser_four_time = 0
 	for id in parameter.person_dict.keys():
 		os.system("mkdir -p " + current_path + "laser_4/" + id)
 		os.chdir(id)
@@ -714,7 +719,9 @@ def laser_four():
 
 		start_time = time.time()
 		hifi_run_code = subprocess_execute(hifi_file)
-		print "Laser IV run time: ", id, round(time.time() - start_time, 2), "s"
+		run_time = round(time.time() - start_time, 2)
+		laser_four_time += run_time
+		print "Laser IV run time: ", id, run_time, "s"
 
 		if hifi_run_code != 0:
 			print "==done=="
@@ -727,6 +734,8 @@ def laser_four():
 			pass
 		os.chdir(current_path + "laser_4")
 	os.chdir(current_path)
+
+	print "laser_four_time total", laser_four_time
 
 
 def get_args():
