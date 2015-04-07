@@ -19,9 +19,6 @@ file_path = "/home/guoxing/disk2/dgv_struct_val/" # for segmental dups
 rmsk_path = "/home/guoxing/disk2/strval/"
 file_path = "/home/guoxing/disk2/segdups/" # for structral val
 
-
-
-
 currentPath = os.getcwd() + '/'
 
 # store repeat info from rmsk file

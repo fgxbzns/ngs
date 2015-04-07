@@ -102,17 +102,14 @@ def output_revised_seed_with_error(revised_seed_dict, same_to_B_dict):
 
 def hifi_process(file_number, number_of_subfile, hap_subfile_name, geno_subfile_name="genotype.txt",
                  ref_subfile_name="refHaplos.txt"):
-	"""method for hifi using shell"""
 	maf_step = float(random.randrange(10, 40)) / (100.0)
-	# maf_step = 0.5
 	print "maf_step is: ", maf_step
 	if file_number < (number_of_subfile - 3):
-		#hifi = program_path + "hifi_fu_ref " + hap_subfile_name + " " + geno_subfile_name + " " + ref_subfile_name + " " + str(maf_step) + " &"
 		hifi = program_path + "hifi_fu_revise " + hap_subfile_name + " " + geno_subfile_name + " " + ref_subfile_name + " " + str(
 			maf_step) + " &"
 	else:
 		hifi = program_path + "hifi_fu_revise " + hap_subfile_name + " " + geno_subfile_name + " " + ref_subfile_name + " " + str(
-			maf_step) + ""  # make sure the other hifi processes are finished
+			maf_step) + ""
 	hifi_process = subprocess.Popen(hifi, shell=True)
 	hifi_process.wait()
 

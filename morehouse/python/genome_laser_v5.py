@@ -660,7 +660,7 @@ def genome_laser(pedi_name, geno_name):
 	output_seed()
 
 	laser_three()
-	#laser_four()
+	laser_four()
 
 def laser_three():
 	print "Laser III"

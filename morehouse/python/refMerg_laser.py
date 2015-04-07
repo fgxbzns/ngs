@@ -226,7 +226,6 @@ def refMerger(id, parameter):
 	make_hifi_files(ref, parameter)
 
 
-
 def refMerger_laser2(id, parameter):
 
 	person = parameter.person_dict[id]
