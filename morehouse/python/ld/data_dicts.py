@@ -71,8 +71,8 @@ class data_dicts:
         print "seed_hetero_dict", len(self.seed_hetero_dict)
         
     def update_geno_dict(self):
-        genotype_file = file_path + "genotype_NA10847_" + self.chr_name + ".txt"
-        self.geno_title_info, self.geno_dict = load_raw_data(genotype_file)
+        #genotype_file = file_path + "genotype_NA10847_" + self.chr_name + ".txt"
+        self.geno_title_info, self.geno_dict = load_raw_data(self.geno_file_name)
         self.geno_homo_dict, self.geno_hetero_dict = group_seed(self.geno_dict, self.geno_dict)
         print "total_geno_number: ", len(self.geno_dict)
         print "geno_homo_dict", len(self.geno_homo_dict)

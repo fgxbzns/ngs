@@ -169,6 +169,7 @@ def get_hap_various_crossover(person, crossover_pos_list):
 					hap_dict[pos] = person.B_dict[pos]
 				hap_side = "A" if hap_side == "B" else hap_side == "A"
 				crossover_pos_index += 1
+							#print max_base
 
 	return hap_dict
 

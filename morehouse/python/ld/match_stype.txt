@@ -1,0 +1,7 @@
+No solution imp_random_maf_cnt: 13
+No solution imp_random_maf_notcnt: 0
+No single solution: 108
+No big gap: 0
+Total imputed: 4641
+Ref_homo_imputeXX: 0
+Ref_nothomo_imputeXX_or_imputeNN: 13

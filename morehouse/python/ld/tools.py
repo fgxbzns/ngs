@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # ######################################################################################
-# Common tools
+# Author: Guoxing Fu
 # ######################################################################################
 from __future__ import division
 import os, glob, subprocess, random, operator, time, sys, math
@@ -62,8 +62,8 @@ def load_raw_data(file_name, raw_data_format="list"):
 
 def hifi_run(file_name, chr_name):
 	#hifi = program_path + "hifi_fu_revise " + file_name + " genotype.txt refHaplos.txt 0.10"
-	hifi = script_path + "/hifi_v2 " + file_name + " genotype.txt refHaplos.txt 0.10"
-	#hifi = "./hifi_v2 " + file_name + " genotype.txt refHaplos.txt 0.10"
+	#hifi = script_path + "/hifi_v2 " + file_name + " genotype.txt refHaplos.txt 0.10"
+	hifi = "./hifi_fu_revise " + file_name + " genotype.txt refHaplos.txt 0.10"
 	hifi_process = subprocess.Popen(hifi, shell=True)
 	hifi_process.wait()
 

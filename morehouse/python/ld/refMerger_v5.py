@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 # ######################################################################################
-# 
+# Author: Guoxing Fu
 #######################################################################################
 """
 keep only the snps that are available in ref data
@@ -57,8 +57,6 @@ def compare_geno_ref(geno_dict, hap_ref_dict):
 				pass
 			else:
 				try:
-					#if n_alleles == 1:
-					#	ref_homo_dict[position] = list_to_line(snp)
 					if geno_A == geno_B:
 						if n_alleles == 2:
 							if geno_A == unique_alleles[0] or geno_A == unique_alleles[1]:
@@ -89,7 +87,6 @@ def compare_geno_ref(geno_dict, hap_ref_dict):
 	print "geno_n_dict: ", len(geno_n_dict)
 	print "geno_ref_not_consistent: ", len(geno_ref_not_consistent)
 	print "ref_homo", len(ref_homo_dict)
-	#print ref_homo_dict[104922938]
 	return (ref_homo_dict, geno_ref_not_consistent, geno_n_dict)
 
 
@@ -108,7 +105,6 @@ def load_hap_ref_data(chr_name):
 			temp_hap_ref_dict = temp_data_tuple[1]
 			for position, line in temp_hap_ref_dict.iteritems():
 				if position in hap_ref_dict:
-					#hap_ref_dict[position] += "\t" + list_to_line(line[2:])
 					hap_ref_dict[position].extend(line[2:])
 	return ref_title_info, hap_ref_dict
 
@@ -271,8 +267,8 @@ def get_args():
 
 	usage = "refMerger -i haplotype -g genotype -c chr#"
 	parser = OptionParser(usage=usage, description=desc)
-	parser.add_option("-i", "--haplotype", type="string", dest="haplotypeFile", help="Input File Name", default="null")
-	parser.add_option("-g", "--genotype", type="string", dest="genotypeFile", help="Input File Name", default="null")
+	parser.add_option("-i", "--haplotype", type="string", dest="haplotypeFile", help="Input seed File Name", default="null")
+	parser.add_option("-g", "--genotype", type="string", dest="genotypeFile", help="Input genotype File Name", default="null")
 	parser.add_option("-c", "--chr", type="string", dest="chrName", help="Input chr Name", default="null")
 	parser.add_option("-p", "--pct", type="float", dest="remPercent", help="percent of ref removed", default=0)
 	parser.add_option("-d", "--id", type="string", dest="personID", help="personID", default=0)

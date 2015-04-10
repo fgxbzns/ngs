@@ -1,0 +1,8 @@
+seed file:  imputed_haplotype.txt
+std hap file:  /home/guoxing/disk2/solid/common_files/ASW_chr9_child_hap_refed.txt
+seed_same_to_A 13385
+seed_same_to_B 1192
+A_in_hetero 91.82 %
+B_in_hetero 8.18 %
+homo seed 43442
+seed_not_AB 79

@@ -526,7 +526,6 @@ def snpPick_solid(sam_file, depth_threshold, chr_name):
 	#haplotype_file = "NA12878_chr4_haplotype_std_hg18.txt"	# for illumina hg18 NA12878 chr4
 	#genotype_file = "genotype_NA12878_"+chr_name+".txt"	# for illumina hg18 NA12878 chr4
 
-
 	haplotype_file = "NA12878_hap_new_refed.txt"	# for simulation hg18 NA12878 chr6
 	genotype_file = "genotype_NA12878_"+chr_name+".txt"	# for simulation
 	#haplotype_file = "NA12878_hap_new_refed.txt" # for quake data
