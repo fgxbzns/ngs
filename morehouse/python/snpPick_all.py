@@ -131,6 +131,28 @@ if __name__ == '__main__':
 
 		output_indel(parameters)
 
+	elif mode == "james":
+
+		parameters.sam_file = options.samFile
+
+		# for rnaseq data
+		ref_path = "/home/guoxing/disk2/james/ref/"
+		parameters.ref_file = ref_path + "tair10_Chr5.fa"
+		print "ref file", parameters.ref_file
+
+		parameters.sam_file_name = parameters.sam_file[:parameters.sam_file.find('.')]
+
+		parameters.quality_score_threshold = 0
+		parameters.second_largest_allele_depth_cutoff = 1
+
+		output_file_name = parameters.sam_file_name + "_qs_" + str(parameters.quality_score_threshold) + ".txt"
+		parameters.output_file = open(output_file_name, "w")
+
+		snpPick(parameters)
+		parameters.output_file.close()
+
+		#output_indel(parameters)
+
 
 	elif mode == "meth":
 		# keep all alleles disregarding qs and depth

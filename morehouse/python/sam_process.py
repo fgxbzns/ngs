@@ -170,7 +170,8 @@ def single_end_indel(sam_file, chr_name):
 				print "error in first read:", sam_line_first
 			
 			# process all chr or one particular chr
-			check_chr_name = chrName_first.startswith("chr") if (chr_name == "chr") else (chr_name == chrName_first)
+			check_chr_name = chrName_first.startswith("Chr") if (chr_name == "Chr") else (chr_name == chrName_first)    #jiang
+			#check_chr_name = chrName_first.startswith("chr") if (chr_name == "chr") else (chr_name == chrName_first)
 			if check_chr_name:					# only keep the reads mapped to chr
 
 				if is_indel(indel_info_first):
@@ -400,8 +401,10 @@ def filter_by_XA():
 						print "error in first read:", sam_line_first
 						
 					# process all chr or one particular chr, keep these steps for other files that do not need pair match
-					check_chr_name = chrName_first.startswith("chr") if (parameter.chr_name == "chr") else (parameter.chr_name == chrName_first)
-					if check_chr_name and (insert_size_first > parameter.insert_size_lower_bond) and (insert_size_first <= parameter.insert_size_upper_bond):					# only keep the reads mapped to chr 
+					check_chr_name = chrName_first.startswith("Chr") if (parameter.chr_name == "Chr") else (parameter.chr_name == chrName_first)    #jiang
+					#check_chr_name = chrName_first.startswith("chr") if (parameter.chr_name == "chr") else (parameter.chr_name == chrName_first)
+
+					if check_chr_name and (insert_size_first > parameter.insert_size_lower_bond) and (insert_size_first <= parameter.insert_size_upper_bond):					# only keep the reads mapped to chr
 						# if the first read is within insert size limit, check the second read
 						# the insert_size for a pair is the same. If the first read is passed, the second will be passed, too.
 						sam_line_second = inputfile_sam.readline()

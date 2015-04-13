@@ -35,7 +35,7 @@ for line in chr_input_file:
 		output_in_process = False
 	if line.startswith(">") and not output_in_process:
 		output_in_process = True
-		chr_name = line[(line.find('>') + 1):].strip()
+		chr_name = line[(line.find('>') + 1):].strip().split()[0]
 		print chr_name
 		chr_output_file = open(currentPath + chr_file_name + "_" + chr_name + ".fa", "w")
 		chr_output_file.write(line.strip() + "\n")

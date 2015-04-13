@@ -878,11 +878,11 @@ def output_indel_dict(parameters, file_type):
 		print >> info_output, "##" + file_type + ":" + len(pos_list)
 		print >> info_output, "#CHROM POS ID REF ALT DP"
 		for pos in pos_list:
-				indel = dict[pos]
-				print >> info_output, indel.chr_name[3:], pos, ".", indel.ref_seq,
-				for seq in indel.alt_seq_dict.keys():
-					print >> info_output, seq,
-				print >> info_output, indel.alt_seq_dict[seq]
+			indel = dict[pos]
+			print >> info_output, indel.chr_name[3:], pos, ".", indel.ref_seq,
+			for seq in indel.alt_seq_dict.keys():
+				print >> info_output, seq,
+			print >> info_output, indel.alt_seq_dict[seq]
 
 def is_indel(cigar):
 	num_indel = cigar.count("I") + cigar.count("D")
@@ -975,7 +975,8 @@ def cigar_process(chr_name, start_pos, read_seq, cigar, parameters):
 					else:
 						parameters.insertion_dict[display_pos].alt_seq_dict[alt_seq] += 1
 			else:
-				print indel_length, indel_type
+				#print indel_length, indel_type
+				pass
 			indel_length = ""
 			indel_type = ""
 
