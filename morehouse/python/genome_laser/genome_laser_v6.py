@@ -6,6 +6,7 @@
 # 1. impute child haplotype from parent haplotype
 # 2. impute parent haplotype from child haplotype
 # 3, 4. impute all haplotype from populaton data
+# with laser 3
 #######################################################################################
 
 import os

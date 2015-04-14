@@ -1,0 +1,9 @@
+('/home/guoxing/disk2/ngs/morehouse/python/genome_laser/dist/genome_laser_v6_1',
+ True,
+ False,
+ None,
+ None,
+ [],
+ None,
+ False,
+ 1429023283)

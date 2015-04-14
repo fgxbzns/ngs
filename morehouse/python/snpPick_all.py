@@ -142,7 +142,7 @@ if __name__ == '__main__':
 
 		parameters.sam_file_name = parameters.sam_file[:parameters.sam_file.find('.')]
 
-		parameters.quality_score_threshold = 0
+		parameters.quality_score_threshold = 13
 		parameters.second_largest_allele_depth_cutoff = 1
 
 		output_file_name = parameters.sam_file_name + "_qs_" + str(parameters.quality_score_threshold) + ".txt"
