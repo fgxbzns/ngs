@@ -851,7 +851,7 @@ def cleanup_repeat_list(ori_repeat_list):
 			# if the next repeat is covered by the previous repeat, skip it.
 			pass
 		elif repeat[0] <= current_repeat[0] and repeat[1] >= current_repeat[1]:
-			# if the next repeat covers the previous repeat, remove the previous repeat, keept the current.
+			# if the next repeat covers the previous repeat, remove the previous repeat, keep the current.
 			del new_repeat_list[-1]
 			new_repeat_list.append(repeat)
 			current_repeat = list(repeat)
